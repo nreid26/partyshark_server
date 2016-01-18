@@ -6,7 +6,7 @@ abstract class Identifiable {
   int get identity;
 
   int get hashCode => identity;
-  bool operator==(Identifiable other) => (other == null) ? false : identity == other.identity;
+  bool operator==(Identifiable other) => identical(runtimeType, other.runtimeType) && identical(identity, other.identity);
 
   String toString() => '${runtimeType.toString()}: $identity';
 }
