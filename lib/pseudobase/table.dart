@@ -1,43 +1,113 @@
 part of pseudobase;
 
 ///A class representing a table of objects in a Datastore
-class Table<T extends Identifiable> extends Object with SetBase<T> {
+class Table<T extends Identifiable> extends SetBase<T> {
   //Statics
-  static bool _internalEquals(a, b) {
-    if(a == b) { return true; }
-    else if(a is Identifiable) { return a.identity == b; }
-    else if(b is Identifiable) { return b.identity == a; }
-    else { return false; }
-  }
+  static const int _jump = 11;
+  static const double _fillFactor = 0.75;
 
   //Data
-  int _maxIdentity = 0;
-  Set<T> _core = new HashSet<T>(equals: _internalEquals);
+  int _maxIdentity, _length;
+  List<T> _cells;
+  final Datastore datastore;
 
   //Constructor
-  Table._internal();
+  Table._internal(this.datastore) {
+    clear();
+  }
 
   //Methods
-  T operator[](int identity) => _core.lookup(identity);
-
   int get nextIdentity => _maxIdentity + 1;
+
+  int get length => _length;
+
+  T operator[](int identity) {
+    int index = _search(identity);
+    return (index >= 0) ? _cells[index] : null;
+  }
 
   bool add(T item) {
     if(item.identity > _maxIdentity) { _maxIdentity = item.identity; }
-    return _core.add(item);
+
+    int index = _search(item.identity);
+    if(index < 0) {
+      _length++;
+      _cells[-(index + 1)] = item;
+      if(_length / _cells.length >= _fillFactor) { _expand(); }
+      return true;
+    }
+    return false;
   }
 
-  T lookup(T item) => _core.lookup(item);
+  bool removeIdentity(int identity) {
+    int index = _search(identity);
+    if(index >= 0) {
+      _length--;
+      _cells[index] = null;
+      return true;
+    }
+    return false;
+  }
 
-  Iterator<T> get iterator => _core.iterator;
+  bool remove(T item) => removeIdentity(item.identity);
 
-  bool contains(T item) => _core.contains(item);
+  bool containsIdentity(int identity) => _search(identity) >= 0;
 
-  Set<T> toSet() => _core.toSet();
+  bool contains(T item) => containsIdentity(item.identity);
 
-  bool remove(T item) => _core.remove(item);
+  T lookup(T item) => this[item.identity];
 
-  int get length => _core.length;
+  Iterator<T> get iterator => new _TableIterator(this);
 
-  void clear() => _core.clear();
+  void clear() {
+    _length = 0;
+    _cells = new List<T>(16);
+    _maxIdentity = -1;
+  }
+
+  Set<T> toSet() => new HashSet<T>.from(this);
+
+
+  int _search(int identity) {
+    int index = identity % _cells.length;
+
+    while(true) {
+      if(_cells[index] == null) { return -(index + 1); }
+      else if(_cells[index].identity == identity) { return index; }
+      else { index = (index + _jump) % _cells.length; }
+    }
+  }
+
+  void _expand() {
+    int oldLength = length;
+    List<Identifiable> oldCells = _cells;
+    _cells = new List<Identifiable>(2 * oldCells.length);
+
+    for(T t in oldCells) {
+      if(t != null) { add(t); }
+    }
+    _length = oldLength;
+  }
+}
+
+///A forward Iterator implementation of the Table
+class _TableIterator<T extends Identifiable> implements Iterator<T> {
+  //Data
+  final Table<T> _table;
+  int _index = -1;
+
+  //Constructor
+  _TableIterator(this._table);
+
+  //Methods
+  T get current => _table._cells[_index];
+
+  bool moveNext() {
+    while(_index + 1 < _table._cells.length) {
+      if(_table._cells[++_index] != null) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
