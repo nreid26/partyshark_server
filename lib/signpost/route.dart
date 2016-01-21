@@ -52,7 +52,7 @@ class _Route {
   _Route(this._parent, this._pattern, this._controller, this._fallback, Map<Pattern, dynamic> definition) {
     if(definition == null) { return; }
     for(Pattern pattern in definition.keys) {
-      _subroutes.add(_mapDefinition(_parent, pattern, definition[p]));
+      _subroutes.add(_mapDefinition(this, pattern, definition[p]));
     }
   }
 }
