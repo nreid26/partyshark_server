@@ -1,51 +1,101 @@
 part of signpost;
 
 ///A class that can accept HttpRequests can route them to RouteControllers base on a provided definition
-class Router {
+class Router implements Function {
   //Data
   final _Route _root;
 
   //Constructor
-  Router(MisrouteController controller, Map<Pattern, dynamic> definition) : _root = new _Route(null, null, controller, definition) {
+  Router(MisrouteController controller, Map definition) : _root = new _Route(null, null, controller) {
     if(controller == null) { throw new ArgumentError.notNull('controller'); }
+    _translateDefinition(definition);
   }
 
   //Methods
+  void call(HttpRequest req) { routeRequest(req); }
+
   void routeRequest(HttpRequest req) {
     Iterator<String> segmentItr = req.uri.pathSegments.iterator;
-    List<String> pathParams = [];
+    Map<PathParameterKey, String> pathParams = {};
     _Route route = _root;
-
     bool misroute = false;
 
     traversal: while(segmentItr.moveNext() && !misroute) { //For each path segment
+      bool segMatch = false;
+
       for (_Route subroute in route._subroutes) { //For each subroute
-        if (subroute._segment == null) {
-          pathParams.add(segmentItr.current);
-          route = subroute;
-          continue traversal;
+        if (subroute._segment is PathParameterKey) {
+          pathParams[subroute._segment] = segmentItr.current;
+          segMatch = true;
         }
-        else if (subroute._segment == segmentItr.current) {
+        segMatch = segMatch || (subroute._segment == segmentItr.current);
+
+        if(segMatch) {
           route = subroute;
           continue traversal;
         }
       }
 
-      //If no matching subroute (or no subroutes at all)
-      misroute = true;
+      misroute = true; //If no matching subroute (or no subroutes at all)
     }
 
     //Final route must have controller
     if(route._controller == null) { misroute = true; }
 
     if(misroute) {
-      while(route._controller is! MisrouteController) {
-        route = route._parent;
-      }
-      //Handle misrouted request
+      while(route._controller is! MisrouteController) { route = route._parent; }
+      (route._controller as MisrouteController).handleUnroutableRequest(pathParams, req);
     }
-    else {
+    else { route._controller.distributeByMethod(pathParams, req); }
+  }
 
+  void _translateDefinition(Map definition) {
+    List<_Route> routePath = [_root];
+
+    void extractRecursive(Map subDef) {
+      if(subDef == null) { return; }
+
+      subDef.forEach((segment, right) { //For each route in the subdefinition
+        RouteController con;
+        Map subs;
+
+        //Segment
+        if(segment is String) { }
+        else if(segment is PathParameterKey) {
+          if(routePath.map((r) => r._segment).contains(segment)) { //Ensure keys are unique
+            throw new ArgumentError('Found duplicate $PathParameterKey in path in $Router definition; ${PathParameterKey}s must be unique in a path');
+          }
+        }
+        else { throw new ArgumentError('Found $segment as segment in $Router definition; expected a $String or $PathParameterKey'); }
+
+        //Argument extraction
+        if(right is RouteController) { con = right; }
+        else if(right is Map) { subs = right; }
+        else if(right is List && right.length == 2) {
+          if(right[0] is RouteController) { con = right[0]; }
+          else { throw new ArgumentError('Found ${right[0]} at position 0 in $List in $Router definition; expected a $RouteController'); }
+
+          if(right[1] is Map) { subs = right[1]; }
+          else { throw new ArgumentError('Found ${right[1]} at position 1 in $List in $Router definition; expected a $Map'); }
+        }
+        else { throw new ArgumentError('Found ${right.runtimeType} in $Router definition; expected $RouteController, $Map, or $List[2]'); }
+
+        //Recursion
+        _Route built = new _Route(routePath.last, segment, con);
+        routePath.last._subroutes.add(built);
+
+        routePath.add(built);
+
+        if(con != null) {
+          if(con._pathSegments != null) { throw new ArgumentError('Found a duplicate $RouteController in $Router definition; ${RouteController}s must be unique');}
+          else { con._pathSegments = routePath.map((r) => r._segment).toList()..removeAt(0); }
+        }
+        extractRecursive(subs);
+
+        routePath.removeLast();
+      });
     }
+
+    extractRecursive(definition);
   }
 }
