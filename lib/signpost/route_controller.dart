@@ -7,8 +7,8 @@ abstract class RouteController {
       ..statusCode = HttpStatus.METHOD_NOT_ALLOWED
       ..headers.contentType = ContentType.JSON
       ..write({
-        'description': 'The request could not be handled',
-        'message': 'The requested rousource exists but does not suppost the requested method'
+        'what': 'The request could not be handled',
+        'why': 'The requested rousource exists but does not suppost the requested method'
       })
       ..close();
   }
@@ -39,8 +39,8 @@ abstract class MisrouteController extends RouteController {
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON
       ..write({
-        'description': 'The requested resource could not be found',
-        'message': 'The requested resource does not exsit'
+        'what': 'The requested resource could not be found',
+        'why': 'The requested resource does not exsit'
       })
       ..close();
   }
