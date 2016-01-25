@@ -18,14 +18,44 @@ abstract class RouteController {
   }
 
   //Data
-  List _pathSegments;
-  final List<String> supportedMethods = const [ HttpMethod.Options ];
+  List _pathSegments = null;
+  bool _pathIsConstant = true;
+  List<String> get supportedMethods;
+
+  //Constructor
+  RouteController() {
+    if(supportedMethods == null) {
+      throw new StateError('\'supportedMethods\' must not be null; expected a const $List<$String> naming implemented HTTP methods');
+    }
+  }
 
   //Methods
-  String buildPathFromArguments(Map<PathParameterKey, String> args) =>
-    (_pathSegments == null)
-      ? ''
-      : '/' + _pathSegments.map((seg) => (args.containsKey(seg)) ? args[seg] : seg).join('/');
+  bool get pathIsConstant => _pathIsConstant;
+
+  List<String> getPathSegments([Map<PathParameterKey, String> pathParams]) {
+    if(_pathIsConstant) { return _pathSegments; }
+    else if(pathParams == null) { throw new ArgumentError('Path parameter values are required to get non-constant path segments'); }
+    else {
+      return new UnmodifiableListView<String>(
+          _pathSegments
+            .map((s) {
+              if(s is String) { return s; }
+              s = pathParams[s];
+              if(s != null) { return s; }
+              else { throw new StateError('Some necessary path parameters were missing during path segment reconstruction'); }
+            })
+            .toList(growable: false)
+      );
+    }
+  }
+
+  void setPathSegments(Iterable segments) {
+    if(_pathSegments != null) { throw new StateError('Path segments may only be set once'); }
+
+    _pathIsConstant = segments.every((segment) => segment is String);
+    _pathSegments = segments.toList(growable: false);
+    if(_pathIsConstant) { _pathSegments = new UnmodifiableListView(_pathSegments); }
+  }
 
   void distributeByMethod(Map<PathParameterKey, String> pathParams, HttpRequest req) {
     String key = req.method.toUpperCase();

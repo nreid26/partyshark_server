@@ -82,16 +82,12 @@ class Router implements Function {
 
         //Recursion
         _Route built = new _Route(routePath.last, segment, con);
-        routePath.last._subroutes.add(built);
-
         routePath.add(built);
-
-        if(con != null) {
-          if(con._pathSegments != null) { throw new ArgumentError('Found a duplicate $RouteController in $Router definition; ${RouteController}s must be unique');}
-          else { con._pathSegments = routePath.map((r) => r._segment).toList()..removeAt(0); }
-        }
-        extractRecursive(subs);
-
+          if(con.setPathSegments(routePath.map((r) => r._segment).skip(1))) { }
+          else {
+            throw new ArgumentError('Found a duplicate $RouteController in $Router definition; ${RouteController}s must be unique');
+          }
+          extractRecursive(subs);
         routePath.removeLast();
       });
     }

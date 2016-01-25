@@ -1,13 +1,11 @@
 library signpost;
 
 import 'dart:io';
-import 'dart:convert';
+import 'dart:convert' show JSON;
+import 'dart:collection' show UnmodifiableListView;
 
 part './signpost/router.dart';
 part './signpost/route_controller.dart';
-
-//Top level variables
-final JsonCodec JSON = JSON;
 
 //Helper classes
 class PathParameterKey {
@@ -24,7 +22,9 @@ class _Route {
   final RouteController _controller;
 
   //Constructor
-  _Route(this._parent, this._segment, this._controller);
+  _Route(this._parent, this._segment, this._controller) {
+    if(_parent != null) { _parent._subroutes.add(this); }
+  }
 }
 
 class HttpMethod {
