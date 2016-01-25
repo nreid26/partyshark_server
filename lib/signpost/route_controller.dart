@@ -19,6 +19,7 @@ abstract class RouteController {
 
   //Data
   List _pathSegments;
+  final List<String> supportedMethods = const [ HttpMethod.Options ];
 
   //Methods
   String buildPathFromArguments(Map<PathParameterKey, String> args) =>
@@ -29,15 +30,14 @@ abstract class RouteController {
   void distributeByMethod(Map<PathParameterKey, String> pathParams, HttpRequest req) {
     String key = req.method.toUpperCase();
 
-    if(key == 'CONNECT') { connect(pathParams, req); }
-    else if(key == 'DELETE') { delete(pathParams, req); }
-    else if(key == 'GET') { get(pathParams, req); }
-    else if(key == 'HEAD') { get(pathParams, req); }
-    else if(key == 'OPTIONS') { options(pathParams, req); }
-    else if(key == 'PATCH') { options(pathParams, req); }
-    else if(key == 'POST') { post(pathParams, req); }
-    else if(key == 'PUT') { put(pathParams, req); }
-    else if(key == 'TRACE') { options(pathParams, req); }
+    if(key == HttpMethod.Connect) { connect(pathParams, req); }
+    else if(key == HttpMethod.Delete) { delete(pathParams, req); }
+    else if(key == HttpMethod.Get) { get(pathParams, req); }
+    else if(key == HttpMethod.Head) { get(pathParams, req); } //Default to GET request and let client ignore body
+    else if(key == HttpMethod.Options) { options(pathParams, req); }
+    else if(key == HttpMethod.Patch) { patch(pathParams, req); }
+    else if(key == HttpMethod.Post) { post(pathParams, req); }
+    else if(key == HttpMethod.Put) { put(pathParams, req); }
     else { handleDefault(req); }
   }
 
@@ -45,11 +45,17 @@ abstract class RouteController {
   void delete(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
   void get(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
   void head(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void options(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
   void patch(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
   void post(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
   void put(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void trace(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
+
+  void options(Map<PathParameterKey, String> pathParams, HttpRequest req) {
+    req.response
+      ..statusCode = HttpStatus.OK
+      ..headers.add('Allow', supportedMethods.join(', '))
+      ..close();
+  }
+
 }
 
 ///A class implementing the behaviour of a RouteController but also able to handle unroutable requests
@@ -59,7 +65,7 @@ abstract class MisrouteController extends RouteController {
     req.response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON
-      ..write(RouteController.builfErrorJson(
+      ..write(RouteController.buildErrorJson(
         'The requested resource could not be found',
         'The requested resource does not exsit'
       ))

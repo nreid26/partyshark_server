@@ -26,3 +26,16 @@ class _Route {
   //Constructor
   _Route(this._parent, this._segment, this._controller);
 }
+
+class HttpMethod {
+  static const String
+    Connect = 'CONNECT',
+    Delete = 'DELETE',
+    Get = 'GET',
+    Head = 'HEAD',
+    Options = 'OPTIONS',
+    Patch = 'PATCH',
+    Post = 'POST',
+    Put = 'PUT',
+    Trace = 'TRACE';
+}
