@@ -39,3 +39,8 @@ class HttpMethod {
     Put = 'PUT',
     Trace = 'TRACE';
 }
+
+class RouterDefinitionError extends ArgumentError {
+  //Constructor
+  RouterDefinitionError([String message]): super(message);
+}

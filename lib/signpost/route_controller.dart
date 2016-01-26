@@ -33,18 +33,18 @@ abstract class RouteController {
   bool get pathIsConstant => _pathIsConstant;
 
   List<String> getPathSegments([Map<PathParameterKey, String> pathParams]) {
+    String mapArgs(s) {
+      if(s is String) { return s; }
+      s = pathParams[s];
+      if(s != null) { return s.toString(); }
+      else { throw new StateError('At least one necessary path parameter was missing during path segment reconstruction'); }
+    }
+
     if(_pathIsConstant) { return _pathSegments; }
     else if(pathParams == null) { throw new ArgumentError('Path parameter values are required to get non-constant path segments'); }
     else {
       return new UnmodifiableListView<String>(
-          _pathSegments
-            .map((s) {
-              if(s is String) { return s; }
-              s = pathParams[s];
-              if(s != null) { return s; }
-              else { throw new StateError('Some necessary path parameters were missing during path segment reconstruction'); }
-            })
-            .toList(growable: false)
+          _pathSegments.map(mapArgs).toList(growable: false)
       );
     }
   }
