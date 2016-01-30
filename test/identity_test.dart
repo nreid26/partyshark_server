@@ -9,7 +9,7 @@ class ConcreteIdentifiable extends Object with Identifiable {
   ConcreteIdentifiable(this.identity, this.nonIdentity);
 }
 
-int main() {
+void main() {
   group('Identity defines', () {
     test('equality relation based on identity', () {
       final ConcreteIdentifiable

@@ -4,7 +4,7 @@ part of entities;
 class Party extends Object with Identifiable {
   //Data
   final int identity, adminCode;
-  final SettingsGroup options = new SettingsGroup();
+  final SettingsGroup settings;
   User player;
   bool isPlaying = false;
 
@@ -12,7 +12,7 @@ class Party extends Object with Identifiable {
   final Set<User> users = new HashSet();
 
   //Constructor
-  Party(this.identity, this.adminCode);
+  Party(this.identity, this.adminCode, this.settings);
 
   //Methods
   int get partycode => identity;
