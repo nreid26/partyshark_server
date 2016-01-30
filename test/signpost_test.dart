@@ -30,11 +30,21 @@ class HttpRequestStub extends Object with Spy implements HttpRequest  {
   final Uri uri;
   RouteController routedController;
   String routedMethod;
+  final HttpResponse response = new HttpResponseStub();
 
   HttpRequestStub(this.method, String uriString) : uri = Uri.parse(uriString);
 }
 
+class HttpResponseStub extends Object with Spy implements HttpResponse {
+  final HttpHeaders headers = new HttpHeadersStub();
+}
 
+class HttpHeadersStub extends Object with Spy implements HttpHeaders {
+  final Map<String, dynamic> _pairs = { };
+
+  void add(String name, Object value) { _pairs[name.toLowerCase()] = value; }
+  dynamic operator[](String name) => _pairs[name.toLowerCase()];
+}
 
 //Tests
 void main() {
@@ -102,12 +112,14 @@ void main() {
       expect(cons[0].recoverUri(),                 equals(Uri.parse(baseUri)));
       expect(cons[3].recoverUri({keys[0]: 'end'}), equals(Uri.parse('$baseUri/one/three/end')));
       expect(cons[3].recoverUri({keys[0]: 1}),     equals(Uri.parse('$baseUri/one/three/1')));
+      expect(cons[3].recoverUri({keys[0]: '%'}),   equals(Uri.parse('$baseUri/one/three/%')));
     });
 
     test('correctly handle OPTIONS requests by default', () {
       HttpRequestStub req = new HttpRequestStub(HttpMethod.Options, 'https://api.partyshark.tk');
       router.routeRequest(req);
-      //TODO: Add appropriate condition. May require implementing HttpResponseStub of improving Spy
+
+      expect(req.response.headers['Allow'], equals(([HttpMethod.Get, HttpMethod.Options, HttpMethod.Head]..sort()).join(',')) );
     });
   });
 }

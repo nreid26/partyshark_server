@@ -5,7 +5,7 @@ part of signpost;
 /// generate as much functionally dependent behaviour as possible.
 abstract class RouteController {
   //Data
-  List _pathSegments;
+  List __pathSegments;
   Uri _constantUri;
   Map<String, Symbol> _methodMap = { };
   Router _router;
@@ -38,12 +38,12 @@ abstract class RouteController {
 
   //Set the path segments of the route leading to this controller and perform
   // some member updating.
-  void _assignPath(Iterable segments) {
+  void set _pathSegments(Iterable segments) {
     if(segments.every((segment) => segment is String)) {
       _constantUri = _router._baseUri.replace(pathSegments: segments);
     }
     else {
-      _pathSegments = segments.toList(growable: false);
+      __pathSegments = segments.toList(growable: false);
     }
   }
 
@@ -53,7 +53,7 @@ abstract class RouteController {
   Uri recoverUri([Map<PathParameterKey, dynamic> pathParams]) {
     return _constantUri ??
       _router._baseUri.replace(
-          pathSegments: _pathSegments.map((s) {
+          pathSegments: __pathSegments.map((s) {
             if(s is String) { return s; }
             else {
               if(pathParams.containsKey(s)) { return pathParams[s].toString(); }

@@ -60,15 +60,20 @@ class Router {
       else { route._controller._distributeByMethod(req, pathParams); }
     }
     catch (e) {
-      req.response
+      try {
+        req.response
           ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
           ..write(errorJson(
               'The server could not handle this request',
               'The code to handle this request is buggy'
-          ))
-          ..close();
+          ));
+      }
+      catch(e) { }
 
       rethrow;
+    }
+    finally {
+      req.response.close();
     }
   }
 
@@ -77,7 +82,7 @@ class Router {
 
     _root._controller
       .._router = this
-      .._assignPath([]);
+      .._pathSegments = [];
 
     void extractRecursive(Map subDef) {
       if(subDef == null) { return; }
@@ -119,7 +124,7 @@ class Router {
         if(con != null) {
           con
             .._router = this
-            .._assignPath(routePath.map((r) => r._segment).skip(1));
+            .._pathSegments = routePath.map((r) => r._segment).skip(1);
         }
         extractRecursive(subs);
 
