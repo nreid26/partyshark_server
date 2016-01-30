@@ -1,20 +1,28 @@
 part of signpost;
 
-///A class that can accept HttpRequests can route them to RouteControllers base on a provided definition
-class Router implements Function {
+///A class that can accept [HttpRequest]s can route them to [RouteController]s
+/// based on a provided definition.
+class Router {
   //Data
   final _Route _root;
+  final Uri _baseUri;
 
-  //Constructor
-  Router(MisrouteController controller, Map definition) : _root = new _Route(null, null, controller) {
+  ///The default generative constructor of a [Router]. [hostUri] should be a
+  /// a [String] representation of the scheme and host that this [Router] is
+  /// using as its public face. [definition] should be nested [Map]s with
+  /// [String] or [ParameterPathKey] keys describing the routing tree and values
+  /// which are the associated [RouteController]; for routes with both a
+  /// controller and subroutes, a [List] containing the [RouteController]
+  /// followed by the subroute [Map] should be used as the value.
+  Router(String baseUri, MisrouteController controller, Map definition): _root = new _Route(null, null, controller), _baseUri = Uri.parse(baseUri) {
     if(controller == null) { throw new ArgumentError.notNull('controller'); }
-    controller.setPathSegments([]);
     _translateDefinition(definition);
   }
 
-  //Methods
-  void call(HttpRequest req) { routeRequest(req); }
-
+  ///Traverses the routing tree according to the path of the [HttpRequest]
+  /// [Uri] and dispatches the request to the associated [RouteController].
+  /// If the route does not exist, the tree is traversed upwards until the first
+  /// [MisrouteController] is found.
   void routeRequest(HttpRequest req) {
     Iterator<String> segmentItr = req.uri.pathSegments.iterator;
     Map<PathParameterKey, String> pathParams = {};
@@ -29,7 +37,7 @@ class Router implements Function {
           pathParams[subroute._segment] = segmentItr.current;
           segMatch = true;
         }
-        segMatch = segMatch || (subroute._segment == segmentItr.current);
+        else if (subroute._segment == segmentItr.current) { segMatch = true; };
 
         if(segMatch) {
           route = subroute;
@@ -43,15 +51,33 @@ class Router implements Function {
     //Final route must have controller
     if(route._controller == null) { misroute = true; }
 
-    if(misroute) {
-      while(route._controller is! MisrouteController) { route = route._parent; }
-      (route._controller as MisrouteController).handleUnroutableRequest(pathParams, req);
+    //Ensure request is closed regardless of client code
+    try {
+      if(misroute) {
+        while(route._controller is! MisrouteController) { route = route._parent; }
+        (route._controller as MisrouteController).handleUnroutableRequest(req, pathParams);
+      }
+      else { route._controller._distributeByMethod(req, pathParams); }
     }
-    else { route._controller.distributeByMethod(pathParams, req); }
+    catch (e) {
+      req.response
+          ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+          ..write(errorJson(
+              'The server could not handle this request',
+              'The code to handle this request is buggy'
+          ))
+          ..close();
+
+      rethrow;
+    }
   }
 
   void _translateDefinition(Map definition) {
     List<_Route> routePath = [_root];
+
+    _root._controller
+      .._router = this
+      .._assignPath([]);
 
     void extractRecursive(Map subDef) {
       if(subDef == null) { return; }
@@ -89,12 +115,14 @@ class Router implements Function {
         //Recursion
         _Route built = new _Route(routePath.last, segment, con);
         routePath.add(built);
-          try {
-            con?.setPathSegments(routePath.map((r) => r._segment).skip(1));
-          } catch(e) {
-            throw new RouterDefinitionError('Found a duplicate $RouteController in $Router definition; ${RouteController}s must be unique');
-          }
-          extractRecursive(subs);
+
+        if(con != null) {
+          con
+            .._router = this
+            .._assignPath(routePath.map((r) => r._segment).skip(1));
+        }
+        extractRecursive(subs);
+
         routePath.removeLast();
       });
     }

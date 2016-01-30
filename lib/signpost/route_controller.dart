@@ -1,101 +1,109 @@
 part of signpost;
 
-///A class implementing the basic behaviour required to respond to an HttpRequest
+///A class implementing the basic behaviour required to respond to an
+/// [HttpRequest]. Designed to integrate with a [Router] and automatically
+/// generate as much functionally dependent behaviour as possible.
 abstract class RouteController {
-  //Statics
-  static String buildErrorJson(String what, String why) =>
-      '{"what":${JSON.encode(what)},"why":${JSON.encode(why)}}';
-
-  static handleDefault(HttpRequest req) {
-    req.response
-      ..statusCode = HttpStatus.METHOD_NOT_ALLOWED
-      ..headers.contentType = ContentType.JSON
-      ..write(buildErrorJson(
-          'The request could not be handled',
-          'The requested rousource exists but does not suppost the requested method'
-      ))
-      ..close();
-  }
-
   //Data
-  List _pathSegments = null;
-  bool _pathIsConstant = true;
-  List<String> get supportedMethods;
+  List _pathSegments;
+  Uri _constantUri;
+  Map<String, Symbol> _methodMap = { };
+  Router _router;
+  String _supportedMethodsString;
+  InstanceMirror _reflection;
 
-  //Constructor
+  ///The default generative constructor of all [RouteController]s.
   RouteController() {
-    if(supportedMethods == null) {
-      throw new StateError('\'supportedMethods\' must not be null; expected a const $List<$String> naming implemented HTTP methods');
+    _reflection = reflect(this);
+
+    void searchMirror(ClassMirror cm) {
+      cm.declarations.forEach((Symbol s, DeclarationMirror d) {
+        d.metadata
+            .map((InstanceMirror i) => i.reflectee)
+            .where((dynamic r) => r is HttpHandler)
+            .forEach((HttpHandler h) => _methodMap[h.methodName] = s);
+      });
     }
+
+    [RouteController, this.runtimeType]
+        .map(reflectClass)
+        .forEach(searchMirror);
+
+    if(_methodMap.containsKey(HttpMethod.Get) && !_methodMap.containsKey(HttpMethod.Head)) {
+      _methodMap[HttpMethod.Head] = _methodMap[HttpMethod.Get];
+    }
+
+    _supportedMethodsString = (_methodMap.keys.toList()..sort()).join(',');
   }
 
-  //Methods
-  bool get pathIsConstant => _pathIsConstant;
-
-  List<String> getPathSegments([Map<PathParameterKey, String> pathParams]) {
-    String mapArgs(s) {
-      if(s is String) { return s; }
-      s = pathParams[s];
-      if(s != null) { return s.toString(); }
-      else { throw new StateError('At least one necessary path parameter was missing during path segment reconstruction'); }
+  //Set the path segments of the route leading to this controller and perform
+  // some member updating.
+  void _assignPath(Iterable segments) {
+    if(segments.every((segment) => segment is String)) {
+      _constantUri = _router._baseUri.replace(pathSegments: segments);
     }
-
-    if(_pathIsConstant) { return _pathSegments; }
-    else if(pathParams == null) { throw new ArgumentError('Path parameter values are required to get non-constant path segments'); }
     else {
-      return new UnmodifiableListView<String>(
-          _pathSegments.map(mapArgs).toList(growable: false)
-      );
+      _pathSegments = segments.toList(growable: false);
     }
   }
 
-  void setPathSegments(Iterable segments) {
-    if(_pathSegments != null) { throw new StateError('Path segments may only be set once'); }
-
-    _pathIsConstant = segments.every((segment) => segment is String);
-    _pathSegments = segments.toList(growable: false);
-    if(_pathIsConstant) { _pathSegments = new UnmodifiableListView(_pathSegments); }
+  ///Recovers the [Uri] leading to this controller with
+  /// [PathParameterKey]s substituted for mapped values. If required values
+  /// are missing this method throws an [ArgumentError].
+  Uri recoverUri([Map<PathParameterKey, dynamic> pathParams]) {
+    return _constantUri ??
+      _router._baseUri.replace(
+          pathSegments: _pathSegments.map((s) {
+            if(s is String) { return s; }
+            else {
+              if(pathParams.containsKey(s)) { return pathParams[s].toString(); }
+              else { throw new ArgumentError('At least one necessary path parameter was missing'); }
+            }
+          })
+      );
   }
 
-  void distributeByMethod(Map<PathParameterKey, String> pathParams, HttpRequest req) {
+  void _distributeByMethod(HttpRequest req, [Map<PathParameterKey, String> pathParams]) {
     String key = req.method.toUpperCase();
 
-    if(key == HttpMethod.Connect) { connect(pathParams, req); }
-    else if(key == HttpMethod.Delete) { delete(pathParams, req); }
-    else if(key == HttpMethod.Get) { get(pathParams, req); }
-    else if(key == HttpMethod.Head) { get(pathParams, req); } //Default to GET request and let client ignore body
-    else if(key == HttpMethod.Options) { options(pathParams, req); }
-    else if(key == HttpMethod.Patch) { patch(pathParams, req); }
-    else if(key == HttpMethod.Post) { post(pathParams, req); }
-    else if(key == HttpMethod.Put) { put(pathParams, req); }
-    else { handleDefault(req); }
+    if(_methodMap.containsKey(key)) {
+      _reflection.invoke(_methodMap[key], [req, pathParams]);
+    }
+    else {
+      req.response
+        ..statusCode = HttpStatus.NOT_IMPLEMENTED
+        ..headers.contentType = ContentType.JSON
+        ..write(errorJson(
+            'The request could not be handled',
+            'The requested rousource exists but does not suppost the requested method'
+        ))
+        ..close();
+    }
   }
 
-  void connect(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void delete(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void get(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void head(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void patch(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void post(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-  void put(Map<PathParameterKey, String> pathParams, HttpRequest req) { handleDefault(req); }
-
-  void options(Map<PathParameterKey, String> pathParams, HttpRequest req) {
+  @HttpHandler(HttpMethod.Options)
+  void _options(HttpRequest req, [Map<PathParameterKey, String> pathParams]) {
     req.response
       ..statusCode = HttpStatus.OK
-      ..headers.add('Allow', supportedMethods.join(', '))
+      ..headers.add('Allow', _supportedMethodsString)
       ..close();
   }
-
 }
 
-///A class implementing the behaviour of a RouteController but also able to handle unroutable requests
+///A class extended to handle unroutable [HttpRequest]s designating non-existent/functional
+/// routes. When such a request is received, the routing tree is
+/// traversed upwards from the specified route until the first
+/// [MisrouteController] is found; the behaviour of that instance is then
+/// invoked.
 abstract class MisrouteController extends RouteController {
-  //Methods
-  void handleUnroutableRequest(Map<PathParameterKey, String> pathParams, HttpRequest req) {
+
+  ///This method is called when this [MisrouteController] is selected to handle
+  /// a request that had no existing route.
+  void handleUnroutableRequest(HttpRequest req, [Map<PathParameterKey, String> pathParams]) {
     req.response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON
-      ..write(RouteController.buildErrorJson(
+      ..write(errorJson(
         'The requested resource could not be found',
         'The requested resource does not exsit'
       ))

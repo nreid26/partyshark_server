@@ -1,43 +1,113 @@
 import 'package:test/test.dart';
 import 'package:partyshark_server/signpost.dart';
+import 'package:partyshark_server/espionage.dart';
+import 'dart:io';
 
+const String baseUri = 'https://api.partyshark.tk';
+
+//Stubs
 class BasicRouteController extends MisrouteController {
   final List<String> supportedMethods;
+  final int index;
 
-  //Constructor
-  BasicRouteController([this.supportedMethods = const [HttpMethod.Options]]);
+  BasicRouteController(this.index, [this.supportedMethods = const [HttpMethod.Options]]);
+
+  @HttpHandler(HttpMethod.Get)
+  void get(HttpRequestStub req, [Map pathParams]) {
+    req.routedController = this;
+    req.routedMethod = HttpMethod.Get;
+  }
+
+  void handleUnroutableRequest(HttpRequestStub req, [Map pathParams]) {
+    req.routedController = this;
+    req.routedMethod = 'UNROUTABLE';
+    super.handleUnroutableRequest(req, pathParams);
+  }
 }
 
-List<PathParameterKey> keys = new List.generate(3, (i) => new PathParameterKey());
+class HttpRequestStub extends Object with Spy implements HttpRequest  {
+  final String method;
+  final Uri uri;
+  RouteController routedController;
+  String routedMethod;
 
+  HttpRequestStub(this.method, String uriString) : uri = Uri.parse(uriString);
+}
+
+
+
+//Tests
 void main() {
   Router router;
-  List<RouteController> cons = new List.generate(4, (i) => new BasicRouteController());
+  List<RouteController> cons = new List.generate(4, (i) => new BasicRouteController(i));
+  List<PathParameterKey> keys = new List.generate(3, (i) => new PathParameterKey());
+
+  void build() {
+    router = new Router(baseUri, cons[0], {
+      'one': {
+        'three': [cons[2], {
+          keys[0]: cons[3]
+        }],
+      },
+      'two': cons[1]
+    });
+  }
 
   group('${Router}s', () {
     test('support a terse definition language', () {
-      void build() {
-        router = new Router(cons[0], {
-          'one': {
-            'three': [cons[2], {
-              keys[0]: cons[3]
-            }],
-          },
-          'two': cons[1]
-        });
-      }
-
       expect(build, isNot(throws));
+    });
+
+    test('can route requests based on path', () {
+      var cases = {'': cons[0], '/': cons[0], '/two': cons[1], '/one/three/hello': cons[3]};
+
+      cases.forEach((String path, MisrouteController con) {
+        HttpRequestStub req = new HttpRequestStub(HttpMethod.Get, '$baseUri$path');
+        router.routeRequest(req);
+
+        expect(req.routedController, equals(con));
+        expect(req.routedMethod,     equals(HttpMethod.Get));
+      });
+    });
+
+    test('require less than 0.05ms to route a request on average', () {
+      Stopwatch watch = new Stopwatch();
+      int iterations = 10000;
+
+      watch.start();
+      for(int i = 0; i < iterations; i++) {
+        HttpRequestStub req = new HttpRequestStub(HttpMethod.Get, '$baseUri/one/three');
+        router.routeRequest(req);
+      }
+      watch.stop();
+
+      expect(watch.elapsedMilliseconds / iterations, lessThan(0.05));
+    });
+
+    test('propagate unroutable requests up the routing tree until a handler is found', () {
+      var cases = {'/four': cons[0], '/one': cons[0], '/one/three/hello/goodbye': cons[3]};
+
+      cases.forEach((String path, MisrouteController con) {
+        HttpRequestStub req = new HttpRequestStub(HttpMethod.Get, '$baseUri$path');
+        router.routeRequest(req);
+
+        expect(req.routedController, equals(con));
+        expect(req.routedMethod,     equals('UNROUTABLE'));
+      });
     });
   });
 
   group('${RouteController}s', () {
-    test('can recover their path', () {
-      expect(cons[0].getPathSegments(), orderedEquals([]));
-      expect(cons[1].getPathSegments(), orderedEquals(['two']));
-      expect(cons[2].getPathSegments(), orderedEquals(['one', 'three']));
-      expect(cons[3].getPathSegments({keys[0]: 'end'}), orderedEquals(['one', 'three', 'end']));
-      expect(cons[3].getPathSegments({keys[0]: 1}), orderedEquals(['one', 'three', '1']));
+    test('can recover their ${Uri}', () {
+      expect(cons[0].recoverUri(),                 equals(Uri.parse(baseUri)));
+      expect(cons[3].recoverUri({keys[0]: 'end'}), equals(Uri.parse('$baseUri/one/three/end')));
+      expect(cons[3].recoverUri({keys[0]: 1}),     equals(Uri.parse('$baseUri/one/three/1')));
+    });
+
+    test('correctly handle OPTIONS requests by default', () {
+      HttpRequestStub req = new HttpRequestStub(HttpMethod.Options, 'https://api.partyshark.tk');
+      router.routeRequest(req);
+      //TODO: Add appropriate condition. May require implementing HttpResponseStub of improving Spy
     });
   });
 }
