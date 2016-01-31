@@ -1,6 +1,6 @@
 library identity;
 
-///The interface of an identifiable object. When used my client code, distinct objects with the same identity should not coexist within the same structure.
+///The interface of an identifiable object. When used by client code, distinct objects with the same identity should not coexist within the same structure.
 abstract class Identifiable {
   //Methods
   int get identity;
