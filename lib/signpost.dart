@@ -52,7 +52,7 @@ class _Route {
   }
 }
 
-///A set of string constants that name common HTTP methods.
+///A namespace class defining [String] constants naming common HTTP methods.
 abstract class HttpMethod {
   static const String
     Connect = 'CONNECT',
