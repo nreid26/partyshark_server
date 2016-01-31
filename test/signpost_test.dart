@@ -121,5 +121,12 @@ void main() {
 
       expect(req.response.headers['Allow'], equals(([HttpMethod.Get, HttpMethod.Options, HttpMethod.Head]..sort()).join(',')) );
     });
+
+    test('close responses to unsupported methods with appropriate status', () {
+      HttpRequestStub req = new HttpRequestStub(HttpMethod.Connect, 'http://api.partyshark.tk');
+      router.routeRequest(req);
+
+      expect(req.response.statusCode, equals(HttpStatus.NOT_IMPLEMENTED));
+    });
   });
 }
