@@ -15,14 +15,13 @@ enum Genre {
 ///A class representing the settings on a party
 class SettingsGroup extends Object with Identifiable {
   //Data
-  final int identity;
-  final Party party;
+  Party party;
   bool usingVirtualDj = false;
   Genre defaultGenre = null;
   int userCap = -1, playthroughCap = -1;
 
   //Constructor
-  SettingsGroup(this.identity, this.party);
+  SettingsGroup();
 
   //Methods
   bool get hasDefaultGenre => defaultGenre != null;

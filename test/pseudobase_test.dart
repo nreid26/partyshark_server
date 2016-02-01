@@ -2,12 +2,14 @@ import 'package:test/test.dart';
 import 'package:partyshark_server/identity.dart';
 import 'package:partyshark_server/pseudobase.dart';
 
-class ConcreteIdentifiable implements Identifiable {
+class ConcreteIdentifiable extends Identifiable {
 	//Data
-	final int identity;
+	final int nonIdentity;
 
 	//Constructor
-	ConcreteIdentifiable(this.identity);
+	ConcreteIdentifiable(this.nonIdentity, [int id]) {
+		if(id != null) { identity = id; }
+	}
 }
 
 void main() {
@@ -15,10 +17,6 @@ void main() {
 		test('must have types which subclass Identifiable', () {
 			expect(() => new Datastore([String, int, Error]), throws);
 			expect(() => new Datastore([ConcreteIdentifiable]), isNot(throws));
-		});
-
-		test('must have only one Table per Type', () {
-			expect(() => new Datastore([ConcreteIdentifiable, ConcreteIdentifiable]), throws);
 		});
 
 		var store = new Datastore([ConcreteIdentifiable]);
@@ -45,9 +43,24 @@ void main() {
 			expect(table.datastore, equals(store));
 		});
 
-		test('can have at least 1000 items added', () {
+		test('can have items added and be cleared', () {
+			expect(table.length, equals(0));
+
+			ConcreteIdentifiable c = new ConcreteIdentifiable(0, 84);
+			table.add(c);
+			expect(table.length, equals(1));
+			expect(table.containsIdentity(84), equals(true));
+			expect(table[84], equals(c));
+
+			table.clear();
+			expect(table.length, equals(0));
+			expect(table.containsIdentity(84), equals(false));
+			expect(table[84], equals(null));
+		});
+
+		test('can handle at least 10000 items', () {
 			for(int i = 0; i < 1000; i++) {
-				var x = new ConcreteIdentifiable(i);
+				var x = new ConcreteIdentifiable(i, i);
 				expect(table.add(x), equals(true));
 				expect(table.length, equals(i + 1));
 				refList.add(x);
@@ -69,27 +82,58 @@ void main() {
 			expect(refListCopy.length, equals(0));
 		});
 
+		test('set a unique identity on unidentified items', () {
+			ConcreteIdentifiable c = new ConcreteIdentifiable(0);
+			table.add(c);
+
+			expect(c.hasIdentity,                      equals(true));
+			expect(table[c.identity],                  equals(c));
+			expect(table.containsIdentity(c.identity), equals(true));
+		});
+
 		test('can have their items removed by identity', () {
+			int l = table.length;
+
 			for(int i = 0; i < 500; i++) {
 				expect(table.removeIdentity(i), equals(true));
-				expect(table[i], equals(null));
-				expect(table.length, equals(1000 - 1 - i));
+				expect(table[i],                equals(null));
+				expect(table.length,            equals(--l));
 			}
 		});
 
 		test('can have their items removed by value', () {
+			int l = table.length;
+
 			for(int i = 500; i < 1000; i++) {
 				expect(table.remove(table[i]), equals(true));
-				expect(table[i], equals(null));
-				expect(table.length, equals(1000 - 1 - i));
+				expect(table[i],               equals(null));
+				expect(table.length,           equals(--l));
 			}
+		});
+	});
+
+	group('${Datastore}s', () {
+		var store = new Datastore([ConcreteIdentifiable]), table = store[ConcreteIdentifiable];
+
+		test('can add to ${Table}s directly by $Type}', () {
+			ConcreteIdentifiable c = new ConcreteIdentifiable(9);
+
+      expect(store.add(c), equals(true));
+			expect(table.length,      equals(1));
+			expect(table.contains(c), equals(true));
+
+      table.clear();
 		});
 
-		test('update their nextIdentity to ensure it is unique', () {
-			for(int i = 10; i < 15; i++) {
-				expect(table.where((ConcreteIdentifiable c) => c.identity == table.nextIdentity).length, equals(0));
-				table.add(new ConcreteIdentifiable(table.nextIdentity));
-			}
+		test('can remove from ${Table}s directly by $Type', () {
+      int l = table.length;
+			ConcreteIdentifiable c = new ConcreteIdentifiable(0, 95);
+			table.add(c);
+
+			expect(store.remove(c), equals(true));
+			expect(table.length, equals(l));
+			expect(table.containsIdentity(95), equals(false));
 		});
+
 	});
 }

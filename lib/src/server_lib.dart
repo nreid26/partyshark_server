@@ -1,13 +1,16 @@
 library server_lib;
 
 import 'dart:io';
+import 'dart:math';
 
 import 'package:partyshark_server/signpost.dart';
 import 'package:partyshark_server/pseudobase.dart';
+import 'package:partyshark_server/src/entities.dart';
 
 part './server_lib/partyshark_controller.dart';
 part './server_lib/parties_controller.dart';
 
+final Random _serverRand = new Random();
 
 ///A namespace class defining [String] constants naming custom HTTP headers
 /// used by this library.

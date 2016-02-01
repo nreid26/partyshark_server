@@ -16,18 +16,24 @@ class Table<T extends Identifiable> extends SetBase<T> {
     clear();
   }
 
-  //Methods
-  int get nextIdentity => _maxIdentity + 1;
-
+  ///The number of items in the table.
   int get length => _length;
 
+  ///Returns an item from within the table with the provided [identity] is such
+  /// and item exists; returns null otherwise.
   T operator[](int identity) {
     int index = _search(identity);
     return (index >= 0) ? _cells[index] : null;
   }
 
+  ///Insert [item] into the [Table] if no item with the same identity is
+  /// present. If the identity of the [item] has not been
+  /// set, an identity that is not currently in use within the [Table] will
+  /// be assigned. Returns true if the insertion is successful and false
+  /// otherwise.
   bool add(T item) {
-    if(item.identity > _maxIdentity) { _maxIdentity = item.identity; }
+    if(!item.hasIdentity) { item.identity = ++_maxIdentity; }
+    else if(item.identity > _maxIdentity) { _maxIdentity = item.identity; }
 
     int index = _search(item.identity);
     if(index < 0) {
@@ -39,6 +45,8 @@ class Table<T extends Identifiable> extends SetBase<T> {
     return false;
   }
 
+  ///Remove an element from the [Table] with the provided [identity]. Returns
+  /// true if such an element existed and false otherwise.
   bool removeIdentity(int identity) {
     int index = _search(identity);
     if(index >= 0) {
@@ -51,10 +59,13 @@ class Table<T extends Identifiable> extends SetBase<T> {
 
   bool remove(T item) => removeIdentity(item.identity);
 
+  ///Determine any element in the [Table] has the provided [identity].
   bool containsIdentity(int identity) => _search(identity) >= 0;
 
   bool contains(T item) => containsIdentity(item.identity);
 
+  ///Return an element from the [Table] with the same [identity] as [item].
+  ///  Returns [null] if no such element exists.
   T lookup(T item) => this[item.identity];
 
   Iterator<T> get iterator => new _TableIterator(this);
@@ -67,7 +78,11 @@ class Table<T extends Identifiable> extends SetBase<T> {
 
   Set<T> toSet() => new HashSet<T>.from(this);
 
-
+  ///Run a single hashing search over the table. A negative values indicate an
+  /// open space where an element with the provided [identity] could go;
+  /// non-negative values indicate that a mtaching element has been found at
+  /// that location. To extract a viable position from a netative return, add
+  /// one and negate.
   int _search(int identity) {
     int index = identity % _cells.length;
 
@@ -78,6 +93,8 @@ class Table<T extends Identifiable> extends SetBase<T> {
     }
   }
 
+  ///Double the capacity of the [Table] and reinsert the existing values to
+  /// preserve their hashed order.
   void _expand() {
     int oldLength = length;
     List<Identifiable> oldCells = _cells;
