@@ -1,12 +1,9 @@
 library identity;
 
-///The interface of an identifiable object with default properties suitable
-/// for use as a mixin. When used by client code, distinct objects with the
-/// same identity should not coexist within the same structure.
+///A mixin class defining identity on an object. When used by client code,
+/// distinct objects with the same identity should not coexist within the same
+/// structure.
 abstract class Identifiable {
-  //Statics
-  static const int _key = 1282724092;
-
   //Data
   int _identity;
 
@@ -34,7 +31,7 @@ abstract class Identifiable {
   ///Determine whether this [Identifiable]'s [identity] has been set.
   bool get hasIdentity => _identity != null;
 
-  bool operator==(Identifiable other) => identical(runtimeType, other.runtimeType) && identical(identity, other.identity);
+  bool operator==(Object other) => identical(runtimeType, other.runtimeType) && identical(identity, (other as Identifiable).identity);
 
   String toString() => '$runtimeType: $identity';
 }

@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:partyshark_server/signpost.dart';
+import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/espionage.dart';
 import 'dart:io';
 

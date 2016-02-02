@@ -5,8 +5,8 @@ import 'dart:convert' show JSON;
 import 'dart:collection' show UnmodifiableListView;
 import 'dart:mirrors';
 
-part './signpost/router.dart';
-part './signpost/route_controller.dart';
+part './router.dart';
+part './route_controller.dart';
 
 
 ///A convenience function for generating a basic error in JSON format.
