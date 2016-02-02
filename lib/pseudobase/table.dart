@@ -1,7 +1,9 @@
 part of pseudobase;
 
+///A singleton class whose instance is used to mark deletions in [Table]s.
 class _Deleted extends Identifiable {
-  static final _Deleted instance = new _Deleted();
+  static final _Deleted instance = new _Deleted.__internal();
+  _Deleted.__internal() { identity = 0; }
 }
 
 ///A class representing a table of objects in a Datastore
@@ -22,6 +24,8 @@ class Table<T extends Identifiable> extends SetBase<T> {
 
   ///The number of items in the table.
   int get length => _length;
+
+  bool _isDeleted(int index) => identical(_cells[index], _Deleted.instance);
 
   ///Returns an item from within the table with the provided [identity] is such
   /// and item exists; returns null otherwise.
@@ -44,12 +48,12 @@ class Table<T extends Identifiable> extends SetBase<T> {
       index = -(index + 1);
 
       _length++;
-      if(identical(_cells[index], _Deleted.instance)) { _deletedCount--; }
+      if(_isDeleted(index)) { _deletedCount--; }
       _cells[index] = item;
 
       if(_length + _deletedCount >= _cells.length * _fillFactor) {
-        bool expand = (_length >= (_length + _deletedCount) * _fillFactor);
-        _scrub(expand);
+        if(_length >= (_length + _deletedCount) * _fillFactor) { _expand(); }
+        else { _scrub(); }
       }
       return true;
     }
@@ -105,7 +109,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
         if(firstFree >= 0) { index = firstFree; }
         return -(index + 1);
       }
-      else if(identical(_cells[index], _Deleted.instance)) {
+      else if(_isDeleted(index)) {
         if(firstFree < 0) { firstFree = index; }
       }
       else if(_cells[index].identity == identity) { return index; }
@@ -115,18 +119,27 @@ class Table<T extends Identifiable> extends SetBase<T> {
   }
 
   ///Remove all deleted markers from the [Table] and reinsert the real entries.
-  ///  If [expand] is true, the [Table] will also double in capacity.
-  void _scrub([bool expand = false]) {
-    List<Identifiable> oldCells = _cells;
+  /// Setting [expand] to true will simultaneously double the capacity of the
+  /// [Table].
+  void _scrub([bool expand = true]) {
+    List<Identifiable> newCells =
+        new List<Identifiable>((expand ? 2 : 1) * _cells.length);
 
-    _deletedCount = 0;
-    _length = 0;
-    _cells = new List<Identifiable>((expand ? 2 : 1) * oldCells.length);
-
-    for(T t in oldCells) {
-      if(t != null && !identical(t, _Deleted.instance)) { add(t); }
+    for(T t in this) {
+      int index = t.identity.abs() % newCells.length;
+      while(newCells[index] != null) {
+        index = (index + _jump) % newCells.length;
+      }
+      newCells[index] = t;
     }
+
+    _cells = newCells;
+    _deletedCount = 0;
   }
+
+  ///Double the capacity of the [Table] and remove all deleted markers at the
+  /// same time.
+  void _expand() => _scrub(true);
 }
 
 ///A forward [Iterator] implementation on the Table
@@ -145,9 +158,8 @@ class _TableIterator<T extends Identifiable> implements Iterator<T> {
     while(_index < _table._cells.length - 1) {
       T t = _table._cells[++_index];
 
-      if(t != null && !identical(t, _Deleted.instance)) {
-        return true;
-      }
+      if(t == null || _table._isDeleted(_index)) { continue; }
+      return true;
     }
     return false;
   }
