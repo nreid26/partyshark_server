@@ -2,6 +2,9 @@ part of server_lib;
 
 class PartiesController extends PartysharkController {
 
+  PartiesController.__internal();
+  static final instance = new PartiesController.__internal();
+
   @HttpHandler(HttpMethod.Post)
   void post(HttpRequest req, [Map<PathParameterKey, dynamic> pathParams]) {
     SettingsGroup settings = new SettingsGroup();
@@ -19,7 +22,7 @@ class PartiesController extends PartysharkController {
       ..statusCode = HttpStatus.OK
       ..headers.contentType = ContentType.JSON
       ..headers.add(_CustomHeader.SetUsercode, encodeBase64(user.identity))
-      ..headers.set(_CustomHeader.Location, '')
+      ..headers.set(_CustomHeader.Location, PartyController.only.recoverRoute())
       ..write(party)
       ..close();
   }

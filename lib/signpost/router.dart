@@ -1,13 +1,13 @@
 part of signpost;
 
-///A class that can accept [HttpRequest]s can route them to [RouteController]s
+/// A class that can accept [HttpRequest]s can route them to [RouteController]s
 /// based on a provided definition.
 class Router {
   //Data
   final _Route _root;
   final Uri _baseUri;
 
-  ///The default generative constructor of a [Router]. [hostUri] should be a
+  /// The default generative constructor of a [Router]. [hostUri] should be a
   /// a [String] representation of the scheme and host that this [Router] is
   /// using as its public face. [definition] should be nested [Map]s with
   /// [String] or [ParameterPathKey] keys describing the routing tree and values
@@ -19,7 +19,7 @@ class Router {
     _translateDefinition(definition);
   }
 
-  ///Traverses the routing tree according to the path of the [HttpRequest]
+  /// Traverses the routing tree according to the path of the [HttpRequest]
   /// [Uri] and dispatches the request to the associated [RouteController].
   /// If the route does not exist, the tree is traversed upwards until the first
   /// [MisrouteController] is found.

@@ -1,7 +1,7 @@
 part of entities;
 
-///A class representing a party
-class Party extends Object with Identifiable {
+/// A class representing a party
+class Party extends DeferredIdentifiable with IdentifiableMixin {
   //Data
   final int adminCode;
   final SettingsGroup settings;

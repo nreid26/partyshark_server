@@ -1,12 +1,12 @@
 part of entities;
 
-///An enum representing the possible votes on a ballot
+/// An enum representing the possible votes on a ballot
 enum Vote {
   Up, Down
 }
 
-///A class representing a ballot cast by a user on a playthrough
-class Ballot extends Object with Identifiable {
+/// A class representing a ballot cast by a user on a playthrough
+class Ballot extends DeferredIdentifiable with IdentifiableMixin {
   //Data
   Vote vote;
   final User voter;

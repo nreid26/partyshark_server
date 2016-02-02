@@ -1,8 +1,8 @@
 part of server_lib;
 
-///A base class fora all concrete [RouteController]s of the server prociding
+/// A base class fora all concrete [RouteController]s of the server prociding
 /// facilities for common behaviour and properties.
-abstract class PartysharkController extends MisrouteController {
+abstract class PartysharkController extends RouteController {
   //Data
   Datastore model;
 }

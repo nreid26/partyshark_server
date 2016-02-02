@@ -1,6 +1,6 @@
 part of entities;
 
-///An enum representing a basic musical genre
+/// An enum representing a basic musical genre
 enum Genre {
   Rock,
   Metal,
@@ -12,8 +12,8 @@ enum Genre {
   Electronic
 }
 
-///A class representing the settings on a party
-class SettingsGroup extends Object with Identifiable {
+/// A class representing the settings on a party
+class SettingsGroup extends DeferredIdentifiable with IdentifiableMixin {
   //Data
   Party party;
   bool usingVirtualDj = false;

@@ -9,35 +9,35 @@ part './router.dart';
 part './route_controller.dart';
 
 
-///A convenience function for generating a basic error in JSON format.
+/// A convenience function for generating a basic error in JSON format.
 String errorJson(String what, String why) => '{"what":${JSON.encode(what)},"why":${JSON.encode(why)}}';
 
-///A trivial extension of [ArgumentError] denoting a specific kind of error
+/// A trivial extension of [ArgumentError] denoting a specific kind of error
 /// during a [Router] definition.
 class RouterDefinitionError extends ArgumentError {
   RouterDefinitionError([String message]): super(message);
 }
 
-///An identity class designed to denote path parameters in a [Router]
+/// An identity class designed to denote path parameters in a [Router]
 /// definition. These objects have no properties beyond uniqueness and type.
 class PathParameterKey {
   PathParameterKey._internal();
   factory PathParameterKey() = PathParameterKey._internal;
 }
 
-///An annotation class for marking methods in a [RouteController] subclass as
+/// An annotation class for marking methods in a [RouteController] subclass as
 /// handlers for HTTP requests.
 class HttpHandler {
 
-  ///The name of the HTTP method that the method this object annotates is
+  /// The name of the HTTP method that the method this object annotates is
   /// intended to handle.
   final String methodName;
 
-  ///A simple constant constructor.
+  /// A simple constant constructor.
   const HttpHandler(this.methodName);
 }
 
-///A class that holds the information required within a routing tree. Each
+/// A class that holds the information required within a routing tree. Each
 /// [_Route] is a node.
 class _Route {
   //Data
@@ -52,7 +52,7 @@ class _Route {
   }
 }
 
-///A namespace class defining [String] constants naming common HTTP methods.
+/// A namespace class defining [String] constants naming common HTTP methods.
 abstract class HttpMethod {
   static const String
     Connect = 'CONNECT',
