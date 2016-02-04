@@ -22,8 +22,8 @@ void main() {
 		var store = new Datastore([ConcreteIdentifiable]);
 
 		test('can determines if a Table exists', () {
-      expect(store.hasTable(ConcreteIdentifiable), equals(true));
-      expect(store.hasTable(String), equals(false));
+      expect(store.hasTable(ConcreteIdentifiable), isTrue);
+      expect(store.hasTable(String), isFalse);
 		});
 
 		test('can locate Tables based on Type and not by invalid Type', () {
@@ -49,19 +49,19 @@ void main() {
 			ConcreteIdentifiable c = new ConcreteIdentifiable(0, 84);
 			table.add(c);
 			expect(table.length, equals(1));
-			expect(table.containsIdentity(84), equals(true));
+			expect(table.containsIdentity(84), isTrue);
 			expect(table[84], equals(c));
 
 			table.clear();
 			expect(table.length, equals(0));
-			expect(table.containsIdentity(84), equals(false));
-			expect(table[84], equals(null));
+			expect(table.containsIdentity(84), isFalse);
+			expect(table[84], isNull);
 		});
 
 		test('can handle at least 10000 items', () {
 			for(int i = 0; i < 1000; i++) {
 				var x = new ConcreteIdentifiable(i, i);
-				expect(table.add(x), equals(true));
+				expect(table.add(x), isTrue);
 				expect(table.length, equals(i + 1));
 				refList.add(x);
 			}
@@ -77,26 +77,26 @@ void main() {
 			var refListCopy = new List.from(refList);
 
 			for(ConcreteIdentifiable c in table) {
-				expect(refListCopy.remove(c), equals(true));
+				expect(refListCopy.remove(c), isTrue);
 			}
-			expect(refListCopy.length, equals(0));
+			expect(refListCopy, isEmpty);
 		});
 
 		test('set a unique identity on unidentified items', () {
 			ConcreteIdentifiable c = new ConcreteIdentifiable(0);
 			table.add(c);
 
-			expect(c.identity != null,                 equals(true));
+			expect(c.identity != null,                 isTrue);
 			expect(table[c.identity],                  equals(c));
-			expect(table.containsIdentity(c.identity), equals(true));
+			expect(table.containsIdentity(c.identity), isTrue);
 		});
 
 		test('can have their items removed by identity', () {
 			int l = table.length;
 
 			for(int i = 0; i < 500; i++) {
-				expect(table.removeIdentity(i), equals(true));
-				expect(table[i],                equals(null));
+				expect(table.removeIdentity(i), isTrue);
+				expect(table[i],                isNull);
 				expect(table.length,            equals(--l));
 			}
 		});
@@ -105,8 +105,8 @@ void main() {
 			int l = table.length;
 
 			for(int i = 500; i < 1000; i++) {
-				expect(table.remove(table[i]), equals(true));
-				expect(table[i],               equals(null));
+				expect(table.remove(table[i]), isTrue);
+				expect(table[i],               isNull);
 				expect(table.length,           equals(--l));
 			}
 		});
@@ -118,9 +118,9 @@ void main() {
 		test('can add to ${Table}s directly by $Type}', () {
 			ConcreteIdentifiable c = new ConcreteIdentifiable(9);
 
-      expect(store.add(c), equals(true));
+      expect(store.add(c), isTrue);
 			expect(table.length,      equals(1));
-			expect(table.contains(c), equals(true));
+			expect(table.contains(c), isTrue);
 
       table.clear();
 		});
@@ -130,9 +130,9 @@ void main() {
 			ConcreteIdentifiable c = new ConcreteIdentifiable(0, 95);
 			table.add(c);
 
-			expect(store.remove(c), equals(true));
+			expect(store.remove(c), isTrue);
 			expect(table.length, equals(l));
-			expect(table.containsIdentity(95), equals(false));
+			expect(table.containsIdentity(95), isFalse);
 		});
 
 	});
