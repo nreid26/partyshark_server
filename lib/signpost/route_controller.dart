@@ -63,29 +63,36 @@ abstract class RouteController {
       );
   }
 
-  void _distributeByMethod(HttpRequest req, [Map<PathParameterKey, String> pathParams]) {
+  void _distributeByMethod(HttpRequest req, Map<PathParameterKey, String> pathParams) {
     String key = req.method.toUpperCase();
 
     if(_methodMap.containsKey(key)) {
       _reflection.invoke(_methodMap[key], [req, pathParams]);
     }
     else {
-      req.response
-        ..statusCode = HttpStatus.NOT_IMPLEMENTED
-        ..headers.contentType = ContentType.JSON
-        ..write(errorJson(
-            'The request could not be handled',
-            'The requested rousource exists but does not suppost the requested method'
-        ))
-        ..close();
+      handleUnsupportedMethod(req, pathParams);
     }
   }
 
+  /// Handle requests routed to this [RouteController] which have a method that
+  /// is not supported.
+  void handleUnsupportedMethod(HttpRequest req, Map<PathParameterKey, String> pathParams) {
+    req.response
+      ..statusCode = HttpStatus.METHOD_NOT_ALLOWED
+      ..headers.contentType = ContentType.JSON
+      ..headers.set('Allow', _supportedMethodsString)
+      ..write(errorJson(
+          'The request could not be handled.',
+          'The requested rousource exists but does not suppost the requested method.'
+      ))
+      ..close();
+  }
+
   @HttpHandler(HttpMethod.Options)
-  void _options(HttpRequest req, [Map<PathParameterKey, String> pathParams]) {
+  void _options(HttpRequest req, Map<PathParameterKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.OK
-      ..headers.add('Allow', _supportedMethodsString)
+      ..headers.set('Allow', _supportedMethodsString)
       ..close();
   }
 }

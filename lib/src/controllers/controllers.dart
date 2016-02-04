@@ -1,25 +1,33 @@
-library server_lib;
+library controllers;
 
 import 'dart:io';
-import 'dart:math' show Random;
 import 'dart:convert' show JSON, BASE64;
-import 'dart:typed_data';
+import 'dart:typed_data' show Uint8ClampedList;
+import 'dart:async' show Future;
 
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/entities/entities.dart';
+import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
 
 part './partyshark_controller.dart';
 part './parties_controller.dart';
-part './rand_service.dart';
 part './party_controller.dart';
+
+/// Indicator for when library is ready to be used.
+///
+/// [controllers] requires some resources to be loaded asynchronously.
+/// This process is initiated automatically and is guaranteed to be complete
+/// when this [Future] completes. Functions in this library may throw errors if
+/// they are used before that time.
+final Future ready = rand_serve.ready;
 
 /// A namespace class defining [String] constants naming HTTP headers
 /// used by this library.
 class _CustomHeader {
   static const String
-    SetUsercode = 'X-Set-Usercode',
-    Usercode = 'X-Usercode',
+    SetUserCode = 'X-Set-User-Code',
+    UserCode = 'X-User-Code',
     Location = 'Location';
 
   _CustomHeader.__internal();
@@ -55,12 +63,17 @@ String encodeBase64(int value, [int bytes = -1]) {
 /// A convenience function for converting a Base64 [String] to an [int] with
 /// preserved endianness.
 int decodeBase64(String value) {
-  List<int> l = BASE64.decode(value);
+  if(value == null) { return null; }
+
+  List<int> l;
   int ret = 0;
 
-  for(int i in l) {
+  try { l = BASE64.decode(value); }
+  catch (e) { return null; }
+
+  for(int i = 0; i < l.length; i++) {
     ret <<= 8;
-    ret |= i;
+    ret |= l[i];
   }
 
   return ret;

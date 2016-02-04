@@ -11,5 +11,5 @@ class User extends DeferredIdentifiable with IdentifiableMixin {
   User(this.party, this.username, [this.isAdmin = false]);
 
   //Methods
-  int get usercode => identity;
+  int get userCode => identity;
 }

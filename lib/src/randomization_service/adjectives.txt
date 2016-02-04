@@ -31,8 +31,7 @@ acidic
 acoustic
 acrid
 actually
-ad
-hoc
+adhoc
 adamant
 adaptable
 addicted

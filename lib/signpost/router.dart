@@ -59,22 +59,29 @@ class Router {
       }
       else { route._controller._distributeByMethod(req, pathParams); }
     }
-    catch (e) {
-      try {
-        req.response
-          ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-          ..write(errorJson(
-              'The server could not handle this request',
-              'The code to handle this request is buggy'
-          ));
-      }
-      catch(e) { }
-
+    on Exception catch (e) {
+      try { handleInternalException(req, e); }
+      on Exception { }
       rethrow;
     }
     finally {
       req.response.close();
     }
+  }
+
+  /// Receives any [Exception] thrown by a method in a [RouteController] marked
+  /// with [HttpHandler] as well as the [HttpRequest] caused it. [e] is
+  /// guaranteed to be rethrown but this method provides a chance to do logging
+  /// or attempt an error response.
+  void handleInternalException(HttpRequest req, Exception e) {
+    req.response
+      ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+      ..headers.contentType = ContentType.JSON
+      ..write(errorJson(
+          'The server could not handle this request.',
+          'The code to handle this request is buggy.'
+      ))
+      ..close();
   }
 
   void _translateDefinition(Map definition) {

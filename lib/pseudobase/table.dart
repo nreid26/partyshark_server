@@ -31,7 +31,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// Returns an item from within the table with the provided [identity] is such
   /// and item exists; returns null otherwise.
   T operator[](int identity) {
-    int index = _search(identity);
+    int index = __search(identity);
     return (index.isNegative) ? null : __cells[index];
   }
 
@@ -41,14 +41,12 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// be assigned. Returns true if the insertion is successful and false
   /// otherwise.
   bool add(T item) {
-    if(item is MutableIdentifiable) {
-      MutableIdentifiable m = item as MutableIdentifiable;
-      if(!m.hasIdentity) { m.identity = ++__maxIdentity; }
+    if(item is MutableIdentifiable && item.identity == null) {
+      (item as MutableIdentifiable).identity = ++__maxIdentity;
     }
+    else if(item.identity > __maxIdentity) { __maxIdentity = item.identity; }
 
-    if(item.identity > __maxIdentity) { __maxIdentity = item.identity; }
-
-    int index = _search(item.identity);
+    int index = __search(item.identity);
     if(index.isNegative) {
       index = -(index + 1);
 
@@ -68,7 +66,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// Remove an element from the [Table] with the provided [identity]. Returns
   /// true if such an element existed and false otherwise.
   bool removeIdentity(int identity) {
-    int index = _search(identity);
+    int index = __search(identity);
     if(!index.isNegative) {
       __length--;
       __deletedCount++;
@@ -81,7 +79,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
   bool remove(T item) => removeIdentity(item.identity);
 
   /// Determine any element in the [Table] has the provided [identity].
-  bool containsIdentity(int identity) => _search(identity) >= 0;
+  bool containsIdentity(int identity) => __search(identity) >= 0;
 
   bool contains(T item) => containsIdentity(item.identity);
 
@@ -105,8 +103,8 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// non-negative values indicate that a matching element has been found at
   /// that location. To extract a viable position from a netative return, add
   /// one and negate.
-  int _search(int identity) {
-    int index = identity.abs() % __cells.length,
+  int __search(int identity) {
+    int index = Identifiable.referenceHashCode(identity) % __cells.length,
         firstFree = -1;
 
     while(true) {
@@ -131,7 +129,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
         new List<Identifiable>((expand ? 2 : 1) * __cells.length);
 
     for(T t in this) {
-      int index = t.identity.abs() % newCells.length;
+      int index = Identifiable.referenceHashCode(t.identity) % newCells.length;
       while(newCells[index] != null) {
         index = (index + _jump) % newCells.length;
       }

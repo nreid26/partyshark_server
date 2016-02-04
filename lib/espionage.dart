@@ -19,6 +19,7 @@ class Spy {
     if(invocation.isSetter) {
       String prop = invocation.memberName.toString().replaceAll('=', '');
       _properties[prop] = invocation.positionalArguments.first;
+      return null;
     }
     else if(invocation.isGetter) {
       String prop = invocation.memberName.toString();

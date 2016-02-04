@@ -86,7 +86,7 @@ void main() {
 			ConcreteIdentifiable c = new ConcreteIdentifiable(0);
 			table.add(c);
 
-			expect(c.hasIdentity,                      equals(true));
+			expect(c.identity != null,                 equals(true));
 			expect(table[c.identity],                  equals(c));
 			expect(table.containsIdentity(c.identity), equals(true));
 		});
