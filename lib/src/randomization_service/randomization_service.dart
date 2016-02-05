@@ -16,19 +16,28 @@ import 'package:resource/resource.dart' show Resource;
 final Future ready = (() async {
   const String packageBase = 'package:partyshark_server/src/randomization_service';
 
-  Future<Map> fillMapFromFile(Resource resc, Map map) =>
-    resc.openRead()
+  Future<Map> mapFromFile(Resource resc, Map map) =>
+      resc.openRead()
         .transform(UTF8.decoder)
         .transform(const LineSplitter())
         .listen((String word) {
+          if(word.length < 3) { return; }
+
           int key = word.codeUnitAt(0);
           map.putIfAbsent(key, () => new Set<String>());
           map[key].add(word);
         })
         .asFuture(map);
 
-  await fillMapFromFile(const Resource('$packageBase/adjectives.txt'), _adjectives);
-  await fillMapFromFile(const Resource('$packageBase/animals.txt'), _animals);
+  await mapFromFile(const Resource('$packageBase/adjectives.txt'), _adjectives);
+  await mapFromFile(const Resource('$packageBase/animals.txt'), _animals);
+
+  //Generate distribution of potential names
+  int sum = 0;
+  for(int key in _animals.keys) {
+    sum += _animals[key].length * (_adjectives[key]?.length ?? 0);
+    _distribution.add(new _Pair(key, sum));
+  }
 
   return null;
 })();
@@ -42,7 +51,13 @@ const String lowercaseAlphabet = 'abcdefghijklmnopqrstuvwxyz';
 final Random _rand = new Random();
 
 /// File data for use in [username] service.
-final Map<String, Set<String>> _animals = { }, _adjectives = { };
+final Map<int, Set<String>> _animals = { }, _adjectives = { };
+final List<_Pair> _distribution = [];
+
+class _Pair {
+  final int key, max;
+  _Pair(this.key, this.max);
+}
 
 
 
@@ -67,16 +82,18 @@ dynamic draw(dynamic struct, [int seed]) {
 
 /// Returns a random username based on the resource files in this library.
 String get username {
-  int key;
-  String adj, ani;
+  int key = _rand.nextInt(_distribution.last.max);
 
-  do {
-    key = draw(_adjectives.keys);
-    adj = draw(_adjectives[key]);
-    ani = draw(_animals[key]);
-  } while(adj == null || ani == null);
+  for(_Pair p in _distribution) {
+    if (key < p.max) {
+      key = p.key;
+      break;
+    }
+  }
 
-  return adj + '_' + ani;
+  var s = draw(_adjectives[key]) + '_' + draw(_animals[key]);
+  print(s);
+  return s;
 }
 
 /// Service for retrieving a random administrator code.

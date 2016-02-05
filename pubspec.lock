@@ -81,6 +81,10 @@ packages:
     description: pub_semver
     source: hosted
     version: "1.2.3"
+  resource:
+    description: resource
+    source: hosted
+    version: "1.1.0"
   shelf:
     description: shelf
     source: hosted
@@ -117,6 +121,10 @@ packages:
     description: test
     source: hosted
     version: "0.12.7"
+  typed_data:
+    description: typed_data
+    source: hosted
+    version: "1.1.1"
   utf:
     description: utf
     source: hosted
@@ -129,3 +137,4 @@ packages:
     description: yaml
     source: hosted
     version: "2.1.7"
+sdk: ">=1.14.0-any <1.16.0"

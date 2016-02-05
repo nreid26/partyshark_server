@@ -12,7 +12,6 @@ clownfish
 cod
 conch
 coral
-cuttlefish
 dolphin
 dottyback
 dragonet
@@ -22,8 +21,7 @@ eel
 seal
 shrimp
 crocodile
-worm
-tentacles
+flatworm
 flounder
 fish
 fugu
@@ -41,7 +39,7 @@ dory
 mackerel
 krill
 lamprey
-dragon
+seadragon
 ling
 lionfish
 lobster

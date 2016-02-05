@@ -7,9 +7,9 @@ main() async {
 
   group('randomization_service', () {
     test('generates satisfactory usernames', () {
-      final RegExp exp = new RegExp(r'^[a-z]{3,}_[a-z]{3,}$');
+      final RegExp exp = new RegExp(r'^([a-z])[a-z]{2,}_\1[a-z]{2,}$');
 
-      for(int i = 0; i < 10; i++) {
+      for(int i = 0; i < 1000; i++) {
         expect(rand_serve.username, matches(exp));
       }
     });
