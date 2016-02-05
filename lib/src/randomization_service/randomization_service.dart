@@ -1,9 +1,11 @@
 /// A utility class implementing random value generation functions needed by the server.
 library randomization_service;
 
+import 'dart:core' hide Resource;
 import 'dart:math' show Random;
 import 'dart:async' show Future, Stream;
 import 'dart:convert' show UTF8, LineSplitter;
+import 'package:resource/resource.dart' show Resource;
 
 /// Indicator for when library is ready to be used.
 ///
