@@ -15,19 +15,15 @@ abstract class RouteController {
   /// The default generative constructor of all [RouteController]s.
   RouteController() {
     _reflection = reflect(this);
+    _methodMap[HttpMethod.Options] = #_options;
 
-    void searchMirror(ClassMirror cm) {
-      cm.declarations.forEach((Symbol s, DeclarationMirror d) {
+    reflectClass(this.runtimeType).declarations
+      .forEach((Symbol s, DeclarationMirror d) {
         d.metadata
             .map((InstanceMirror i) => i.reflectee)
             .where((dynamic r) => r is HttpHandler)
             .forEach((HttpHandler h) => _methodMap[h.methodName] = s);
       });
-    }
-
-    [RouteController, this.runtimeType]
-        .map(reflectClass)
-        .forEach(searchMirror);
 
     if(_methodMap.containsKey(HttpMethod.Get) && !_methodMap.containsKey(HttpMethod.Head)) {
       _methodMap[HttpMethod.Head] = _methodMap[HttpMethod.Get];
@@ -36,8 +32,8 @@ abstract class RouteController {
     _supportedMethodsString = (_methodMap.keys.toList()..sort()).join(',');
   }
 
-  //Set the path segments of the route leading to this controller and perform
-  // some member updating.
+  /// Set the path segments of the route leading to this controller and perform
+  /// some member updating.
   void set _pathSegments(Iterable segments) {
     if(segments.every((segment) => segment is String)) {
       _constantUri = _router.baseUri.replace(pathSegments: segments);
@@ -85,7 +81,6 @@ abstract class RouteController {
       ..close();
   }
 
-  @HttpHandler(HttpMethod.Options)
   void _options(HttpRequest req, Map<PathParameterKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.OK

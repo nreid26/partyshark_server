@@ -5,7 +5,7 @@ author: Nick Reid <nreid26@uwo.ca>
 #homepage: https://www.example.com
 
 environment:
-  sdk: '>=1.0.0 <2.0.0'
+  sdk: '^1.0.0'
 
 dependencies:
     resource: '^1.1.0'
