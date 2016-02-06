@@ -2,7 +2,7 @@ library signpost;
 
 import 'dart:io';
 import 'dart:convert' show JSON;
-import 'dart:collection' show UnmodifiableListView;
+import 'dart:async' show Future;
 import 'dart:mirrors';
 
 part './router.dart';

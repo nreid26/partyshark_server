@@ -5,7 +5,9 @@ part of signpost;
 class Router {
   //Data
   final _Route _root;
-  final Uri _baseUri;
+
+  /// The base of all URIs this [Router] is intended to route to.
+  final Uri baseUri;
 
   /// The default generative constructor of a [Router]. [hostUri] should be a
   /// a [String] representation of the scheme and host that this [Router] is
@@ -14,50 +16,54 @@ class Router {
   /// which are the associated [RouteController]; for routes with both a
   /// controller and subroutes, a [List] containing the [RouteController]
   /// followed by the subroute [Map] should be used as the value.
-  Router(String baseUri, MisrouteController controller, Map definition): _root = new _Route(null, null, controller), _baseUri = Uri.parse(baseUri) {
+  Router(String baseUri, MisrouteController controller, Map definition)
+      : _root = new _Route(null, null, controller), baseUri = Uri.parse(baseUri)
+  {
     if(controller == null) { throw new ArgumentError.notNull('controller'); }
     _translateDefinition(definition);
   }
 
-  /// Traverses the routing tree according to the path of the [HttpRequest]
-  /// [Uri] and dispatches the request to the associated [RouteController].
+  /// Traverses the routing tree according to the path of [req.uri]
+  /// and dispatches the request to the associated [RouteController].
   /// If the route does not exist, the tree is traversed upwards until the first
   /// [MisrouteController] is found.
-  void routeRequest(HttpRequest req) {
-    Iterator<String> segmentItr = req.uri.pathSegments.iterator;
+  Future routeRequest(HttpRequest req) async {
     Map<PathParameterKey, String> pathParams = {};
     _Route route = _root;
-    bool misroute = false;
+    bool routeMissing = false;
 
-    traversal: while(segmentItr.moveNext() && !misroute) { //For each path segment
+    traversal: for(String seg in req.uri.pathSegments) {
       bool segMatch = false;
 
       for (_Route subroute in route._subroutes) { //For each subroute
         if (subroute._segment is PathParameterKey) {
-          pathParams[subroute._segment] = segmentItr.current;
+          pathParams[subroute._segment] = seg;
           segMatch = true;
         }
-        else if (subroute._segment == segmentItr.current) { segMatch = true; };
+        else if (subroute._segment == seg) { segMatch = true; };
 
-        if(segMatch) {
+        if (segMatch) {
           route = subroute;
           continue traversal;
         }
       }
 
-      misroute = true; //If no matching subroute (or no subroutes at all)
+      routeMissing = true; //If no matching subroute (or no subroutes at all)
+      break traversal;
     }
 
-    //Final route must have controller
-    if(route._controller == null) { misroute = true; }
-
-    //Ensure request is closed regardless of client code
     try {
-      if(misroute) {
+      var potFuture;
+
+      if (routeMissing || route._controller == null) { //Routing failed or final route has no controller
         while(route._controller is! MisrouteController) { route = route._parent; }
-        (route._controller as MisrouteController).handleUnroutableRequest(req, pathParams);
+        potFuture = (route._controller as MisrouteController).handleUnroutableRequest(req, pathParams);
       }
-      else { route._controller._distributeByMethod(req, pathParams); }
+      else { //Route found
+        potFuture = route._controller._distributeByMethod(req, pathParams);
+      }
+
+      if (potFuture is Future) { await potFuture; }
     }
     on Exception catch (e) {
       try { handleInternalException(req, e); }
@@ -71,8 +77,8 @@ class Router {
 
   /// Receives any [Exception] thrown by a method in a [RouteController] marked
   /// with [HttpHandler] as well as the [HttpRequest] caused it. [e] is
-  /// guaranteed to be rethrown but this method provides a chance to do logging
-  /// or attempt an error response.
+  /// always asynchronously rethrown but this method provides a chance to do
+  /// logging or attempt an error response.
   void handleInternalException(HttpRequest req, Exception e) {
     req.response
       ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR

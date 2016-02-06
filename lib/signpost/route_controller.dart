@@ -40,7 +40,7 @@ abstract class RouteController {
   // some member updating.
   void set _pathSegments(Iterable segments) {
     if(segments.every((segment) => segment is String)) {
-      _constantUri = _router._baseUri.replace(pathSegments: segments);
+      _constantUri = _router.baseUri.replace(pathSegments: segments);
     }
     else {
       __pathSegments = segments.toList(growable: false);
@@ -52,7 +52,7 @@ abstract class RouteController {
   /// are missing this method throws an [ArgumentError].
   Uri recoverUri([Map<PathParameterKey, dynamic> pathParams]) {
     return _constantUri ??
-      _router._baseUri.replace(
+      _router.baseUri.replace(
           pathSegments: __pathSegments.map((s) {
             if(s is String) { return s; }
             else {
@@ -63,15 +63,12 @@ abstract class RouteController {
       );
   }
 
-  void _distributeByMethod(HttpRequest req, Map<PathParameterKey, String> pathParams) {
+  dynamic _distributeByMethod(HttpRequest req, Map<PathParameterKey, String> pathParams) {
     String key = req.method.toUpperCase();
 
-    if(_methodMap.containsKey(key)) {
-      _reflection.invoke(_methodMap[key], [req, pathParams]);
-    }
-    else {
-      handleUnsupportedMethod(req, pathParams);
-    }
+    return (_methodMap.containsKey(key))
+      ? _reflection.invoke(_methodMap[key], [req, pathParams]).reflectee
+      : handleUnsupportedMethod(req, pathParams);
   }
 
   /// Handle requests routed to this [RouteController] which have a method that
@@ -106,7 +103,7 @@ abstract class MisrouteController extends RouteController {
 
   /// This method is called when this [MisrouteController] is selected to handle
   /// a request that had no existing route.
-  void handleUnroutableRequest(HttpRequest req, [Map<PathParameterKey, String> pathParams]) {
+  void handleUnroutableRequest(HttpRequest req, Map<PathParameterKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON

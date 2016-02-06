@@ -1,7 +1,9 @@
 import 'package:test/test.dart';
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/espionage.dart';
+
 import 'dart:io';
+import 'dart:async' show Future;
 
 const String baseUri = 'https://api.partyshark.tk';
 
@@ -13,12 +15,12 @@ class BasicRouteController extends MisrouteController {
   BasicRouteController(this.index, [this.supportedMethods = const [HttpMethod.Options]]);
 
   @HttpHandler(HttpMethod.Get)
-  void get(HttpRequestStub req, [Map pathParams]) {
+  void get(HttpRequestStub req, Map pathParams) {
     req.routedController = this;
     req.routedMethod = HttpMethod.Get;
   }
 
-  void handleUnroutableRequest(HttpRequestStub req, [Map pathParams]) {
+  void handleUnroutableRequest(HttpRequestStub req, Map pathParams) {
     req.routedController = this;
     req.routedMethod = 'UNROUTABLE';
     super.handleUnroutableRequest(req, pathParams);
@@ -42,9 +44,15 @@ class HttpResponseStub extends Object with Spy implements HttpResponse {
 class HttpHeadersStub extends Object with Spy implements HttpHeaders {
   final Map<String, dynamic> _pairs = { };
 
-  void add(String name, Object value) { _pairs[name.toLowerCase()] = value; }
   dynamic operator[](String name) => _pairs[name.toLowerCase()];
+  void set(String name, Object value) { _pairs[name.toLowerCase()] = value; }
+  void add(String name, Object value) {
+    if(_pairs.containsKey(name)) { _pairs[name] += ',$value'; }
+    else { _pairs[name] = value.toString(); }
+  }
 }
+
+
 
 //Tests
 void main() {
@@ -53,14 +61,14 @@ void main() {
   List<PathParameterKey> keys = new List.generate(3, (i) => new PathParameterKey());
 
   void build() {
-    router = new Router(baseUri, cons[0], {
+    var def =
+    {
       'one': {
         'three': [cons[2], {
-          keys[0]: cons[3]
-        }],
-      },
-      'two': cons[1]
-    });
+          keys[0]: cons[3] }], },
+      'two': cons[1] };
+
+    router = new Router(baseUri, cons[0], def);
   }
 
   group('${Router}s', () {
@@ -71,18 +79,19 @@ void main() {
     test('can route requests based on path', () {
       var cases = {'': cons[0], '/': cons[0], '/two': cons[1], '/one/three/hello': cons[3]};
 
-      cases.forEach((String path, MisrouteController con) {
+      cases.forEach((String path, MisrouteController con) async {
         HttpRequestStub req = new HttpRequestStub(HttpMethod.Get, '$baseUri$path');
-        router.routeRequest(req);
+        await router.routeRequest(req);
 
         expect(req.routedController, equals(con));
         expect(req.routedMethod,     equals(HttpMethod.Get));
       });
     });
 
-    test('require less than 0.05ms to route a request on average', () {
+
+    int iterations = 10000;
+    test('can route at least $iterations requests per second', () {
       Stopwatch watch = new Stopwatch();
-      int iterations = 10000;
 
       watch.start();
       for(int i = 0; i < iterations; i++) {
@@ -91,15 +100,15 @@ void main() {
       }
       watch.stop();
 
-      expect(watch.elapsedMilliseconds / iterations, lessThan(0.05));
+      expect(watch.elapsedMilliseconds, lessThan(1000));
     });
 
     test('propagate unroutable requests up the routing tree until a handler is found', () {
       var cases = {'/four': cons[0], '/one': cons[0], '/one/three/hello/goodbye': cons[3]};
 
-      cases.forEach((String path, MisrouteController con) {
+      cases.forEach((String path, MisrouteController con) async {
         HttpRequestStub req = new HttpRequestStub(HttpMethod.Get, '$baseUri$path');
-        router.routeRequest(req);
+        await router.routeRequest(req);
 
         expect(req.routedController, equals(con));
         expect(req.routedMethod,     equals('UNROUTABLE'));
@@ -115,18 +124,18 @@ void main() {
       expect(cons[3].recoverUri({keys[0]: '%'}),   equals(Uri.parse('$baseUri/one/three/%')));
     });
 
-    test('correctly handle OPTIONS requests by default', () {
-      HttpRequestStub req = new HttpRequestStub(HttpMethod.Options, 'https://api.partyshark.tk');
-      router.routeRequest(req);
+    test('correctly handle OPTIONS requests by default', () async {
+      HttpRequestStub req = new HttpRequestStub(HttpMethod.Options, baseUri);
+      await router.routeRequest(req);
 
       expect(req.response.headers['Allow'], equals(([HttpMethod.Get, HttpMethod.Options, HttpMethod.Head]..sort()).join(',')) );
     });
 
-    test('close responses to unsupported methods with appropriate status', () {
-      HttpRequestStub req = new HttpRequestStub(HttpMethod.Connect, 'http://api.partyshark.tk');
-      router.routeRequest(req);
+    test('close responses to unsupported methods with appropriate status', () async {
+      HttpRequestStub req = new HttpRequestStub(HttpMethod.Connect, baseUri);
+      await router.routeRequest(req);
 
-      expect(req.response.statusCode, equals(HttpStatus.NOT_IMPLEMENTED));
+      expect(req.response.statusCode, equals(HttpStatus.METHOD_NOT_ALLOWED));
     });
   });
 }
