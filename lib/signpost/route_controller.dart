@@ -7,23 +7,21 @@ abstract class RouteController {
   //Data
   List __pathSegments;
   Uri _constantUri;
-  Map<String, Symbol> _methodMap = { };
+  Map<String, Function> _methodMap = { };
   Router _router;
   String _supportedMethodsString;
-  InstanceMirror _reflection;
 
-  /// The default generative constructor of all [RouteController]s.
+  /// The default generative constructor of a [RouteController].
   RouteController() {
-    _reflection = reflect(this);
-    _methodMap[HttpMethod.Options] = #_options;
+    InstanceMirror mirrorThis = reflect(this);
+    _methodMap[HttpMethod.Options] = _options;
 
-    reflectClass(this.runtimeType).declarations
-      .forEach((Symbol s, DeclarationMirror d) {
-        d.metadata
-            .map((InstanceMirror i) => i.reflectee)
-            .where((dynamic r) => r is HttpHandler)
-            .forEach((HttpHandler h) => _methodMap[h.methodName] = s);
-      });
+    mirrorThis.type.declarations.forEach((Symbol s, DeclarationMirror d) {
+      d.metadata
+          .map((InstanceMirror i) => i.reflectee)
+          .where((dynamic r) => r is HttpHandler)
+          .forEach((HttpHandler h) => _methodMap[h.methodName] = mirrorThis.getField(s).reflectee);
+    });
 
     if(_methodMap.containsKey(HttpMethod.Get) && !_methodMap.containsKey(HttpMethod.Head)) {
       _methodMap[HttpMethod.Head] = _methodMap[HttpMethod.Get];
@@ -44,9 +42,9 @@ abstract class RouteController {
   }
 
   /// Recovers the [Uri] leading to this controller with
-  /// [PathParameterKey]s substituted for mapped values. If required values
+  /// [RouteKey]s substituted for mapped values. If required values
   /// are missing this method throws an [ArgumentError].
-  Uri recoverUri([Map<PathParameterKey, dynamic> pathParams]) {
+  Uri recoverUri([Map<RouteKey, dynamic> pathParams]) {
     return _constantUri ??
       _router.baseUri.replace(
           pathSegments: __pathSegments.map((s) {
@@ -59,17 +57,17 @@ abstract class RouteController {
       );
   }
 
-  dynamic _distributeByMethod(HttpRequest req, Map<PathParameterKey, String> pathParams) {
+  dynamic _distributeByMethod(HttpRequest req, Map<RouteKey, String> pathParams) {
     String key = req.method.toUpperCase();
 
     return (_methodMap.containsKey(key))
-      ? _reflection.invoke(_methodMap[key], [req, pathParams]).reflectee
+      ? _methodMap[key](req, pathParams)
       : handleUnsupportedMethod(req, pathParams);
   }
 
   /// Handle requests routed to this [RouteController] which have a method that
   /// is not supported.
-  void handleUnsupportedMethod(HttpRequest req, Map<PathParameterKey, String> pathParams) {
+  void handleUnsupportedMethod(HttpRequest req, Map<RouteKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.METHOD_NOT_ALLOWED
       ..headers.contentType = ContentType.JSON
@@ -81,7 +79,7 @@ abstract class RouteController {
       ..close();
   }
 
-  void _options(HttpRequest req, Map<PathParameterKey, String> pathParams) {
+  void _options(HttpRequest req, Map<RouteKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.OK
       ..headers.set('Allow', _supportedMethodsString)
@@ -98,7 +96,7 @@ abstract class MisrouteController extends RouteController {
 
   /// This method is called when this [MisrouteController] is selected to handle
   /// a request that had no existing route.
-  void handleUnroutableRequest(HttpRequest req, Map<PathParameterKey, String> pathParams) {
+  void handleUnroutableRequest(HttpRequest req, Map<RouteKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON

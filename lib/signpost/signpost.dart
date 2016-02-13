@@ -20,9 +20,9 @@ class RouterDefinitionError extends ArgumentError {
 
 /// An identity class designed to denote path parameters in a [Router]
 /// definition. These objects have no properties beyond uniqueness and type.
-class PathParameterKey {
-  PathParameterKey._internal();
-  factory PathParameterKey() = PathParameterKey._internal;
+class RouteKey {
+  RouteKey._internal();
+  factory RouteKey() = RouteKey._internal;
 }
 
 /// An annotation class for marking methods in a [RouteController] subclass as

@@ -1,10 +1,10 @@
 part of pseudobase;
 
 /// A singleton class whose instance is used to mark deletions in a [Table].
-class _Deleted implements Identifiable {
+class _Deleted extends IdentifiableMixin {
   final int identity = 0;
-  _Deleted.__internal();
-  static final _Deleted only = new _Deleted.__internal();
+  _Deleted.__();
+  static final _Deleted only = new _Deleted.__();
 }
 
 /// A class representing a table of objects in a Datastore.
@@ -19,14 +19,14 @@ class Table<T extends Identifiable> extends SetBase<T> {
   final Datastore datastore;
 
   //Constructor
-  Table._internal(this.datastore) {
+  Table._(this.datastore) {
     clear();
   }
 
   /// The number of items in the table.
   int get length => __length;
 
-  bool _isDeleted(int index) => identical(__cells[index], _Deleted.only);
+  bool __isDeleted(int index) => identical(__cells[index], _Deleted.only);
 
   /// Returns an item from within the table with the provided [identity] is such
   /// and item exists; returns null otherwise.
@@ -51,12 +51,12 @@ class Table<T extends Identifiable> extends SetBase<T> {
       index = -(index + 1);
 
       __length++;
-      if(_isDeleted(index)) { __deletedCount--; }
+      if(__isDeleted(index)) { __deletedCount--; }
       __cells[index] = item;
 
       if(__length + __deletedCount >= __cells.length * _fillFactor) {
-        if(__length >= (__length + __deletedCount) * _fillFactor) { _expand(); }
-        else { _scrub(); }
+        if(__length >= (__length + __deletedCount) * _fillFactor) { __expand(); }
+        else { __scrub(); }
       }
       return true;
     }
@@ -112,7 +112,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
         if(firstFree >= 0) { index = firstFree; }
         return -(index + 1);
       }
-      else if(_isDeleted(index)) {
+      else if(__isDeleted(index)) {
         if(firstFree < 0) { firstFree = index; }
       }
       else if(__cells[index].identity == identity) { return index; }
@@ -124,7 +124,7 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// Remove all deleted markers from the [Table] and reinsert the real entries.
   /// Setting [expand] to true will simultaneously double the capacity of the
   /// [Table].
-  void _scrub([bool expand = true]) {
+  void __scrub([bool expand = true]) {
     List<Identifiable> newCells =
         new List<Identifiable>((expand ? 2 : 1) * __cells.length);
 
@@ -142,28 +142,32 @@ class Table<T extends Identifiable> extends SetBase<T> {
 
   /// Double the capacity of the [Table] and remove all deleted markers at the
   /// same time.
-  void _expand() => _scrub(true);
+  void __expand() => __scrub(true);
+
+  bool _advanceIterator(_TableIterator itr) {
+    while(++itr._index < __cells.length) {
+      T t = __cells[itr._index];
+      if(t == null || __isDeleted(itr._index)) { continue; }
+
+      itr._current = t;
+      return true;
+    }
+    return false;
+  }
 }
 
 /// A forward [Iterator] implementation on the Table
 class _TableIterator<T extends Identifiable> implements Iterator<T> {
   //Data
-  final Table<T> _table;
+  final Table<T> __table;
   int _index = -1;
+  T _current = null;
 
   //Constructor
-  _TableIterator(this._table);
+  _TableIterator(this.__table);
 
   //Methods
-  T get current => _table.__cells[_index];
+  T get current => _current;
 
-  bool moveNext() {
-    while(_index < _table.__cells.length - 1) {
-      T t = _table.__cells[++_index];
-
-      if(t == null || _table._isDeleted(_index)) { continue; }
-      return true;
-    }
-    return false;
-  }
+  bool moveNext() => __table._advanceIterator(this);
 }

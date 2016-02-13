@@ -26,7 +26,7 @@ class Datastore {
         throw new ArgumentError('No two tables in a $Datastore may have types whise are assignable to one another');
       }
       else {
-        _tables[type] = new Table._internal(this);
+        _tables[type] = new Table._(this);
         mirrors.add(tm);
       }
     }

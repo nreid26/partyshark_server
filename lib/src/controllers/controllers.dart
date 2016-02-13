@@ -30,20 +30,19 @@ class _CustomHeader {
     UserCode = 'X-User-Code',
     Location = 'Location';
 
-  _CustomHeader.__internal();
+  _CustomHeader.__();
 }
 
-/// A namespace class defining [PathParameterKey] constants used by this
-/// library.
+/// A namespace class defining [RouteKey] constants used by this library.
 class PathKey {
-  static final PathParameterKey
-    PartyCode = new PathParameterKey(),
-    Username = new PathParameterKey(),
-    PlaythroughCode = new PathParameterKey(),
-    TransferRequestCode = new PathParameterKey(),
-    SongCode = new PathParameterKey();
+  static final RouteKey
+    PartyCode = new RouteKey(),
+    Username = new RouteKey(),
+    PlaythroughCode = new RouteKey(),
+    TransferRequestCode = new RouteKey(),
+    SongCode = new RouteKey();
 
-  PathKey.__internal();
+  PathKey.__();
 }
 
 /// A convenience function for converting an [int] to a Base64 [String] with

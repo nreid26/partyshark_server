@@ -18,10 +18,10 @@ final RouteController
   C2 = new BasicRouteController(),
   C3 = new BasicRouteController();
 
-final PathParameterKey 
-  K0 = new PathParameterKey(),
-  K1 = new PathParameterKey(),
-  K2 = new PathParameterKey();
+final RouteKey
+  K0 = new RouteKey(),
+  K1 = new RouteKey(),
+  K2 = new RouteKey();
 
 final routerDefinition = {
     'one': {
@@ -51,17 +51,19 @@ void main() {
       });
     });
 
-    test('can route at least 10000 requests per second', () {
+    const int iterations = 10000;
+    test('can route at least $iterations requests per second', () async {
       Stopwatch watch = new Stopwatch();
 
       watch.start();
-      for(int i = 0; i < 10000; i++) {
+      for(int i = 0; i < iterations; i++) {
         HttpRequestStub req = new HttpRequestStub(HttpMethod.Get, '$baseUri/one/three');
-        router.routeRequest(req);
+        await router.routeRequest(req);
       }
       watch.stop();
 
       expect(watch.elapsedMilliseconds, lessThan(1000));
+      print('\tRate = ${watch.elapsedMilliseconds / iterations}ms/req');
     });
 
     test('propagate unroutable requests up the routing tree until a handler is found', () {
