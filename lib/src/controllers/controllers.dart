@@ -5,6 +5,8 @@ import 'dart:convert' show JSON, BASE64;
 import 'dart:typed_data' show Uint8ClampedList;
 import 'dart:async' show Future;
 
+import 'package:partyshark_server/src/messaging/messaging.dart' as messaging;
+
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/entities/entities.dart';

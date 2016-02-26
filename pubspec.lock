@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.27.1+2"
+    version: "0.26.4"
   args:
     description: args
     source: hosted
@@ -33,6 +33,10 @@ packages:
     description: csslib
     source: hosted
     version: "0.12.2"
+  dartson:
+    description: dartson
+    source: hosted
+    version: "0.2.5"
   glob:
     description: glob
     source: hosted
