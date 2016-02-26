@@ -2,7 +2,7 @@ import 'package:test/test.dart';
 import 'package:partyshark_server/identity.dart';
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 
-class ConcreteIdentifiable extends DeferredIdentifiable {
+class ConcreteIdentifiable extends Object with DeferredIdentifiableMixin {
 	//Data
 	final int nonIdentity;
 

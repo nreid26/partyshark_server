@@ -1,7 +1,7 @@
 part of entities;
 
 /// A class representing a user at a party
-class User extends DeferredIdentifiable with IdentifiableMixin {
+class User extends Object with DeferredIdentifiableMixin {
   //Data
   final String username;
   final Party party;

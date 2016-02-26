@@ -1,7 +1,7 @@
 part of entities;
 
 /// A class representing an instance of a song to be played at a party
-class Playthrough extends DeferredIdentifiable with IdentifiableMixin {
+class Playthrough extends Object with DeferredIdentifiableMixin {
   //Data
   int position;
   Duration completedDuration = const Duration();

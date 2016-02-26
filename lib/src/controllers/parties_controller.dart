@@ -21,9 +21,9 @@ class PartiesController extends PartysharkController {
     req.response
       ..statusCode = HttpStatus.OK
       ..headers.contentType = ContentType.JSON
-      ..headers.add(_CustomHeader.SetUserCode, encodeBase64(user.identity))
+      ..headers.add(CustomHeader.SetUserCode, encodeBase64(user.identity))
       ..headers.set(
-          _CustomHeader.Location,
+          CustomHeader.Location,
           PartyController.only.recoverUri({
             PathKey.PartyCode: party.identity
           })

@@ -58,7 +58,7 @@ abstract class IdentifiableMixin implements Identifiable {
 /// A mixin defining an [Identifiable] that allows its [identity] to be set
 /// only once following construction. Setting [identity]a second time will
 /// throw a [StateError].
-abstract class DeferredIdentifiable implements MutableIdentifiable {
+abstract class DeferredIdentifiableMixin implements MutableIdentifiable {
   //Data
   int __identity;
 
@@ -69,4 +69,10 @@ abstract class DeferredIdentifiable implements MutableIdentifiable {
     if(__identity != null) { throw new StateError('Identity may only be set once.'); }
     else { __identity = i; }
   }
+
+  bool operator==(Identifiable other) => Identifiable.referenceEquals(this, other);
+
+  int get hashCode => Identifiable.referenceHashCode(identity);
+
+  String toString() => Identifiable.referenceToString(this);
 }

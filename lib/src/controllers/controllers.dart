@@ -24,13 +24,13 @@ final Future ready = rand_serve.ready;
 
 /// A namespace class defining [String] constants naming HTTP headers
 /// used by this library.
-class _CustomHeader {
+class CustomHeader {
   static const String
     SetUserCode = 'X-Set-User-Code',
     UserCode = 'X-User-Code',
     Location = 'Location';
 
-  _CustomHeader.__();
+  CustomHeader.__();
 }
 
 /// A namespace class defining [RouteKey] constants used by this library.

@@ -115,19 +115,19 @@ abstract class PartysharkController extends RouteController {
     User ret;
 
     String getErr() {
-      String userCode64 = req.response.headers.value(_CustomHeader.UserCode);
+      String userCode64 = req.response.headers.value(CustomHeader.UserCode);
       if(userCode64 == null) {
-        return 'The request did not carry a ${_CustomHeader.UserCode} header.';
+        return 'The request did not carry a ${CustomHeader.UserCode} header.';
       }
 
       int useCode = decodeBase64(userCode64);
       if(useCode == null) {
-        return 'The user code in ${_CustomHeader.UserCode} was malformed Base64.';
+        return 'The user code in ${CustomHeader.UserCode} was malformed Base64.';
       }
 
       ret = model[User][useCode];
       if(ret == null) {
-        return 'The user specified by ${_CustomHeader.UserCode} does not exist.';
+        return 'The user specified by ${CustomHeader.UserCode} does not exist.';
       }
 
       return null;

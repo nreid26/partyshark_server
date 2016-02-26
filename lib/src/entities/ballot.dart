@@ -6,7 +6,7 @@ enum Vote {
 }
 
 /// A class representing a ballot cast by a user on a playthrough
-class Ballot extends DeferredIdentifiable with IdentifiableMixin {
+class Ballot extends Object with DeferredIdentifiableMixin {
   //Data
   Vote vote;
   final User voter;

@@ -13,12 +13,12 @@ enum Genre {
 }
 
 /// A class representing the settings on a party
-class SettingsGroup extends DeferredIdentifiable with IdentifiableMixin {
+class SettingsGroup extends Object with DeferredIdentifiableMixin {
   //Data
   Party party;
   bool usingVirtualDj = false;
   Genre defaultGenre = null;
-  int userCap = -1, playthroughCap = -1;
+  int userCap = null, playthroughCap = null;
 
   //Constructor
   SettingsGroup();

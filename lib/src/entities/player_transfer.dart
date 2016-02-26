@@ -7,7 +7,7 @@ enum TransferStatus {
 }
 
 /// A class representing a request for transfer of player privilege
-class PlayerTransfer extends DeferredIdentifiable with IdentifiableMixin {
+class PlayerTransfer extends Object with DeferredIdentifiableMixin {
   //Data
   final User requester;
   final DateTime creationTime = new DateTime.now();
