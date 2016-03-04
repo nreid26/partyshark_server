@@ -1,20 +1,27 @@
 library controllers;
 
 import 'dart:io';
-import 'dart:convert' show JSON, BASE64;
+import 'dart:convert' show JSON, BASE64, UTF8;
 import 'dart:typed_data' show Uint8ClampedList;
 import 'dart:async' show Future;
 
-import 'package:partyshark_server/src/messaging/messaging.dart' as messaging;
+import 'package:partyshark_server/src/messaging/messaging.dart';
 
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/entities/entities.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
 
+
 part './partyshark_controller.dart';
-part './parties_controller.dart';
-part './party_controller.dart';
+part './misc_classes.dart';
+part './misc_functions.dart';
+
+part './controllers/parties_controller.dart';
+part './controllers/party_controller.dart';
+part './controllers/playlist_controller.dart';
+part './controllers/playthrough_controller.dart';
+
 
 /// Indicator for when library is ready to be used.
 ///
@@ -24,58 +31,10 @@ part './party_controller.dart';
 /// they are used before that time.
 final Future ready = rand_serve.ready;
 
-/// A namespace class defining [String] constants naming HTTP headers
-/// used by this library.
-class CustomHeader {
-  static const String
-    SetUserCode = 'X-Set-User-Code',
-    UserCode = 'X-User-Code',
-    Location = 'Location';
 
-  CustomHeader.__();
-}
+final PartysharkController
+  partyController = new PartyController._(),
+  partiesController = new PartiesController._(),
+  playlistController = new PlaylistController._(),
+  playthroughController = new PlaythroughController._();
 
-/// A namespace class defining [RouteKey] constants used by this library.
-class PathKey {
-  static final RouteKey
-    PartyCode = new RouteKey(),
-    Username = new RouteKey(),
-    PlaythroughCode = new RouteKey(),
-    TransferRequestCode = new RouteKey(),
-    SongCode = new RouteKey();
-
-  PathKey.__();
-}
-
-/// A convenience function for converting an [int] to a Base64 [String] with
-/// preserved endianness.
-String encodeBase64(int value, [int bytes = -1]) {
-  bytes = bytes.isNegative ? (value.bitLength ~/ 8 + 1) : bytes;
-  Uint8ClampedList l = new Uint8ClampedList(bytes);
-
-  for(int i = l.length - 1; i >= 0; i--) {
-    l[i] = value;
-    value >>= 8;
-  }
-
-  return BASE64.encode(l);
-}
-
-/// A convenience function for converting a Base64 [String] to an [int] with
-/// preserved endianness.
-int decodeBase64(String value) {
-  if(value == null) { return null; }
-
-  List<int> l;
-  int ret = 0;
-
-  try { l = BASE64.decode(value); }
-  catch (e) { return null; }
-
-  for(int i = 0; i < l.length; i++) {
-    ret <<= 8;
-    ret |= l[i];
-  }
-
-  return ret;
-}

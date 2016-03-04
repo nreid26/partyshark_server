@@ -5,6 +5,7 @@ import 'dart:mirrors';
 import 'dart:convert' show JSON;
 
 part './json_property.dart';
+part './group_functions.dart';
 
 
 abstract class Jsonable {

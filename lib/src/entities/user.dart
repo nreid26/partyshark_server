@@ -12,4 +12,5 @@ class User extends Object with DeferredIdentifiableMixin {
 
   //Methods
   int get userCode => identity;
+  bool get isPlayer => party.player == this;
 }

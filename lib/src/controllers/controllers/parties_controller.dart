@@ -1,10 +1,9 @@
 part of controllers;
 
 class PartiesController extends PartysharkController {
+  PartiesController._(): super._();
 
-  PartiesController.__(): super._();
-  static final only = new PartiesController.__();
-
+  /// Create a party.
   @HttpHandler(HttpMethod.Post)
   void post(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) {
     SettingsGroup settings = new SettingsGroup();
@@ -18,17 +17,13 @@ class PartiesController extends PartysharkController {
       ..add(party)
       ..add(user);
 
-    req.response
-      ..statusCode = HttpStatus.OK
-      ..headers.contentType = ContentType.JSON
-      ..headers.add(CustomHeader.SetUserCode, encodeBase64(user.identity))
-      ..headers.set(
-          CustomHeader.Location,
-          PartyController.only.recoverUri({
-            PathKey.PartyCode: party.identity
-          })
-      )
-      ..write(party)
-      ..close();
+    var partyMsg = new PartyMsg()
+      ..adminCode.value = party.adminCode
+      ..code.value = party.identity
+      ..isPlaying.value = party.isPlaying
+      ..player.value = user.username;
+
+    Uri location = partyController.recoverUri({CustomKey.PartyCode: party.identity});
+    _closeGoodRequest(req, location, partyMsg, null, user);
   }
 }

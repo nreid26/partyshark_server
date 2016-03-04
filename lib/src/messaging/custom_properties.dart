@@ -17,6 +17,22 @@ abstract class _EnumProperty<T> extends JsonProperty<T> {
 
 }
 
+class _TransferStatusProperty extends _EnumProperty<TransferStatus> {
+  final List<TransferStatus> values = TransferStatus.values;
+  _TransferStatusProperty(String name, [bool isDefined, TransferStatus value]) : super(name, isDefined, value);
+}
+
+class _VoteProperty extends _EnumProperty<Vote> {
+  final List<Vote> values = Vote.values;
+  _VoteProperty(String name, [bool isDefined, Vote value]) : super(name, isDefined, value);
+}
+
+class _GenreProperty extends _EnumProperty<Genre> {
+  final List<Genre> values = Genre.values;
+  _GenreProperty(String name, [bool isDefined, Genre value]) : super(name, isDefined, value);
+}
+
+
 
 class _DurationProperty extends JsonProperty<Duration> {
   _DurationProperty(String name, [bool isDefined, Duration value]) : super(name, isDefined, value);
@@ -36,19 +52,4 @@ class _UriProperty extends JsonProperty<Uri> {
   void set encodableValue(raw) {
     value = (raw is String) ? Uri.parse(raw) : null;
   }
-}
-
-class _TransferStatusProperty extends _EnumProperty<TransferStatus> {
-  final List<TransferStatus> values = TransferStatus.values;
-  _TransferStatusProperty(String name, [bool isDefined, TransferStatus value]) : super(name, isDefined, value);
-}
-
-class _VoteProperty extends _EnumProperty<Vote> {
-  final List<Vote> values = Vote.values;
-  _VoteProperty(String name, [bool isDefined, Vote value]) : super(name, isDefined, value);
-}
-
-class _GenreProperty extends _EnumProperty<Genre> {
-  final List<Genre> values = Genre.values;
-  _GenreProperty(String name, [bool isDefined, Genre value]) : super(name, isDefined, value);
 }
