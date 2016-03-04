@@ -45,16 +45,16 @@ abstract class RouteController {
   /// [RouteKey]s substituted for mapped values. If required values
   /// are missing this method throws an [ArgumentError].
   Uri recoverUri([Map<RouteKey, dynamic> pathParams]) {
-    return _constantUri ??
-      _router.baseUri.replace(
-          pathSegments: __pathSegments.map((s) {
-            if(s is String) { return s; }
-            else {
-              if(pathParams.containsKey(s)) { return pathParams[s].toString(); }
-              else { throw new ArgumentError('At least one necessary path parameter was missing'); }
-            }
-          })
-      );
+    if (_constantUri != null) { return _constantUri; }
+    else {
+      var segments = __pathSegments.map((s) {
+        if(s is String) { return s; }
+        else if(pathParams.containsKey(s)) { return pathParams[s].toString(); }
+        else { throw new ArgumentError('At least one necessary path parameter was missing'); }
+      });
+
+      return _router.baseUri.replace(pathSegments: segments);
+    }
   }
 
   dynamic _distributeByMethod(HttpRequest req, Map<RouteKey, String> pathParams) {

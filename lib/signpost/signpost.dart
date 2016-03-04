@@ -1,13 +1,14 @@
 library signpost;
 
+@MirrorsUsed(metaTargets: const ['signpost.HttpHandler'])
+import 'dart:mirrors';
 import 'dart:io';
 import 'dart:convert' show JSON;
 import 'dart:async' show Future;
-import 'dart:mirrors';
 
 part './router.dart';
 part './route_controller.dart';
-
+part './route.dart';
 
 /// A convenience function for generating a basic error in JSON format.
 String errorJson(String what, String why) => '{"what":${JSON.encode(what)},"why":${JSON.encode(why)}}';
@@ -35,21 +36,6 @@ class HttpHandler {
 
   /// A simple constant constructor.
   const HttpHandler(this.methodName);
-}
-
-/// A class that holds the information required within a routing tree. Each
-/// [_Route] is a node.
-class _Route {
-  //Data
-  final _Route _parent;
-  final List<_Route> _subroutes = [];
-  final dynamic _segment; //String or PathParameterKey
-  final RouteController _controller;
-
-  //Constructor
-  _Route(this._parent, this._segment, this._controller) {
-    if(_parent != null) { _parent._subroutes.add(this); }
-  }
 }
 
 /// A namespace class defining [String] constants naming common HTTP methods.
