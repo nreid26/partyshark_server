@@ -10,20 +10,24 @@ class PartiesController extends PartysharkController {
     Party party = new Party(rand_serve.adminCode, settings);
     User user = new User(party, rand_serve.username, true);
 
-    user.identity = rand_serve.usercode;
+    int u;
+    do {
+      u = rand_serve.usercode;
+    } while (model[User].containsIdentity(u));
+    user.identity = u;
 
     model
       ..add(settings)
       ..add(party)
       ..add(user);
 
-    var partyMsg = new PartyMsg()
+    var msg = new PartyMsg()
       ..adminCode.value = party.adminCode
       ..code.value = party.identity
       ..isPlaying.value = party.isPlaying
       ..player.value = user.username;
 
     Uri location = partyController.recoverUri({CustomKey.PartyCode: party.identity});
-    _closeGoodRequest(req, location, partyMsg, null, user);
+    _closeGoodRequest(req, location, msg.toJsonString(), null, user);
   }
 }

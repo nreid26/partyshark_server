@@ -24,8 +24,8 @@ class Router {
 
   /// The default generative constructor of a [Router].
   ///
-  /// [hostUri] should be a [String] representation of the scheme and host that
-  /// this [Router] is using as its public face. [definition] should be a
+  /// [baseUri] should be a [String] representation of root address that this
+  /// [Router] is using as its public face. [definition] should be a
   /// [Map] whose keys are [String] or [RouteKey], and whose values are
   /// [RouteController], further definitions, or a [List] containing both.
   /// Example:

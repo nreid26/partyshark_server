@@ -22,13 +22,13 @@ class PlaythroughMsg extends Jsonable {
   final JsonProperty<int> downvotes = new SimpleProperty('downvotes');
   final JsonProperty<String> suggester = new SimpleProperty('suggester');
   final JsonProperty<Vote> vote = new _VoteProperty('vote');
-  final JsonProperty<Duration> completed = new _DurationProperty('completed_duration');
+  final JsonProperty<Duration> completedDuration = new _DurationProperty('completed_duration');
   final JsonProperty<DateTime> creationTime = new DateTimeProperty('creation_time');
 }
 
 class SettingsMsg extends Jsonable {
   final JsonProperty<bool> virtualDj = new SimpleProperty('virtual_dj');
-  final JsonProperty<Genre> defaultGenre = new SimpleProperty('default_genre');
+  final JsonProperty<Genre> defaultGenre = new _GenreProperty('default_genre');
   final JsonProperty<int> userCap = new SimpleProperty('user_cap');
   final JsonProperty<int> playthroughCap = new SimpleProperty('playthrough_cap');
   final JsonProperty<double> vetoRatio = new SimpleProperty('veto_ratio');
@@ -43,8 +43,7 @@ class UserMsg extends Jsonable {
 class SongMsg extends Jsonable {
   final JsonProperty<int> code = new SimpleProperty('code');
   final JsonProperty<int> year = new SimpleProperty('year');
-  final JsonProperty<Duration> completed = new _DurationProperty('duration');
+  final JsonProperty<Duration> duration = new _DurationProperty('duration');
   final JsonProperty<String> title = new SimpleProperty('title');
   final JsonProperty<String> artist = new SimpleProperty('artist');
-  final JsonProperty<Uri> streamLocation = new _UriProperty('stream_location');
 }

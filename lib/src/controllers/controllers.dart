@@ -1,6 +1,6 @@
 library controllers;
 
-import 'dart:io';
+import 'dart:io' show HttpRequest, HttpResponse, HttpHeader, HttpStatus, ContentType;
 import 'dart:convert' show JSON, BASE64, UTF8;
 import 'dart:typed_data' show Uint8ClampedList;
 import 'dart:async' show Future;
@@ -11,16 +11,20 @@ import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/entities/entities.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
+import 'package:partyshark_server/deezer.dart' as deezer;
 
 
 part './partyshark_controller.dart';
 part './misc_classes.dart';
 part './misc_functions.dart';
 
-part './controllers/parties_controller.dart';
-part './controllers/party_controller.dart';
-part './controllers/playlist_controller.dart';
-part './controllers/playthrough_controller.dart';
+part './concrete/parties_controller.dart';
+part './concrete/party_controller.dart';
+part './concrete/playlist_controller.dart';
+part './concrete/playthrough_controller.dart';
+part './concrete/settings_controller.dart';
+part './concrete/song_controller.dart';
+part './concrete/songs_controller.dart';
 
 
 /// Indicator for when library is ready to be used.
@@ -31,10 +35,14 @@ part './controllers/playthrough_controller.dart';
 /// they are used before that time.
 final Future ready = rand_serve.ready;
 
+Datastore model;
 
-final PartysharkController
-  partyController = new PartyController._(),
-  partiesController = new PartiesController._(),
-  playlistController = new PlaylistController._(),
-  playthroughController = new PlaythroughController._();
+final RouteController
+    partyController = new PartyController._(),
+    partiesController = new PartiesController._(),
+    playlistController = new PlaylistController._(),
+    playthroughController = new PlaythroughController._(),
+    settingsController = new SettingsController._(),
+    songController = new SongController._(),
+    songsController = new SongsController._();
 
