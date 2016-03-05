@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async' show Future;
 
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/controllers/controllers.dart';
@@ -24,8 +25,18 @@ main(List<String> arguments) async {
     }]
   };
 
-  (await HttpServer.bind(InternetAddress.ANY_IP_V4, int.parse(arguments[1])))
-      .listen(
-          new Router(arguments[0], new RootController(), definition).routeRequest
-      );
+  var router =  new Router(arguments[0], new RootController(), definition);
+  var server = await HttpServer.bind(InternetAddress.ANY_IP_V4, int.parse(arguments[1]));
+
+  print('PartyShark API server is swimming!');
+
+  await for (Future res in server.map(router.routeRequest)) {
+    try {
+      await res;
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  print('PartyShark API server died!');
 }
