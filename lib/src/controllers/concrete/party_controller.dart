@@ -3,20 +3,6 @@ part of controllers;
 class PartyController extends PartysharkController {
   PartyController._(): super._();
 
-  /// Update a party.
-  @HttpHandler(HttpMethod.Put)
-  Future put(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams);
-    if (prep.hadError) { return; }
-
-    var partyMsg = new PartyMsg()..fillFromJsonMap(prep.body);
-    if(partyMsg.isPlaying.isDefined) {
-      prep.party.isPlaying = partyMsg.isPlaying.value;
-    }
-
-    __respondWithParty(req, pathParams, prep);
-  }
-
   /// Get a party.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
@@ -26,8 +12,22 @@ class PartyController extends PartysharkController {
     __respondWithParty(req, pathParams, prep);
   }
 
+  /// Update a party.
+  @HttpHandler(HttpMethod.Put)
+  Future put(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
+    _Preperation prep = await _prepareRequest(req, pathParams);
+    if (prep.hadError) { return; }
+
+    var msg = new PartyMsg()..fillFromJsonMap(prep.body);
+    if(msg.isPlaying.isDefined && msg.isPlaying.value != null) {
+      prep.party.isPlaying = msg.isPlaying.value;
+    }
+
+    __respondWithParty(req, pathParams, prep);
+  }
+
   void __respondWithParty(HttpRequest req, Map pathParams, _Preperation prep) {
-    var partyMsg = new PartyMsg()
+    var msg = new PartyMsg()
       ..adminCode.value = prep.party.adminCode
       ..adminCode.isDefined = prep.requester.isAdmin
       ..code.value = prep.party.identity
@@ -35,6 +35,6 @@ class PartyController extends PartysharkController {
       ..player.value = prep.party.player.username;
 
 
-    _closeGoodRequest(req, recoverUri({CustomKey.PartyCode: prep.party.identity}), partyMsg.toJsonString());
+    _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
   }
 }

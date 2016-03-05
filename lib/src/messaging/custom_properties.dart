@@ -44,6 +44,7 @@ class _DurationProperty extends JsonProperty<Duration> {
   }
 }
 
+/*
 class _UriProperty extends JsonProperty<Uri> {
   _UriProperty(String name, [bool isDefined, Uri value]) : super(name, isDefined, value);
 
@@ -53,3 +54,4 @@ class _UriProperty extends JsonProperty<Uri> {
     value = (raw is String) ? Uri.parse(raw) : null;
   }
 }
+*/

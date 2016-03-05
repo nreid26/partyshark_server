@@ -40,7 +40,7 @@ abstract class PartysharkController extends RouteController {
   /// in some way, it will be closed and the [_Preperation] will be marked
   /// with [hasError].
   Future<_Preperation> _prepareRequest(HttpRequest req, Map<RouteKey, String> pathParams,
-    {bool getBody: true, bool getParty: true, bool getRequestingUser: true, bool getRequestedUser: true, bool checkRequesterAdmin: true}
+    {bool getBody: true, bool getParty: true, bool getRequester: true, bool checkRequesterAdmin: true}
   ) async {
     _Preperation prep = new _Preperation();
 
@@ -57,6 +57,16 @@ abstract class PartysharkController extends RouteController {
         else { prep.party = x; }
       }
 
+      if(getRequester) {
+        var x = __getRequester(req);
+        if(x is _Failure) { return x; }
+        else  { prep.requester = x; }
+
+        x = __isMember(prep.party, prep.user);
+        if(x is _Failure) { return x; }
+      }
+
+      /*
       if(getRequestedUser) {
         var x = __getRequestingUser(req);
         if(x is _Failure) { return x; }
@@ -65,6 +75,7 @@ abstract class PartysharkController extends RouteController {
         x = __isMember(prep.party, prep.user);
         if(x is _Failure) { return x; }
       }
+      */
 
       if(checkRequesterAdmin) {
         var x = __requestingUserIsAdmin(prep.requester);
@@ -111,7 +122,7 @@ abstract class PartysharkController extends RouteController {
   /// Returns the [User] in [model] associated with the user code header in
   /// [req]. If the [User] does not exist, or some other problem is
   /// encountered, a [_Failure] is returned instead.
-  dynamic __getRequestingUser(HttpRequest req) {
+  dynamic __getRequester(HttpRequest req) {
     User ret;
 
     String getWhy() {

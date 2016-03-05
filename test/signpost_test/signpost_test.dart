@@ -1,6 +1,7 @@
 library signpost_test;
 
 import 'dart:io';
+import 'dart:async' show Future;
 
 import 'package:test/test.dart';
 import 'package:partyshark_server/signpost/signpost.dart';

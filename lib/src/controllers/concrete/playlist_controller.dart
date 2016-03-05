@@ -20,8 +20,10 @@ class PlaylistController extends PartysharkController {
     if (prep.hadError) { return; }
 
     var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
-    Song song = songController._getSong(msg.songCode);
+    Song song = await (songController as SongController)._getSong(msg.songCode.value);
     if (song == null) { return; }
+
+    if (!__suggestionIsValid(req, prep)) { return; }
 
     Playthrough play = new Playthrough(song, prep.party.playthroughs.length, prep.user);
     Ballot ballot = new Ballot(prep.user, play, Vote.Up);
@@ -52,5 +54,16 @@ class PlaylistController extends PartysharkController {
     }
 
     _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(getMessages()));
+  }
+
+  bool __suggestionIsValid(HttpRequest req, _Preperation prep) {
+    Party party = prep.party;
+    if (party.settings.playthroughCap == null || party.playthroughs.length < party.settings.playthroughCap) {
+      return true;
+    }
+    else {
+      _closeBadRequest(req, new _Failure(HttpStatus.BAD_REQUEST, 'The playthrough suggestion could not be accepted', 'The playlist is the maximum length allowed for this party'));
+      return false;
+    }
   }
 }

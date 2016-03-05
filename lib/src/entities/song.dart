@@ -4,12 +4,10 @@ part of entities;
 class Song extends Object with DeferredIdentifiableMixin {
   //Data
   final int year;
-  final Uri streamLocation;
   final Duration duration;
   final String title, artist;
 
   //Constructor
-  Song(this.title, this.artist, this.year, this.streamLocation, this.duration);
-  Song.fromPrimitives(this.title, this.artist, this.year, String streamLocation, int secondsDuration) :
-        streamLocation = Uri.parse(streamLocation), duration = new Duration(seconds: secondsDuration);
+  Song(this.title, this.artist, this.year, this.duration);
+  Song.fromPrimitives(this.title, this.artist, this.year, int secondsDuration) : duration = new Duration(seconds: secondsDuration);
 }

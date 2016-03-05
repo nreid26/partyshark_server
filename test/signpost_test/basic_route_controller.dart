@@ -12,9 +12,9 @@ class BasicRouteController extends MisrouteController {
     req.routedMethod = HttpMethod.Get;
   }
 
-  void handleUnroutableRequest(HttpRequestStub req, Map pathParams) {
+  Future handleUnroutableRequest(HttpRequestStub req, Map pathParams) {
     req.routedController = this;
     req.routedMethod = Unroutable;
-    super.handleUnroutableRequest(req, pathParams);
+    return super.handleUnroutableRequest(req, pathParams);
   }
 }

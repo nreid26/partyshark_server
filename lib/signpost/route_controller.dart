@@ -88,15 +88,16 @@ abstract class RouteController {
 }
 
 /// A class extended to handle unroutable [HttpRequest]s designating non-existent/functional
-/// routes. When such a request is received, the routing tree is
-/// traversed upwards from the specified route until the first
-/// [MisrouteController] is found; the behaviour of that instance is then
-/// invoked.
+/// routes.
+///
+/// When such a request is received, the routing tree is traversed upwards from
+/// the specified route until the first [MisrouteController] is found; the
+/// behaviour of that instance is then invoked.
 abstract class MisrouteController extends RouteController {
 
   /// This method is called when this [MisrouteController] is selected to handle
   /// a request that had no existing route.
-  void handleUnroutableRequest(HttpRequest req, Map<RouteKey, String> pathParams) {
+  Future handleUnroutableRequest(HttpRequest req, Map<RouteKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON
@@ -105,5 +106,7 @@ abstract class MisrouteController extends RouteController {
         'The requested resource does not exsit'
       ))
       ..close();
+
+    return null;
   }
 }
