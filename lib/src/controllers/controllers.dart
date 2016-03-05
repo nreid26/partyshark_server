@@ -25,6 +25,7 @@ part './concrete/playthrough_controller.dart';
 part './concrete/settings_controller.dart';
 part './concrete/song_controller.dart';
 part './concrete/songs_controller.dart';
+part './concrete/users_controller.dart';
 
 
 /// Indicator for when library is ready to be used.

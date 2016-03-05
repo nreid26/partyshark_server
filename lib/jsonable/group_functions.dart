@@ -7,6 +7,13 @@ Iterable<Jsonable> fillFromJsonGroupString(String source, Jsonable construct()) 
 
 
 Map<String, dynamic> toJsonGroupMap(Iterable<Jsonable> set) {
+  if (set == null || set.isEmpty) {
+    return const {
+      'properties': const [ ],
+      'values': const [ ]
+    };
+  }
+
   Map<String, int> indecies = set.first.toJsonMap();
   List<String> propertyNames = indecies.keys.toList(growable: false);
   List<List> values = [ ];

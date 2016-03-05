@@ -33,6 +33,7 @@ class Controller {
   static final SettingsController Settings = new SettingsController._();
   static final SongController Song = new SongController._();
   static final SongsController Songs = new SongsController._();
+  static final UsersController Users = new UsersController._();
 
   Controller.__();
 }

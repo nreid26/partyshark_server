@@ -24,6 +24,9 @@ abstract class PartysharkController extends RouteController {
     req.response
         ..write(body ?? '{ }')
         ..close();
+
+    //TODO: Remove this
+    print('Body: $body');
   }
 
   void _closeBadRequest(HttpRequest req, _Failure fail) {
@@ -101,9 +104,10 @@ abstract class PartysharkController extends RouteController {
     Party ret;
 
     String getErr(){
-      int partyCode = int.parse(partyCodeString, onError: (s) {
+      int partyCode = int.parse(partyCodeString, onError: (s) => null);
+      if(partyCode == null) {
         return 'The party code was malformed.';
-      });
+      }
 
       ret = model[Party][partyCode];
       if(ret == null) {
