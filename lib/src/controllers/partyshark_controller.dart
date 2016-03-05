@@ -3,10 +3,6 @@ part of controllers;
 /// A base class fora all concrete [RouteController]s of the server prociding
 /// facilities for common behaviour and properties.
 abstract class PartysharkController extends RouteController {
-
-  /// The model for all entities this [PartysharkController] operates on.
-  Datastore model;
-
   /// A library private constructor since this class should only be subclassed
   /// by known clients.
   PartysharkController._();

@@ -31,6 +31,7 @@ part './controllers/playthrough_controller.dart';
 /// they are used before that time.
 final Future ready = rand_serve.ready;
 
+Datastore model;
 
 final PartysharkController
   partyController = new PartyController._(),

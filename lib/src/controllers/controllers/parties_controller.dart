@@ -24,6 +24,6 @@ class PartiesController extends PartysharkController {
       ..player.value = user.username;
 
     Uri location = partyController.recoverUri({CustomKey.PartyCode: party.identity});
-    _closeGoodRequest(req, location, partyMsg, null, user);
+    _closeGoodRequest(req, location, partyMsg.toJsonString(), null, user);
   }
 }

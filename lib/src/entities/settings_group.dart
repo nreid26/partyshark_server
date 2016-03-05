@@ -19,6 +19,7 @@ class SettingsGroup extends Object with DeferredIdentifiableMixin {
   bool usingVirtualDj = false;
   Genre defaultGenre = null;
   int userCap = null, playthroughCap = null;
+  double vetoRatio = 0.5;
 
   //Constructor
   SettingsGroup();

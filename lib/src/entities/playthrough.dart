@@ -17,4 +17,7 @@ class Playthrough extends Object with DeferredIdentifiableMixin {
   //Methods
   int get upotes => ballots.where((Ballot b) => b.vote == Vote.Up).length;
   int get downvotes => ballots.where((Ballot b) => b.vote == Vote.Down).length;
+  int get netVotes => upotes - downvotes;
+
+  Party get party => suggester.party;
 }

@@ -14,7 +14,7 @@ class PartyController extends PartysharkController {
       prep.party.isPlaying = partyMsg.isPlaying.value;
     }
 
-    __respond(req, pathParams, prep);
+    __respondWithParty(req, pathParams, prep);
   }
 
   /// Get a party.
@@ -23,10 +23,10 @@ class PartyController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, getBody: false, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    __respond(req, pathParams, prep);
+    __respondWithParty(req, pathParams, prep);
   }
 
-  void __respond(HttpRequest req, Map pathParams, _Preperation prep) {
+  void __respondWithParty(HttpRequest req, Map pathParams, _Preperation prep) {
     var partyMsg = new PartyMsg()
       ..adminCode.value = prep.party.adminCode
       ..adminCode.isDefined = prep.requester.isAdmin
@@ -35,6 +35,6 @@ class PartyController extends PartysharkController {
       ..player.value = prep.party.player.username;
 
 
-    _closeGoodRequest(req, recoverUri({CustomKey.PartyCode: prep.party.identity}), partyMsg);
+    _closeGoodRequest(req, recoverUri({CustomKey.PartyCode: prep.party.identity}), partyMsg.toJsonString());
   }
 }

@@ -9,14 +9,11 @@ class PlaythroughController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, getBody: false);
     if (prep.hadError) { return; }
 
-    var play = __getPlaythrough(req, pathParams, prep.party);
+    Playthrough play = __getPlaythrough(req, pathParams, prep.party);
     if(play == null) { return; }
 
-    prep.party.playthroughs.remove(play);
-    play.ballots.forEach(model[Ballot].remove);
-    model[Playthrough].remove(play);
-
-    __recomputePlaylist();
+    __deletePlaythrough(play);
+    __recomputePlaylist(play.party);
     _closeGoodRequest(req, null, null);
   }
 
@@ -39,16 +36,15 @@ class PlaythroughController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
     var play = __getPlaythrough(req, pathParams, prep.party);
     if (play == null) { return; }
 
-    if (msg.completed.isDefined && prep.requester.isPlayer && msg.completed.value > play.completedDuration) {
-      play.completedDuration = msg.completed.value;
-    }
+    var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
 
+    /// Change vote.
     if (msg.vote.isDefined) {
-      Ballot ballot = play.ballots.fold(null, (a, b) => (b.voter == prep.requester) ? b : a);
+      Ballot ballot = play.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null);
+
       if (ballot != null) {
         ballot.vote = msg.vote.value;
       }
@@ -57,23 +53,37 @@ class PlaythroughController extends PartysharkController {
         play.ballots.add(ballot);
         model[Ballot].add(ballot);
       }
+
+      /// Enforce veto condition
+      if (__playthroughHitVetoCondition(play)) {
+        __deletePlaythrough(play);
+      }
     }
 
-    __recomputePlaylist();
+    /// Update completed duration.
+    if (msg.completedDuration.isDefined && prep.requester.isPlayer && msg.completedDuration.value > play.completedDuration) {
+      play.completedDuration = msg.completedDuration.value;
+
+      if (play.completedDuration >= play.song.duration) {
+        __deletePlaythrough(play);
+      }
+    }
+
+    __recomputePlaylist(play.party);
     __respondWithPlaythrough(req, pathParams, prep, play);
   }
 
 
   void __respondWithPlaythrough(HttpRequest req, Map pathParams, _Preperation prep, Playthrough p) {
     var msg = new PlaythroughMsg()
-        ..completed.value = p.completedDuration
+        ..completedDuration.value = p.completedDuration
         ..code.value = p.identity
         ..position.value = p.position
         ..songCode.value = p.song.identity
         ..creationTime.value = p.creationTime
         ..downvotes.value = p.downvotes
         ..upvotes.value = p.upotes
-        ..vote.value = p.ballots.singleWhere((b) => b.voter == prep.requester).vote;
+        ..vote.value = p.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null)?.vote;
 
     _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
   }
@@ -94,7 +104,22 @@ class PlaythroughController extends PartysharkController {
     return play;
   }
 
-  void __recomputePlaylist() {
+  void __recomputePlaylist(Party party) {
+    List l = party.playthroughs.toList(growable: false)
+      ..sort((a, b) => b.netVotes - a.netVotes);
 
+    int i = 0;
+    for(Playthrough p in l) {
+      p.position = i++;
+    }
   }
+
+  void __deletePlaythrough(Playthrough play) {
+    play.party.playthroughs.remove(play);
+    model[Ballot].removeAll(play.ballots);
+    model[Playthrough].remove(play);
+  }
+
+  bool __playthroughHitVetoCondition(Playthrough play) =>
+      play.downvotes / play.party.users.length >= play.party.settings.vetoRatio;
 }

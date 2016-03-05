@@ -22,7 +22,7 @@ class PlaythroughMsg extends Jsonable {
   final JsonProperty<int> downvotes = new SimpleProperty('downvotes');
   final JsonProperty<String> suggester = new SimpleProperty('suggester');
   final JsonProperty<Vote> vote = new _VoteProperty('vote');
-  final JsonProperty<Duration> completed = new _DurationProperty('completed_duration');
+  final JsonProperty<Duration> completedDuration = new _DurationProperty('completed_duration');
   final JsonProperty<DateTime> creationTime = new DateTimeProperty('creation_time');
 }
 

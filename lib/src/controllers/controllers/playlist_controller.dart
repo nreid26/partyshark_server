@@ -20,14 +20,17 @@ class PlaylistController extends PartysharkController {
     if (prep.hadError) { return; }
 
     var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
-    var playthrough = new Playthrough(model[Song][msg.songCode], prep.party.playthroughs.length, prep.user);
-    var ballot = new Ballot(prep.user, playthrough, Vote.Up);
+    Song song = songController._getSong(msg.songCode);
+    if (song == null) { return; }
 
-    prep.party.playthroughs.add(playthrough);
-    playthrough.ballots.add(ballot);
+    Playthrough play = new Playthrough(song, prep.party.playthroughs.length, prep.user);
+    Ballot ballot = new Ballot(prep.user, play, Vote.Up);
+
+    play.party.playthroughs.add(play);
+    play.ballots.add(ballot);
 
     model
-        ..add(playthrough)
+        ..add(play)
         ..add(ballot);
 
     __respondWithPlaylist(req, pathParams, prep);
@@ -37,14 +40,14 @@ class PlaylistController extends PartysharkController {
     Iterable<PlaythroughMsg> getMessages() sync* {
       for(Playthrough p in prep.party.playthroughs) {
         yield new PlaythroughMsg()
-          ..completed.isDefined = false
+          ..completedDuration.isDefined = false
           ..code.value = p.identity
           ..position.value = p.position
           ..songCode.value = p.song.identity
           ..creationTime.value = p.creationTime
           ..downvotes.value = p.downvotes
           ..upvotes.value = p.upotes
-          ..vote.value = p.ballots.fold(null, (a, b) => (b.voter == prep.requester) ? b : a)?.vote;
+          ..vote.value = p.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null)?.vote;
       }
     }
 
