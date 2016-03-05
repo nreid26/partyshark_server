@@ -37,12 +37,4 @@ final Future ready = rand_serve.ready;
 
 Datastore model;
 
-final RouteController
-    partyController = new PartyController._(),
-    partiesController = new PartiesController._(),
-    playlistController = new PlaylistController._(),
-    playthroughController = new PlaythroughController._(),
-    settingsController = new SettingsController._(),
-    songController = new SongController._(),
-    songsController = new SongsController._();
 

@@ -11,12 +11,12 @@ abstract class PartysharkController extends RouteController {
     req.response
         ..statusCode = status ?? HttpStatus.OK
         ..headers.contentType = ContentType.JSON
-        ..headers.set(CustomHeader.CrossOrigin, '*')
-        ..headers.set(CustomHeader.Location, location);
+        ..headers.set(Header.CrossOrigin, '*')
+        ..headers.set(Header.Location, location);
 
     if (user != null) {
       req.response.headers.set(
-          CustomHeader.SetUserCode,
+          Header.SetUserCode,
           encodeBase64(user.identity, 64)
       );
     }
@@ -30,7 +30,7 @@ abstract class PartysharkController extends RouteController {
     req.response
         ..statusCode = fail.status
         ..headers.contentType = ContentType.JSON
-        ..headers.set(CustomHeader.CrossOrigin, '*')
+        ..headers.set(Header.CrossOrigin, '*')
         ..write(fail.toJsonString())
         ..close();
   }
@@ -52,7 +52,7 @@ abstract class PartysharkController extends RouteController {
       }
 
       if(getParty) {
-        var x =  __getParty(pathParams[CustomKey.PartyCode], req);
+        var x =  __getParty(pathParams[Key.PartyCode], req);
         if(x is _Failure) { return x; }
         else { prep.party = x; }
       }
@@ -126,19 +126,19 @@ abstract class PartysharkController extends RouteController {
     User ret;
 
     String getWhy() {
-      String userCode64 = req.response.headers.value(CustomHeader.UserCode);
+      String userCode64 = req.response.headers.value(Header.UserCode);
       if(userCode64 == null) {
-        return 'The request did not carry a ${CustomHeader.UserCode} header.';
+        return 'The request did not carry a ${Header.UserCode} header.';
       }
 
       int useCode = decodeBase64(userCode64);
       if(useCode == null) {
-        return 'The user code in ${CustomHeader.UserCode} was malformed Base64.';
+        return 'The user code in ${Header.UserCode} was malformed Base64.';
       }
 
       ret = model[User][useCode];
       if(ret == null) {
-        return 'The user specified by ${CustomHeader.UserCode} does not exist.';
+        return 'The user specified by ${Header.UserCode} does not exist.';
       }
 
       return null;

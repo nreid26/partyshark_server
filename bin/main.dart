@@ -11,12 +11,16 @@ main(List<String> arguments) async {
   model = new Datastore([Ballot, Party, PlayerTransfer, Playthrough, SettingsGroup, Song, User]);
 
   var definition = {
-    'parties': [partiesController, {
-      CustomKey.PartyCode: [partyController, {
-        'playlist': [playlistController, {
-          CustomKey.PlaythroughCode: playthroughController
+    'parties': [Controller.Parties, {
+      Key.PartyCode: [Controller.Party, {
+        'playlist': [Controller.Playlist, {
+          Key.PlaythroughCode: Controller.Playthrough
         }]
-      }]
+      }],
+      'settings': Controller.Settings
+    }],
+    'songs': [Controller.Songs, {
+      Key.SongCode: Controller.Song
     }]
   };
 

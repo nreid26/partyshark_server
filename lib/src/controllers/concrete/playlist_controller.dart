@@ -20,7 +20,7 @@ class PlaylistController extends PartysharkController {
     if (prep.hadError) { return; }
 
     var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
-    Song song = await (songController as SongController)._getSong(msg.songCode.value);
+    Song song = await Controller.Song._getSong(msg.songCode.value);
     if (song == null) { return; }
 
     if (!__suggestionIsValid(req, prep)) { return; }

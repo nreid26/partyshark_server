@@ -89,7 +89,7 @@ class PlaythroughController extends PartysharkController {
   }
 
   Playthrough __getPlaythrough(HttpRequest req, Map pathParams, Party party) {
-    int code = int.parse(pathParams[CustomKey.PlaythroughCode], onError: (s) => null);
+    int code = int.parse(pathParams[Key.PlaythroughCode], onError: (s) => null);
     if (code == null) {
       _closeBadRequest(req, new _Failure(HttpStatus.NOT_FOUND, 'The playthrough could not be found', 'The supplied playthrough code is malformed'));
       return null;
