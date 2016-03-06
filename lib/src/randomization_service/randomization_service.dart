@@ -2,7 +2,7 @@
 library randomization_service;
 
 import 'dart:core' hide Resource;
-import 'dart:math' show Random;
+import 'dart:math' show Random, min;
 import 'dart:async' show Future, Stream;
 import 'dart:convert' show UTF8, LineSplitter;
 import 'package:resource/resource.dart' show Resource;
@@ -63,7 +63,18 @@ class _Pair {
 
 /// An internal function returning a random non-negative integer with the
 /// specified number of bits
-int _randIntBits(int bits) => _rand.nextInt(1 << bits);
+int _randIntBits(int bits) {
+  int ret = 0;
+
+  while (bits > 0) {
+    int toGen = min(bits, 32);
+    bits -= toGen;
+
+    ret = (ret << toGen) | _rand.nextInt(1 << toGen);
+  }
+
+  return ret;
+}
 
 /// Returns an entry at random from the provided structure. May be a [String],
 /// [Map], or [Iterable]. If a seed is provided the result is fully
@@ -91,9 +102,7 @@ String get username {
     }
   }
 
-  var s = draw(_adjectives[key]) + '_' + draw(_animals[key]);
-  print(s);
-  return s;
+  return draw(_adjectives[key]) + '_' + draw(_animals[key]);
 }
 
 /// Service for retrieving a random administrator code.
