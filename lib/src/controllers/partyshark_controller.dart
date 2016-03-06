@@ -8,6 +8,8 @@ abstract class PartysharkController extends RouteController {
   PartysharkController._();
 
   void _closeGoodRequest(HttpRequest req, Uri location, String body, [int status, User user]) {
+    body = body ?? '{ }';
+
     req.response
         ..statusCode = status ?? HttpStatus.OK
         ..headers.contentType = ContentType.JSON
@@ -17,31 +19,26 @@ abstract class PartysharkController extends RouteController {
     if (user != null) {
       req.response.headers.set(
           Header.SetUserCode,
-          encodeBase64(user.identity, 8)
+          user.userCode
       );
-      print(req.response.headers.value(Header.SetUserCode));
     }
 
     req.response
-        ..write(body ?? '{ }')
+        ..write(body)
         ..close();
 
-    // TODO: Convert to logger call
-    print('Body: $body');
-    print('');
+    logger.finer('Succesful response with body: $body');
   }
 
   void _closeBadRequest(HttpRequest req, _Failure fail) {
-    // TODO: Convert to logger call
-    print(fail.toJsonString());
-    print('');
-
     req.response
         ..statusCode = fail.status
         ..headers.contentType = ContentType.JSON
         ..headers.set(Header.CrossOrigin, '*')
         ..write(fail.toJsonString())
         ..close();
+
+    logger.warning('Failed response: ${fail.toJsonString()}');
   }
 
   /// Retrieves entities and validates a request according to the requirements
@@ -53,9 +50,7 @@ abstract class PartysharkController extends RouteController {
   ) async {
     _Preperation prep = new _Preperation();
 
-    // TODO: Convert to logger call
-    print(pathParams);
-    print('');
+    logger.finer('Preparing request with params: $pathParams');
 
     Future<_Failure> getFail() async {
       if(getBody) {
@@ -115,6 +110,8 @@ abstract class PartysharkController extends RouteController {
 
     String getErr(){
       int partyCode = int.parse(partyCodeString, onError: (s) => null);
+      logger.finest('Request for party: $partyCode');
+
       if(partyCode == null) {
         return 'The party code was malformed.';
       }
@@ -128,8 +125,7 @@ abstract class PartysharkController extends RouteController {
     }
 
     String why = getErr();
-    return (why == null)
-      ? ret
+    return (why == null) ? ret
       : new _Failure(HttpStatus.NOT_FOUND, 'The requested party does not exist.', why);
   }
 
@@ -140,17 +136,19 @@ abstract class PartysharkController extends RouteController {
     User ret;
 
     String getWhy() {
-      String userCode64 = req.response.headers.value(Header.UserCode);
-      if(userCode64 == null) {
+      String userCodeString = req.headers.value(Header.UserCode);
+      logger.finest('Request had ${Header.UserCode}: $userCodeString');
+
+      if(userCodeString == null) {
         return 'The request did not carry a ${Header.UserCode} header.';
       }
 
-      int useCode = decodeBase64(userCode64);
-      if(useCode == null) {
-        return 'The user code in ${Header.UserCode} was malformed Base64.';
+      int userCode = int.parse(userCodeString, onError: (s) => null);
+      if(userCode == null) {
+        return 'The user code in ${Header.UserCode} was malformed.';
       }
 
-      ret = model[User][useCode];
+      ret = model[User][userCode];
       if(ret == null) {
         return 'The user specified by ${Header.UserCode} does not exist.';
       }
@@ -159,15 +157,16 @@ abstract class PartysharkController extends RouteController {
     }
 
     String why = getWhy();
-    return (why == null)
-        ? ret
+    return (why == null) ? ret
         : new _Failure(HttpStatus.NOT_FOUND, 'The requested party does not exist.', why);
   }
 
   ///Asynchronusly retrives the body of an [HttpRequest]
   dynamic __getBody(HttpRequest req) async {
     try {
-      return JSON.decode(await UTF8.decodeStream(req));
+      var ret =  JSON.decode(await UTF8.decodeStream(req));
+      logger.finest('Request had body: $ret');
+      return ret;
     } catch (e) {
       return new _Failure(
           HttpStatus.BAD_REQUEST,
@@ -179,23 +178,33 @@ abstract class PartysharkController extends RouteController {
 
   /// Checks whether [user] is a member of [party]. If so, null is returned;
   /// if not, a [_Failure] is returned instead.
-  _Failure __isMember(Party party, User user) =>
-    (party?.users?.contains(user) ?? false)
-      ? null
-      : new _Failure(
+  _Failure __isMember(Party party, User user) {
+    if (party?.users?.contains(user) ?? false) {
+      logger.finest('Requensting user verified as party member');
+      return null;
+    }
+    else {
+      return new _Failure(
           HttpStatus.BAD_REQUEST,
           'This user must be a member of the party and is not.',
           'The specifed user and party exist but are not related.'
-        );
+      );
+    }
+  }
 
   /// Checks whether [user] is an administrator at their party. If so, null
   /// is returned; if not, a [_Failure] is returned instead.
-  _Failure __requestingUserIsAdmin(User user) =>
-    (user?.isAdmin ?? false)
-      ? null
-      : new _Failure(
+  _Failure __requestingUserIsAdmin(User user) {
+    if (user?.isAdmin ?? false) {
+      logger.finest('Requesting user validated as administrator');
+      return null;
+    }
+    else {
+      return new _Failure(
           HttpStatus.BAD_REQUEST,
           'This user is not an administrator.',
           'The specifed user and party exist but are not related.'
-        );
+      );
+    }
+  }
 }

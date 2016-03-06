@@ -12,7 +12,7 @@ class PartiesController extends PartysharkController {
 
     int u;
     do {
-      u = rand_serve.usercode;
+      u = rand_serve.userCode;
     } while (model[User].containsIdentity(u));
     user.identity = u;
 
@@ -20,6 +20,11 @@ class PartiesController extends PartysharkController {
       ..add(settings)
       ..add(party)
       ..add(user);
+
+    party.users.add(user); // MUST HAPPEN AFTER MODEL INSERTION
+
+    logger.fine('Created new party: ${party.partyCode}');
+    logger.fine('Created new user: ${user.userCode}');
 
     var msg = new PartyMsg()
       ..adminCode.value = party.adminCode

@@ -2,4 +2,7 @@ library logger;
 
 import 'package:logging/logging.dart';
 
-export 'p'
+export 'package:logging/logging.dart';
+
+
+Logger get logger => Logger.root;

@@ -109,4 +109,4 @@ String get username {
 int get adminCode => _randIntBits(24);
 
 /// Service for retrieving a random user code.
-int get usercode => _randIntBits(64);
+int get userCode => _randIntBits(64);

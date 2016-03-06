@@ -31,8 +31,8 @@ class UsersController extends PartysharkController {
 
     // Make and insert new user
     User user = new User(prep.party, usename, isAdmin);
-    prep.party.users.add(user);
     model.add(user);
+    prep.party.users.add(user); // MUST HAPPEN AFTER MODEL INSERTION
 
     // Make response
     msg = __convertToUserMsg(user);

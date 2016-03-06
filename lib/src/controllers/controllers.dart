@@ -5,13 +5,13 @@ import 'dart:convert' show JSON, BASE64, UTF8;
 import 'dart:typed_data' show Uint8ClampedList;
 import 'dart:async' show Future;
 
+import 'package:partyshark_server/deezer.dart' as deezer;
 import 'package:partyshark_server/src/messaging/messaging.dart';
-
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/entities/entities.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
-import 'package:partyshark_server/deezer.dart' as deezer;
+import 'package:partyshark_server/src/logger.dart';
 
 
 part './partyshark_controller.dart';
