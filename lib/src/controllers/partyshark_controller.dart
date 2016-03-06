@@ -17,19 +17,25 @@ abstract class PartysharkController extends RouteController {
     if (user != null) {
       req.response.headers.set(
           Header.SetUserCode,
-          encodeBase64(user.identity, 64)
+          encodeBase64(user.identity, 8)
       );
+      print(req.response.headers.value(Header.SetUserCode));
     }
 
     req.response
         ..write(body ?? '{ }')
         ..close();
 
-    //TODO: Remove this
+    // TODO: Convert to logger call
     print('Body: $body');
+    print('');
   }
 
   void _closeBadRequest(HttpRequest req, _Failure fail) {
+    // TODO: Convert to logger call
+    print(fail.toJsonString());
+    print('');
+
     req.response
         ..statusCode = fail.status
         ..headers.contentType = ContentType.JSON
@@ -46,6 +52,10 @@ abstract class PartysharkController extends RouteController {
     {bool getBody: true, bool getParty: true, bool getRequester: true, bool checkRequesterAdmin: true}
   ) async {
     _Preperation prep = new _Preperation();
+
+    // TODO: Convert to logger call
+    print(pathParams);
+    print('');
 
     Future<_Failure> getFail() async {
       if(getBody) {

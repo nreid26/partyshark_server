@@ -19,10 +19,10 @@ main(List<String> arguments) async {
       Key.PartyCode: [Controller.Party, {
         'playlist': [Controller.Playlist, {
           Key.PlaythroughCode: Controller.Playthrough
-        }]
+        }],
+        'settings': Controller.Settings,
+        'users':Controller.Users,
       }],
-      'settings': Controller.Settings,
-      'users':Controller.Users,
     }],
     'songs': [Controller.Songs, {
       Key.SongCode: Controller.Song
@@ -38,9 +38,11 @@ main(List<String> arguments) async {
     try {
       await res;
     } catch (e, trace) {
+      print(e);
       print(trace);
     }
   }
 
   print('PartyShark API server died!');
+  print('');
 }
