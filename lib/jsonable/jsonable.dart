@@ -7,13 +7,12 @@ import 'dart:convert' show JSON;
 part './json_property.dart';
 part './group_functions.dart';
 
-
 abstract class Jsonable {
   Iterable<JsonProperty> get properties sync* {
     var im = reflect(this), cm = im.type;
 
     for (DeclarationMirror dm in cm.declarations.values) {
-      if (dm is VariableMirror  || dm is MethodMirror && dm.isGetter) {
+      if (dm is VariableMirror || (dm is MethodMirror && dm.isGetter)) {
         var p = im.getField(dm.simpleName).reflectee;
         if(p is JsonProperty) { yield p; }
       }

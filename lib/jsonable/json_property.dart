@@ -5,7 +5,9 @@ abstract class JsonProperty<T> {
   T value;
   bool isDefined;
 
-  JsonProperty(this.name, [this.isDefined = true, this.value]);
+  JsonProperty(this.name, [this.isDefined, this.value]) {
+    isDefined = isDefined ?? true;
+  }
 
   dynamic get encodableValue;
   void set encodableValue(dynamic raw);
@@ -15,7 +17,7 @@ class SimpleProperty<T> extends JsonProperty<T> {
   static const List<Type> allowedTypes = const [String, num, int, double, bool];
 
   SimpleProperty(String name, [bool isDefined, T value]) : super(name, isDefined, value) {
-    if (!allowedTypes.contains(T)) {
+    if (T != dynamic && !allowedTypes.contains(T)) {
       throw new StateError("$T is not a valid $SimpleProperty type");
     }
   }
