@@ -1,3 +1,8 @@
+/// A library for working with strongly typed JSON objects.
+///
+/// Ideally, classes from this library will be used as the bas for custom
+/// message objects, not long term entities. Reflection is used but no symbols
+/// need be maintained for it to work.
 library jsonable;
 
 @MirrorsUsed()
@@ -11,15 +16,14 @@ part './group_functions.dart';
 /// [JsonProperty] members of the incorporating class.
 abstract class Jsonable {
 
-  /// Returns an [Iterable] of the [JsonProperty] fields or getters of this object.
+  /// Returns an [Iterable] of the [JsonProperty] fields of this object
+  /// as declared in its most derived subclass.
   Iterable<JsonProperty> get properties sync* {
     var im = reflect(this), cm = im.type;
 
-    for (DeclarationMirror dm in cm.declarations.values) {
-      if (dm is VariableMirror || (dm is MethodMirror && dm.isGetter)) {
-        var p = im.getField(dm.simpleName).reflectee;
-        if(p is JsonProperty) { yield p; }
-      }
+    for (VariableMirror dm in cm.declarations.values.where((dm) => dm is VariableMirror)) {
+      var p = im.getField(dm.simpleName).reflectee;
+      if(p is JsonProperty) { yield p; }
     }
   }
 
@@ -32,13 +36,13 @@ abstract class Jsonable {
   }
 
   /// Returns the JSON string representation of this object's [JsonProperty]
-  /// members as given by [properties].
+  /// fields as given by [properties].
   String toJsonString() => JSON.encode(toJsonMap());
 
   /// Equivalent to [toJsonString].
   String toString() => toJsonString();
 
-  /// Returns a JSON encodable [Map] of the [JsonProperty] members of this
+  /// Returns a JSON encodable [Map] of the [JsonProperty] fields of this
   /// object as given by [properties].
   ///
   /// The keys and values will be the [name] and [encodableValue] properties
@@ -53,10 +57,10 @@ abstract class Jsonable {
 
   /// Revives this object with the JSON data in [source].
   ///
-  /// [JsonProperty] members of this object will have their [encodableValue]
-  /// assigned the value of the element of [source] whose key equals their
-  /// [name]. If no such element exists, that property will have [isDefined]
-  /// set to false.
+  /// [JsonProperty] fields of this object as given by [properties] will have
+  /// their [encodableValue] assigned the value of the element of [source]
+  /// whose key equals their [name]. If no such element exists, that property
+  /// will have [isDefined] set to false.
   void fillFromJsonMap(Map<String, dynamic> source) {
     for(JsonProperty p in properties) {
       p

@@ -1,7 +1,7 @@
 part of jsonable;
 
 /// Returns the result of JSON encoding the result of [toJsonGroupMap].
-String toJsonGroupString(Iterable<Jsonable> set) => JSON.encode(toJsonGroupMap(set));
+String toJsonGroupString(Iterable<Jsonable> msgs) => JSON.encode(toJsonGroupMap(msgs));
 
 /// Returns the result of [fillFromJsonGroupMap] when called with the JSON
 /// decoding of source.
@@ -19,37 +19,41 @@ Iterable<Jsonable> fillFromJsonGroupString(String source, Jsonable construct()) 
 ///       ]
 ///     }
 ///
-/// where [object_0] is the first object in the provided iterable and [name_n]
-/// is the [name] of an arbitrary, defined, [JsonProperty] owned by [object_0].
-Map<String, dynamic> toJsonGroupMap(Iterable<Jsonable> set) {
-  if (set == null || set.isEmpty) {
+/// where [object_n] is an indexed object in [msgs] and [name_n] is any [name]
+/// in the intersection of sets of names of defined [JsonProperty] fields
+/// in every [object_n].
+///
+/// Due to this definition, if any supplied object has an undefined property, no
+/// objects will have that property specified in the return of this function.
+Map<String, dynamic> toJsonGroupMap(Iterable<Jsonable> msgs) {
+  if (msgs == null || msgs.isEmpty) {
     return const {
       'properties': const [ ],
       'values': const [ ]
     };
   }
 
-  Map<String, int> indecies = set.first.toJsonMap();
-  List<String> propertyNames = indecies.keys.toList(growable: false);
+  /// The intersection of the defined property names of all provided objects.
+  List<String> propNames = msgs
+      .map((j) => j.properties.where((p) => p.isDefined).toSet())
+      .reduce((Set a, Set b) => a.intersection(b))
+      .toList(growable: false);
+
   List<List> values = [ ];
 
-  int i = 0;
-  for(String s in propertyNames) { indecies[s] = i; }
+  for(Jsonable msg in msgs) {
+    List valueList = new List(propNames.length);
 
-  for(Jsonable object in set) {
-    List valueList = new List(propertyNames.length);
-
-    for(JsonProperty prop in object.properties) {
-      if(indecies.containsKey(prop.name)) {
-        valueList[indecies[prop.name]] = prop.encodableValue;
-      }
+    for(JsonProperty prop in msg.properties) {
+      int index = propNames.indexOf(prop.name);
+      if(index > 0) { valueList[index] = prop.encodableValue;}
     }
 
     values.add(valueList);
   }
 
   return {
-    'properties': propertyNames,
+    'properties': propNames,
     'values': values
   };
 }
