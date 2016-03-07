@@ -7,6 +7,8 @@ import 'dart:async' show Future, Stream;
 import 'dart:convert' show UTF8, LineSplitter;
 import 'package:resource/resource.dart' show Resource;
 
+import 'package:partyshark_server/src/global.dart' show logger;
+
 part './username_generator.dart';
 
 /// Indicator for when library is ready to be used.
@@ -15,7 +17,8 @@ part './username_generator.dart';
 /// This process is initiated automatically and is guaranteed to be complete
 /// when this [Future] completes. Functions in this library may throw errors if
 /// they are used before that time.
-final Future ready = _UsernameGenerator._onlyReady;
+final Future ready = _UsernameGenerator._onlyReady
+  ..then((v) => logger.info('randomization_service assets loaded'));
 
 
 /// A sorted string containing all the lowercase characters.

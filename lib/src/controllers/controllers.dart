@@ -1,7 +1,7 @@
 library controllers;
 
 import 'dart:io' show HttpRequest, HttpResponse, HttpHeader, HttpStatus, ContentType;
-import 'dart:convert' show JSON;
+import 'dart:convert' show JSON, UTF8;
 import 'dart:async' show Future;
 
 import 'package:partyshark_server/deezer.dart' as deezer;
