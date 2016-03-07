@@ -9,17 +9,21 @@ part of jsonable;
 abstract class JsonProperty<T> {
   final String name;
   T value;
+  bool __isDefined;
 
   /// Determines whether this property will be used during conversion
-  /// to a JSON string. Likewise it will be set to false if no
+  /// to a JSON string; likewise it will be set to false if no
   /// property named [name] is found while reviving an owner object from source.
-  bool isDefined;
+  ///
+  /// Cannot be set to null; assigning null is equivalent to assigning true.
+  bool get isDefined => __isDefined;
+  void set isDefined(bool b) { __isDefined = b ?? true; }
 
   /// A generative constructor.
   ///
   /// If [isDefined] is not provided or null, it will default to true.
-  JsonProperty(this.name, [this.isDefined, this.value]) {
-    isDefined = isDefined ?? true;
+  JsonProperty(this.name, [bool isDefined, this.value]) {
+    this.isDefined = isDefined;
   }
 
   /// Converts to and from a JSON encodable representation of [value].

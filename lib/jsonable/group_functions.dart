@@ -34,10 +34,17 @@ Map<String, dynamic> toJsonGroupMap(Iterable<Jsonable> msgs) {
   }
 
   /// The intersection of the defined property names of all provided objects.
-  List<String> propNames = msgs
-      .map((j) => j.properties.where((p) => p.isDefined).toSet())
-      .reduce((Set a, Set b) => a.intersection(b))
-      .toList(growable: false);
+  List<String> propNames = [ ];
+  Map<String, int> propNameCounts = { };
+  for (Jsonable j in msgs) {
+    for (JsonProperty p in j.properties.where((p) => p.isDefined)) {
+      propNameCounts.putIfAbsent(p.name, () => 0);
+      propNameCounts[p.name] += 1;
+    }
+  }
+  propNameCounts.forEach((String k, int v) {
+    if (v == msgs.length) { propNames.add(k); }
+  });
 
   List<List> values = [ ];
 
