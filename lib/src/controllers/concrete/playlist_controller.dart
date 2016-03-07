@@ -28,11 +28,11 @@ class PlaylistController extends PartysharkController {
     Playthrough play = new Playthrough(song, prep.party.playthroughs.length, prep.user);
     Ballot ballot = new Ballot(prep.user, play, Vote.Up);
 
-    model
+    datastore
         ..add(play)
         ..add(ballot);
 
-    // MUST HAPPEN AFTER MODEL INSERTION
+    // MUST HAPPEN AFTER STORE INSERTION
     play.party.playthroughs.add(play);
     play.ballots.add(ballot);
 

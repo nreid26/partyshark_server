@@ -102,7 +102,7 @@ abstract class PartysharkController extends RouteController {
     return prep;
   }
 
-  /// Returns the [Party] in [model] associated with the provided numeric
+  /// Returns the [Party] in [datastore] associated with the provided numeric
   /// [String]. If the [Party] does not exist, or some other problem is
   /// encountered, a [_Failure] is returned instead.
   dynamic __getParty(String partyCodeString, HttpRequest req) {
@@ -116,7 +116,7 @@ abstract class PartysharkController extends RouteController {
         return 'The party code was malformed.';
       }
 
-      ret = model[Party][partyCode];
+      ret = datastore.parties[partyCode];
       if(ret == null) {
         return 'The party code does not match a current party.';
       }
@@ -129,7 +129,7 @@ abstract class PartysharkController extends RouteController {
       : new _Failure(HttpStatus.NOT_FOUND, 'The requested party does not exist.', why);
   }
 
-  /// Returns the [User] in [model] associated with the user code header in
+  /// Returns the [User] in [datastore] associated with the user code header in
   /// [req]. If the [User] does not exist, or some other problem is
   /// encountered, a [_Failure] is returned instead.
   dynamic __getRequester(HttpRequest req) {
@@ -148,7 +148,7 @@ abstract class PartysharkController extends RouteController {
         return 'The user code in ${Header.UserCode} was malformed.';
       }
 
-      ret = model[User][userCode];
+      ret = datastore.users[userCode];
       if(ret == null) {
         return 'The user specified by ${Header.UserCode} does not exist.';
       }

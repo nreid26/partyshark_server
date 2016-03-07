@@ -93,7 +93,7 @@ abstract class RouteController {
 /// When such a request is received, the routing tree is traversed upwards from
 /// the specified route until the first [MisrouteController] is found; the
 /// behaviour of that instance is then invoked.
-abstract class MisrouteController extends RouteController {
+class MisrouteController extends RouteController {
 
   /// This method is called when this [MisrouteController] is selected to handle
   /// a request that had no existing route.

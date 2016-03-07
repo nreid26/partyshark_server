@@ -32,13 +32,13 @@ class SongController extends PartysharkController {
   }
 
   Future<Song> _getSong(int songCode) async {
-    Song song = model[Song][songCode];
+    Song song = datastore.songs[songCode];
 
     if (song == null) {
       song = await deezer.getSong(songCode);
 
       if (song != null) {
-        model.add(song);
+        datastore.add(song);
       }
     }
 

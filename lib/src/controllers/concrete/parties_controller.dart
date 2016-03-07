@@ -13,10 +13,10 @@ class PartiesController extends PartysharkController {
     int u;
     do {
       u = rand_serve.userCode;
-    } while (model[User].containsIdentity(u));
+    } while (datastore.users.containsIdentity(u));
     user.identity = u;
 
-    model
+    datastore
       ..add(settings)
       ..add(party)
       ..add(user);

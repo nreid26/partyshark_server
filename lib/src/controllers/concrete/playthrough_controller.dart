@@ -51,7 +51,7 @@ class PlaythroughController extends PartysharkController {
       else if(msg.vote.value != null) {
         ballot = new Ballot(prep.requester, play, msg.vote.value);
         play.ballots.add(ballot);
-        model[Ballot].add(ballot);
+        datastore.add(ballot);
       }
 
       /// Enforce veto condition
@@ -95,7 +95,7 @@ class PlaythroughController extends PartysharkController {
       return null;
     }
 
-    Playthrough play = model[Playthrough][code];
+    Playthrough play = datastore.playthroughs[code];
     if (play == null || !party.playthroughs.contains(play)) {
       _closeBadRequest(req, new _Failure(HttpStatus.NOT_FOUND, 'The playthrough could not be found', 'The supplied playthrough code does not exist'));
       return null;
@@ -116,8 +116,8 @@ class PlaythroughController extends PartysharkController {
 
   void __deletePlaythrough(Playthrough play) {
     play.party.playthroughs.remove(play);
-    model[Ballot].removeAll(play.ballots);
-    model[Playthrough].remove(play);
+    datastore.bzllots.removeAll(play.ballots);
+    datastore.playthroughs.remove(play);
   }
 
   bool __playthroughHitVetoCondition(Playthrough play) =>
