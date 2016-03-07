@@ -47,3 +47,7 @@ class SongMsg extends Jsonable {
   final JsonProperty<String> title = new SimpleProperty('title');
   final JsonProperty<String> artist = new SimpleProperty('artist');
 }
+
+class EmptyMsg extends Object with Jsonable {
+  static final EmptyMsg only = new EmptyMsg();
+}

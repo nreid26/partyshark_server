@@ -21,6 +21,8 @@ class SongController extends PartysharkController {
     }
 
     _closeGoodRequest(req, recoverUri(pathParams), _convertToSongMsg(song).toJsonString());
+
+    logger.fine('Served song: $songCode');
   }
 
   SongMsg _convertToSongMsg(Song song) {
@@ -35,6 +37,7 @@ class SongController extends PartysharkController {
     Song song = datastore.songs[songCode];
 
     if (song == null) {
+      logger.finer('Queried Deezer for song: $songCode');
       song = await deezer.getSong(songCode);
 
       if (song != null) {

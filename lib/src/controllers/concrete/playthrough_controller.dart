@@ -6,7 +6,7 @@ class PlaythroughController extends PartysharkController {
   /// Veto a playthrough.
   @HttpHandler(HttpMethod.Delete)
   Future delete(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams, getBody: false);
+    _Preperation prep = await _prepareRequest(req, pathParams);
     if (prep.hadError) { return; }
 
     Playthrough play = __getPlaythrough(req, pathParams, prep.party);
@@ -15,31 +15,35 @@ class PlaythroughController extends PartysharkController {
     __deletePlaythrough(play);
     __recomputePlaylist(play.party);
     _closeGoodRequest(req, null, null);
+
+    logger.fine('Vetoed playthrough: ${play.identity} in party: ${prep.party.identity}');
   }
 
   /// Get a playthrough.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams, getBody: false, checkRequesterAdmin: false);
+    _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
     var play = __getPlaythrough(req, pathParams, prep.party);
     if(play == null) { return; }
 
     __respondWithPlaythrough(req, pathParams, prep, play);
+
+    logger.fine('Served playthrough: ${play.identity} in party: ${prep.party.identity}');
   }
 
 
   /// Update a playthrough.
   @HttpHandler(HttpMethod.Put)
   Future put(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
+    _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false, getBodyAs: new PlaythroughMsg());
     if (prep.hadError) { return; }
 
     var play = __getPlaythrough(req, pathParams, prep.party);
     if (play == null) { return; }
 
-    var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
+    var msg = prep.body as PlaythroughMsg;
 
     /// Change vote.
     if (msg.vote.isDefined) {
@@ -57,6 +61,8 @@ class PlaythroughController extends PartysharkController {
       /// Enforce veto condition
       if (__playthroughHitVetoCondition(play)) {
         __deletePlaythrough(play);
+
+        logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
       }
     }
 
@@ -66,11 +72,15 @@ class PlaythroughController extends PartysharkController {
 
       if (play.completedDuration >= play.song.duration) {
         __deletePlaythrough(play);
+
+        logger.finer('Completed playthrough: ${play.identity} in party: ${prep.party.partyCode}');
       }
     }
 
     __recomputePlaylist(play.party);
     __respondWithPlaythrough(req, pathParams, prep, play);
+
+    logger.fine('Updated playthrough: ${play.identity} in party: ${prep.party.partyCode}');
   }
 
 

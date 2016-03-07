@@ -40,9 +40,9 @@ class Controller {
 
 /// A message class holding data from successful precomputations.
 class _Preperation {
-  User requester, user;
+  User requester;
   Party party;
-  Map<String, dynamic> body;
+  Jsonable body;
 
   bool hadError = true;
 }
