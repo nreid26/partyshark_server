@@ -46,7 +46,9 @@ main(List<String> arguments) async {
       await res;
     } catch (e, trace) {
       logger.severe('Router error', e, trace);
+      if (e is Error) { rethrow; } // Errors should crash the server
     }
+
   }
 
   logger.severe('The PartyShark died!');

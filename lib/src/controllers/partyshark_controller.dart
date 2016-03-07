@@ -86,7 +86,7 @@ abstract class PartysharkController extends RouteController {
       */
 
       if(checkRequesterAdmin) {
-        var x = __requestingUserIsAdmin(prep.requester);
+        var x = __requesterIsAdmin(prep.requester);
         if(x is _Failure) { return x; }
       }
 
@@ -179,7 +179,7 @@ abstract class PartysharkController extends RouteController {
   /// Checks whether [user] is a member of [party]. If so, null is returned;
   /// if not, a [_Failure] is returned instead.
   _Failure __isMember(Party party, User user) {
-    if (party?.users?.contains(user) ?? false) {
+    if (party?.users?.contains(user) == true) {
       logger.finest('Requensting user verified as party member');
       return null;
     }
@@ -194,9 +194,9 @@ abstract class PartysharkController extends RouteController {
 
   /// Checks whether [user] is an administrator at their party. If so, null
   /// is returned; if not, a [_Failure] is returned instead.
-  _Failure __requestingUserIsAdmin(User user) {
-    if (user?.isAdmin ?? false) {
-      logger.finest('Requesting user validated as administrator');
+  _Failure __requesterIsAdmin(User user) {
+    if (user?.isAdmin == true) {
+      logger.finest('Requesting user verified as administrator');
       return null;
     }
     else {
