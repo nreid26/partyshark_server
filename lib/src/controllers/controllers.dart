@@ -1,22 +1,19 @@
 library controllers;
 
 import 'dart:io' show HttpRequest, HttpResponse, HttpHeader, HttpStatus, ContentType;
-import 'dart:convert' show JSON, BASE64, UTF8;
-import 'dart:typed_data' show Uint8ClampedList;
+import 'dart:convert' show JSON, UTF8;
 import 'dart:async' show Future;
 
+import 'package:partyshark_server/deezer.dart' as deezer;
 import 'package:partyshark_server/src/messaging/messaging.dart';
-
 import 'package:partyshark_server/signpost/signpost.dart';
-import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/entities/entities.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
-import 'package:partyshark_server/deezer.dart' as deezer;
+import 'package:partyshark_server/src/global.dart';
 
 
 part './partyshark_controller.dart';
 part './misc_classes.dart';
-part './misc_functions.dart';
 
 part './concrete/parties_controller.dart';
 part './concrete/party_controller.dart';
@@ -25,6 +22,7 @@ part './concrete/playthrough_controller.dart';
 part './concrete/settings_controller.dart';
 part './concrete/song_controller.dart';
 part './concrete/songs_controller.dart';
+part './concrete/users_controller.dart';
 
 
 /// Indicator for when library is ready to be used.
@@ -34,15 +32,4 @@ part './concrete/songs_controller.dart';
 /// when this [Future] completes. Functions in this library may throw errors if
 /// they are used before that time.
 final Future ready = rand_serve.ready;
-
-Datastore model;
-
-final RouteController
-    partyController = new PartyController._(),
-    partiesController = new PartiesController._(),
-    playlistController = new PlaylistController._(),
-    playthroughController = new PlaythroughController._(),
-    settingsController = new SettingsController._(),
-    songController = new SongController._(),
-    songsController = new SongsController._();
 

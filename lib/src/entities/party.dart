@@ -15,7 +15,7 @@ class Party extends Object with DeferredIdentifiableMixin {
   Party(this.adminCode, this.settings);
 
   //Methods
-  int get partycode => identity;
+  int get partyCode => identity;
 
   bool get isPaused => !isPlaying;
   void set isPaused(bool pause) { isPlaying = !pause; }

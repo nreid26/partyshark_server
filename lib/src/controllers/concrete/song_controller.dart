@@ -8,7 +8,7 @@ class SongController extends PartysharkController {
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
     _Failure potFail = new _Failure(HttpStatus.NOT_FOUND, 'The requested song does not exist', null);
 
-    int songCode = int.parse(pathParams[CustomKey.SongCode], onError: (s) => null);
+    int songCode = int.parse(pathParams[Key.SongCode], onError: (s) => null);
     if (songCode == null) {
       _closeBadRequest(req, potFail..why = 'The provided song code is malformed');
       return;
@@ -21,6 +21,8 @@ class SongController extends PartysharkController {
     }
 
     _closeGoodRequest(req, recoverUri(pathParams), _convertToSongMsg(song).toJsonString());
+
+    logger.fine('Served song: $songCode');
   }
 
   SongMsg _convertToSongMsg(Song song) {
@@ -32,13 +34,14 @@ class SongController extends PartysharkController {
   }
 
   Future<Song> _getSong(int songCode) async {
-    Song song = model[Song][songCode];
+    Song song = datastore.songs[songCode];
 
     if (song == null) {
+      logger.finer('Queried Deezer for song: $songCode');
       song = await deezer.getSong(songCode);
 
       if (song != null) {
-        model.add(song);
+        datastore.add(song);
       }
     }
 

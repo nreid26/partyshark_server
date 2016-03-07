@@ -4,7 +4,7 @@ part of signpost;
 /// definition.
 class Router {
   //Statics
-  static void _genericHandleInternalException(HttpRequest req, Exception e) {
+  static void handleInternalException(HttpRequest req, Exception e, StackTrace trace) {
     req.response
     ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
     ..headers.contentType = ContentType.JSON
@@ -49,8 +49,8 @@ class Router {
   /// [HttpHandler] method in a [RouteController], as well as the [HttpRequest]
   /// which caused it. The [Exception] is always asynchronously rethrown but
   /// this function provides a chance to do logging or attempt an error response.
-  Router(String baseUri, MisrouteController controller, Map definition, [void handleInternalException(HttpRequest, Exception)])
-      : __root = new _Route(null, null, controller), baseUri = Uri.parse(baseUri), _handleInternalException = handleInternalException ?? _genericHandleInternalException
+  Router(String baseUri, MisrouteController controller, Map definition, [void handleInternalException(HttpRequest, Exception, StackTrace)])
+      : __root = new _Route(null, null, controller), baseUri = Uri.parse(baseUri), _handleInternalException = handleInternalException ?? Router.handleInternalException
   {
     if(controller == null) { throw new ArgumentError.notNull('controller'); }
     _translateDefinition(definition);
@@ -98,8 +98,8 @@ class Router {
 
       if (potFuture is Future) { await potFuture; }
     }
-    on Exception catch (e) {
-      try { _handleInternalException(req, e); }
+    on Exception catch (e, trace) {
+      try { _handleInternalException(req, e, trace); }
       on Exception { }
       rethrow;
     }

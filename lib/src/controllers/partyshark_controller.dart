@@ -8,31 +8,37 @@ abstract class PartysharkController extends RouteController {
   PartysharkController._();
 
   void _closeGoodRequest(HttpRequest req, Uri location, String body, [int status, User user]) {
+    body = body ?? '{ }';
+
     req.response
         ..statusCode = status ?? HttpStatus.OK
         ..headers.contentType = ContentType.JSON
-        ..headers.set(CustomHeader.CrossOrigin, '*')
-        ..headers.set(CustomHeader.Location, location);
+        ..headers.set(Header.CrossOrigin, '*')
+        ..headers.set(Header.Location, location);
 
     if (user != null) {
       req.response.headers.set(
-          CustomHeader.SetUserCode,
-          encodeBase64(user.identity, 64)
+          Header.SetUserCode,
+          user.userCode
       );
     }
 
     req.response
-        ..write(body ?? '{ }')
+        ..write(body)
         ..close();
+
+    logger.finer('Succesful response with body: $body');
   }
 
   void _closeBadRequest(HttpRequest req, _Failure fail) {
     req.response
         ..statusCode = fail.status
         ..headers.contentType = ContentType.JSON
-        ..headers.set(CustomHeader.CrossOrigin, '*')
+        ..headers.set(Header.CrossOrigin, '*')
         ..write(fail.toJsonString())
         ..close();
+
+    logger.warning('Failed response: ${fail.toJsonString()}');
   }
 
   /// Retrieves entities and validates a request according to the requirements
@@ -40,19 +46,21 @@ abstract class PartysharkController extends RouteController {
   /// in some way, it will be closed and the [_Preperation] will be marked
   /// with [hasError].
   Future<_Preperation> _prepareRequest(HttpRequest req, Map<RouteKey, String> pathParams,
-    {bool getBody: true, bool getParty: true, bool getRequester: true, bool checkRequesterAdmin: true}
+    {Jsonable getBodyAs: null, bool getParty: true, bool getRequester: true, bool checkRequesterAdmin: true}
   ) async {
     _Preperation prep = new _Preperation();
 
+    logger.finer('Preparing request with params: $pathParams');
+
     Future<_Failure> getFail() async {
-      if(getBody) {
-        var x = await __getBody(req);
+      if(getBodyAs != null) {
+        var x = await __getBody(req, getBodyAs);
         if (x is _Failure) { return x; }
         prep.body = x;
       }
 
       if(getParty) {
-        var x =  __getParty(pathParams[CustomKey.PartyCode], req);
+        var x =  __getParty(pathParams[Key.PartyCode], req);
         if(x is _Failure) { return x; }
         else { prep.party = x; }
       }
@@ -62,24 +70,13 @@ abstract class PartysharkController extends RouteController {
         if(x is _Failure) { return x; }
         else  { prep.requester = x; }
 
-        x = __isMember(prep.party, prep.user);
+        x = __isMember(prep.party, prep.requester);
         if(x is _Failure) { return x; }
-      }
 
-      /*
-      if(getRequestedUser) {
-        var x = __getRequestingUser(req);
-        if(x is _Failure) { return x; }
-        else  { prep.requester = x; }
-
-        x = __isMember(prep.party, prep.user);
-        if(x is _Failure) { return x; }
-      }
-      */
-
-      if(checkRequesterAdmin) {
-        var x = __requestingUserIsAdmin(prep.requester);
-        if(x is _Failure) { return x; }
+        if(checkRequesterAdmin) {
+          var x = __requesterIsAdmin(prep.requester);
+          if(x is _Failure) { return x; }
+        }
       }
 
       return null;
@@ -94,18 +91,21 @@ abstract class PartysharkController extends RouteController {
     return prep;
   }
 
-  /// Returns the [Party] in [model] associated with the provided numeric
+  /// Returns the [Party] in [datastore] associated with the provided numeric
   /// [String]. If the [Party] does not exist, or some other problem is
   /// encountered, a [_Failure] is returned instead.
   dynamic __getParty(String partyCodeString, HttpRequest req) {
     Party ret;
 
     String getErr(){
-      int partyCode = int.parse(partyCodeString, onError: (s) {
-        return 'The party code was malformed.';
-      });
+      int partyCode = int.parse(partyCodeString, onError: (s) => null);
+      logger.finest('Request for party: $partyCode');
 
-      ret = model[Party][partyCode];
+      if(partyCode == null) {
+        return 'The party code was malformed.';
+      }
+
+      ret = datastore.parties[partyCode];
       if(ret == null) {
         return 'The party code does not match a current party.';
       }
@@ -114,74 +114,91 @@ abstract class PartysharkController extends RouteController {
     }
 
     String why = getErr();
-    return (why == null)
-      ? ret
+    return (why == null) ? ret
       : new _Failure(HttpStatus.NOT_FOUND, 'The requested party does not exist.', why);
   }
 
-  /// Returns the [User] in [model] associated with the user code header in
+  /// Returns the [User] in [datastore] associated with the user code header in
   /// [req]. If the [User] does not exist, or some other problem is
   /// encountered, a [_Failure] is returned instead.
   dynamic __getRequester(HttpRequest req) {
     User ret;
 
     String getWhy() {
-      String userCode64 = req.response.headers.value(CustomHeader.UserCode);
-      if(userCode64 == null) {
-        return 'The request did not carry a ${CustomHeader.UserCode} header.';
+      String userCodeString = req.headers.value(Header.UserCode);
+      logger.finest('Request had ${Header.UserCode}: $userCodeString');
+
+      if(userCodeString == null) {
+        return 'The request did not carry a ${Header.UserCode} header.';
       }
 
-      int useCode = decodeBase64(userCode64);
-      if(useCode == null) {
-        return 'The user code in ${CustomHeader.UserCode} was malformed Base64.';
+      int userCode = int.parse(userCodeString, onError: (s) => null);
+      if(userCode == null) {
+        return 'The user code in ${Header.UserCode} was malformed.';
       }
 
-      ret = model[User][useCode];
+      ret = datastore.users[userCode];
       if(ret == null) {
-        return 'The user specified by ${CustomHeader.UserCode} does not exist.';
+        return 'The user specified by ${Header.UserCode} does not exist.';
       }
 
       return null;
     }
 
     String why = getWhy();
-    return (why == null)
-        ? ret
+    return (why == null) ? ret
         : new _Failure(HttpStatus.NOT_FOUND, 'The requested party does not exist.', why);
   }
 
-  ///Asynchronusly retrives the body of an [HttpRequest]
-  dynamic __getBody(HttpRequest req) async {
+  /// Asynchronously retrieves the body of an [HttpRequest] and fills a supplied
+  /// [Jsonable].
+  dynamic __getBody(HttpRequest req, Jsonable msg) async {
     try {
-      return JSON.decode(await UTF8.decodeStream(req));
-    } catch (e) {
+      String json = await UTF8.decodeStream(req);
+      msg.fillFromJsonString(json);
+
+      logger.finest('Request had valid body: $json');
+
+      return msg;
+    }
+    on Exception catch (e) {
       return new _Failure(
           HttpStatus.BAD_REQUEST,
           'The request body could not be interpreted',
-          'The request body was not valid JSON'
+          e.toString()
       );
     }
   }
 
   /// Checks whether [user] is a member of [party]. If so, null is returned;
   /// if not, a [_Failure] is returned instead.
-  _Failure __isMember(Party party, User user) =>
-    (party?.users?.contains(user) ?? false)
-      ? null
-      : new _Failure(
+  _Failure __isMember(Party party, User user) {
+    if (party?.users?.contains(user) == true) {
+      logger.finest('Requensting user verified as party member');
+      return null;
+    }
+    else {
+      return new _Failure(
           HttpStatus.BAD_REQUEST,
           'This user must be a member of the party and is not.',
           'The specifed user and party exist but are not related.'
-        );
+      );
+    }
+  }
 
   /// Checks whether [user] is an administrator at their party. If so, null
   /// is returned; if not, a [_Failure] is returned instead.
-  _Failure __requestingUserIsAdmin(User user) =>
-    (user?.isAdmin ?? false)
-      ? null
-      : new _Failure(
+  _Failure __requesterIsAdmin(User user) {
+    if (user?.isAdmin == true) {
+      logger.finest('Requesting user verified as administrator');
+      return null;
+    }
+    else {
+      return new _Failure(
           HttpStatus.BAD_REQUEST,
           'This user is not an administrator.',
           'The specifed user and party exist but are not related.'
-        );
+      );
+    }
+  }
 }

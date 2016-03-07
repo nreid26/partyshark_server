@@ -6,21 +6,23 @@ class SettingsController extends PartysharkController {
   /// Get a settings group.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams, getBody: false, checkRequesterAdmin: false);
+    _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
     __respondWithSettings(req, pathParams, prep);
+
+    logger.fine('Served settings for party: ${prep.party.partyCode}');
   }
 
   /// Update a settings group.
   @HttpHandler(HttpMethod.Put)
   Future put(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams);
+    _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new SettingsMsg());
     if (prep.hadError) { return; }
 
     SettingsGroup s = prep.party.settings;
 
-    var msg = new SettingsMsg()..fillFromJsonMap(prep.body);
+    var msg = prep.body as SettingsMsg;
     if(msg.virtualDj.isDefined && msg.virtualDj.value != null) {
       s.usingVirtualDj = msg.virtualDj.value;
     }
@@ -38,6 +40,8 @@ class SettingsController extends PartysharkController {
     }
 
     __respondWithSettings(req, pathParams, prep);
+
+    logger.fine('Updated settings for party: ${prep.party.partyCode}');
   }
 
   void __respondWithSettings(HttpRequest req, Map pathParams, _Preperation prep) {
