@@ -6,9 +6,9 @@ library identity;
 
 /// An interface for types with [identity].
 ///
-/// [identity] must never be null. Types implementing this interface must also
-/// implement the following forwards. If convenient, this can be achieved by
-/// applying [IdentifiableMixin].
+/// [identity] must not be null when used. Types implementing this interface
+/// must also implement the following forwards. If convenient, this can be
+/// achieved by applying [IdentifiableMixin].
 /// - [operator==] => [referenceEquals]
 /// - [hashCode] => [referenceHashcode]
 /// - [toString] => [referenceToString]
@@ -16,16 +16,29 @@ abstract class Identifiable {
   int get identity;
 
   /// The reference implementation of operator [==] for [Identifiable] types.
-  static bool referenceEquals(Identifiable a, Identifiable b) =>
-      identical(a.runtimeType, b.runtimeType) &&
-      identical(a.identity, b.identity) &&
-      a != null;
+  static bool referenceEquals(Identifiable a, Identifiable b) {
+    if ((a != null && a.identity == null) || (b != null && b.identity == null)) {
+      throw new StateError('identity cannot be compared while null');
+    }
+
+    /// Same type, same identity, not null
+    return identical(a.runtimeType, b.runtimeType) &&
+        identical(a.identity, b.identity) &&
+        a != null;
+  }
+
 
   /// The reference implementation of [hashcode] for [Identifiable] types.
   ///
   /// This function makes the additional guarantee that the result will never be
   /// negative.
-  static int referenceHashCode(int identity) => identity.abs();
+  static int referenceHashCode(int identity) {
+    if (identity == null) {
+      throw new StateError('identity cannot be hashed while null');
+    }
+
+    return identity.abs();
+  }
 
   /// The reference implementation of [toString] for [Identifiable] types.
   static String referenceToString(Identifiable i) =>
@@ -41,6 +54,7 @@ abstract class Identifiable {
 /// it is first set.
 abstract class MutableIdentifiable implements Identifiable {
   void set identity(int i);
+  bool get hasIdentity;
 }
 
 
@@ -63,10 +77,15 @@ abstract class DeferredIdentifiableMixin implements MutableIdentifiable {
   int __identity;
 
   //Methods
-  int  get identity => __identity;
+  bool get hasIdentity => __identity != null;
+
+  int  get identity {
+    if (!hasIdentity) { return identity; }
+    throw new StateError('identity moy not be used before being set.');
+  }
 
   void set identity(int i) {
-    if(__identity != null) { throw new StateError('Identity may only be set once.'); }
+    if (hasIdentity) { throw new StateError('identity may only be set once.'); }
     else { __identity = i; }
   }
 
