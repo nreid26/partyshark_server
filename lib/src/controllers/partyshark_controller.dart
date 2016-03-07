@@ -46,15 +46,15 @@ abstract class PartysharkController extends RouteController {
   /// in some way, it will be closed and the [_Preperation] will be marked
   /// with [hasError].
   Future<_Preperation> _prepareRequest(HttpRequest req, Map<RouteKey, String> pathParams,
-    {bool getBody: true, bool getParty: true, bool getRequester: true, bool checkRequesterAdmin: true}
+    {Jsonable getBodyAs: null, bool getParty: true, bool getRequester: true, bool checkRequesterAdmin: true}
   ) async {
     _Preperation prep = new _Preperation();
 
     logger.finer('Preparing request with params: $pathParams');
 
     Future<_Failure> getFail() async {
-      if(getBody) {
-        var x = await __getBody(req);
+      if(getBodyAs != null) {
+        var x = await __getBody(req, getBodyAs);
         if (x is _Failure) { return x; }
         prep.body = x;
       }
@@ -70,24 +70,13 @@ abstract class PartysharkController extends RouteController {
         if(x is _Failure) { return x; }
         else  { prep.requester = x; }
 
-        x = __isMember(prep.party, prep.user);
+        x = __isMember(prep.party, prep.requester);
         if(x is _Failure) { return x; }
-      }
 
-      /*
-      if(getRequestedUser) {
-        var x = __getRequestingUser(req);
-        if(x is _Failure) { return x; }
-        else  { prep.requester = x; }
-
-        x = __isMember(prep.party, prep.user);
-        if(x is _Failure) { return x; }
-      }
-      */
-
-      if(checkRequesterAdmin) {
-        var x = __requesterIsAdmin(prep.requester);
-        if(x is _Failure) { return x; }
+        if(checkRequesterAdmin) {
+          var x = __requesterIsAdmin(prep.requester);
+          if(x is _Failure) { return x; }
+        }
       }
 
       return null;
@@ -161,17 +150,22 @@ abstract class PartysharkController extends RouteController {
         : new _Failure(HttpStatus.NOT_FOUND, 'The requested party does not exist.', why);
   }
 
-  ///Asynchronusly retrives the body of an [HttpRequest]
-  dynamic __getBody(HttpRequest req) async {
+  /// Asynchronously retrieves the body of an [HttpRequest] and fills a supplied
+  /// [Jsonable].
+  dynamic __getBody(HttpRequest req, Jsonable msg) async {
     try {
-      var ret =  JSON.decode(await UTF8.decodeStream(req));
-      logger.finest('Request had body: $ret');
-      return ret;
-    } catch (e) {
+      String json = await UTF8.decodeStream(req);
+      msg.fillFromJsonString(json);
+
+      logger.finest('Request had valid body: $json');
+
+      return msg;
+    }
+    on Exception catch (e) {
       return new _Failure(
           HttpStatus.BAD_REQUEST,
           'The request body could not be interpreted',
-          'The request body was not valid JSON'
+          e.toString()
       );
     }
   }

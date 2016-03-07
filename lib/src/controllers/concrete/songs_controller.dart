@@ -23,5 +23,7 @@ class SongsController extends PartysharkController {
 
     Iterable<SongMsg> msgs = songs.map(Controller.Song._convertToSongMsg);
     _closeGoodRequest(req, null, toJsonGroupString(msgs));
+
+    logger.fine('Served songs for search: $query');
   }
 }

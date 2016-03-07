@@ -41,8 +41,9 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// be assigned. Returns true if the insertion is successful and false
   /// otherwise.
   bool add(T item) {
-    if(item is MutableIdentifiable && item.identity == null) {
-      (item as MutableIdentifiable).identity = ++__maxIdentity;
+    if(item is MutableIdentifiable) {
+      var i = item as MutableIdentifiable;
+      if (!i.hasIdentity) { i.identity = ++__maxIdentity; }
     }
     else if(item.identity > __maxIdentity) { __maxIdentity = item.identity; }
 

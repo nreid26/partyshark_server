@@ -6,27 +6,30 @@ class PlaylistController extends PartysharkController {
   /// Get a playlist.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams, getBody: false, checkRequesterAdmin: false);
+    _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
     __respondWithPlaylist(req, pathParams, prep);
+
+    logger.fine('Served playlist for party: ${prep.party.partyCode}');
   }
 
 
   /// Suggest a playthrough.
   @HttpHandler(HttpMethod.Post)
   Future post(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
-    _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
+    _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new PlaythroughMsg(), checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    var msg = new PlaythroughMsg()..fillFromJsonMap(prep.body);
+    var msg = prep.body as PlaythroughMsg;
+
     Song song = await Controller.Song._getSong(msg.songCode.value);
     if (song == null) { return; }
 
     if (!__suggestionIsValid(req, prep)) { return; }
 
-    Playthrough play = new Playthrough(song, prep.party.playthroughs.length, prep.user);
-    Ballot ballot = new Ballot(prep.user, play, Vote.Up);
+    Playthrough play = new Playthrough(song, prep.party.playthroughs.length, prep.requester);
+    Ballot ballot = new Ballot(prep.requester, play, Vote.Up);
 
     datastore
         ..add(play)
@@ -37,6 +40,8 @@ class PlaylistController extends PartysharkController {
     play.ballots.add(ballot);
 
     __respondWithPlaylist(req, pathParams, prep);
+
+    logger.fine('Created new playthrough: ${play.identity} for party: ${prep.party.partyCode}');
   }
 
   void __respondWithPlaylist(HttpRequest req, Map pathParams, _Preperation prep) {
