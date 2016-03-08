@@ -23,19 +23,20 @@ class UsersController extends PartysharkController {
 
     var msg = prep.body as UserMsg;
 
-    // Generate user variables
+    /// Generate username
     String username;
     do {
       username = rand_serve.username;
     } while (prep.party.users.any((u) => u.username == username));
 
-    User user = new User(prep.party, username)
-      ..isAdmin = msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode;
-
+    /// Generate new objects
+    User user = new User(_genValidUserCode(), prep.party, username, msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode);
     datastore.add(user);
+
+    /// Link new objects
     prep.party.users.add(user); // MUST HAPPEN AFTER STORE INSERTION
 
-    // Make response
+    /// Make response
     msg = __convertToUserMsg(user);
 
     //TODO: Recover Location from other controller
@@ -49,5 +50,11 @@ class UsersController extends PartysharkController {
         ..adminCode.isDefined = false
         ..username.value = user.username
         ..isAdmin.value = user.isAdmin;
+  }
+
+  int _genValidUserCode() {
+    int u = rand_serve.userCode;
+    while (datastore.users.containsIdentity(u)) { u++; }
+    return u;
   }
 }

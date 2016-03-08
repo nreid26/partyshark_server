@@ -60,7 +60,7 @@ Song _songFromMap(Map<String, dynamic> body) {
 
     Duration duration = (body['duration'] is int) ? new Duration(seconds: body['duration']) : null;
 
-    return new Song(title, artistName, year, duration)..identity = code;
+    return new Song(code, title, artistName, year, duration);
   }
   catch (e) {
     return null;

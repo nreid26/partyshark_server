@@ -9,20 +9,19 @@ class PartiesController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, getRequester: false, getBodyAs: EmptyMsg.only, getParty: false);
     if (prep.hadError) { return; }
 
+    /// Make and store new objects
     SettingsGroup settings = new SettingsGroup();
     datastore.add(settings);
 
     Party party = new Party(rand_serve.adminCode, settings);
     datastore.add(party);
 
-    User user = new User(party, rand_serve.username, true);
-    int u = rand_serve.userCode;
-    while (datastore.users.containsIdentity(u)) { u++; }
-    user.identity = u;
+    User user = new User(Controller.Users._genValidUserCode(), party, rand_serve.username, true);
     datastore.add(user);
 
-    // Link new objects
+    /// Link new object
     party.users.add(user);
+    party.player = user;
     settings.party = party;
 
     logger.fine('Created new party: ${party.partyCode}');
