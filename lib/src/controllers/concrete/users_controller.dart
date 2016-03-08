@@ -21,6 +21,8 @@ class UsersController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new UserMsg(), getRequester: false, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
+    if (!__userCanJoin(req, prep)) { return; }
+
     var msg = prep.body as UserMsg;
 
     /// Generate new objects
@@ -65,4 +67,15 @@ class UsersController extends PartysharkController {
     if (maxAttempts == 0) { throw new Exception('Could not generate a unique username for party: ${party.partyCode}'); }
     return username;
   }
+
+  bool __userCanJoin(HttpRequest req, _Preperation prep) {
+    if (prep.party.settings.userCap == null) { return true; }
+
+    if (prep.party.users.length < prep.party.settings.userCap) { return true; }
+    else {
+      _closeBadRequest(req, new _Failure(HttpStatus.BAD_REQUEST, 'You could not join the party.', 'The party you attempted to join is full.'));
+      return false;
+    }
+  }
+
 }
