@@ -38,7 +38,7 @@ abstract class PartysharkController extends RouteController {
         ..write(fail.toJsonString())
         ..close();
 
-    logger.warning('Failed response: ${fail.toJsonString()}');
+    logger.fine('Failed response: ${fail.toJsonString()}');
   }
 
   /// Retrieves entities and validates a request according to the requirements
@@ -86,6 +86,9 @@ abstract class PartysharkController extends RouteController {
     if(fail != null) {
       _closeBadRequest(req, fail);
       prep.hadError = true;
+    }
+    else {
+      prep.hadError = false;
     }
 
     logger.finer('Pequest prepared');
@@ -176,7 +179,7 @@ abstract class PartysharkController extends RouteController {
   /// if not, a [_Failure] is returned instead.
   _Failure __isMember(Party party, User user) {
     if (party?.users?.contains(user) == true) {
-      logger.finest('Requensting user verified as party member');
+      logger.finest('Requesting user verified as party member');
       return null;
     }
     else {

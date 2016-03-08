@@ -44,7 +44,7 @@ class _Preperation {
   Party party;
   Jsonable body;
 
-  bool hadError = true;
+  bool hadError;
 }
 
 /// A message class holding data needed to generate a failed HTTP response.

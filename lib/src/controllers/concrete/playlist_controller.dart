@@ -68,7 +68,7 @@ class PlaylistController extends PartysharkController {
       return true;
     }
     else {
-      _closeBadRequest(req, new _Failure(HttpStatus.BAD_REQUEST, 'The playthrough suggestion could not be accepted', 'The playlist is the maximum length allowed for this party'));
+      _closeBadRequest(req, new _Failure(HttpStatus.BAD_REQUEST, 'The playthrough suggestion could not be accepted.', 'The playlist is the maximum length allowed for this party.'));
       return false;
     }
   }

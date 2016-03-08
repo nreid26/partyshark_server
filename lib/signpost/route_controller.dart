@@ -102,8 +102,8 @@ class MisrouteController extends RouteController {
       ..statusCode = HttpStatus.NOT_FOUND
       ..headers.contentType = ContentType.JSON
       ..write(errorJson(
-        'The requested resource could not be found',
-        'The requested resource does not exsit'
+        'The requested resource could not be found.',
+        'The requested resource does not exsit.'
       ))
       ..close();
 

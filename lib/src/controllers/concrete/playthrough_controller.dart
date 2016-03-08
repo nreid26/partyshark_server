@@ -99,15 +99,17 @@ class PlaythroughController extends PartysharkController {
   }
 
   Playthrough __getPlaythrough(HttpRequest req, Map pathParams, Party party) {
+    _Failure potFail = new _Failure(HttpStatus.NOT_FOUND, 'The playthrough could not be found.', null);
+
     int code = int.parse(pathParams[Key.PlaythroughCode], onError: (s) => null);
     if (code == null) {
-      _closeBadRequest(req, new _Failure(HttpStatus.NOT_FOUND, 'The playthrough could not be found', 'The supplied playthrough code is malformed'));
+      _closeBadRequest(req, potFail..why = 'The supplied playthrough code is malformed.');
       return null;
     }
 
     Playthrough play = datastore.playthroughs[code];
     if (play == null || !party.playthroughs.contains(play)) {
-      _closeBadRequest(req, new _Failure(HttpStatus.NOT_FOUND, 'The playthrough could not be found', 'The supplied playthrough code does not exist'));
+      _closeBadRequest(req, potFail..why = 'The supplied playthrough code does not exist.');
       return null;
     }
 

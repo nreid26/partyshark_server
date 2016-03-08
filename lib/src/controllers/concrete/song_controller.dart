@@ -6,17 +6,17 @@ class SongController extends PartysharkController {
   /// Get a song.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
-    _Failure potFail = new _Failure(HttpStatus.NOT_FOUND, 'The requested song does not exist', null);
+    _Failure potFail = new _Failure(HttpStatus.NOT_FOUND, 'The requested song does not exist.', null);
 
     int songCode = int.parse(pathParams[Key.SongCode], onError: (s) => null);
     if (songCode == null) {
-      _closeBadRequest(req, potFail..why = 'The provided song code is malformed');
+      _closeBadRequest(req, potFail..why = 'The provided song code is malformed.');
       return;
     }
 
     Song song = await _getSong(songCode);
     if (song == null) {
-      _closeBadRequest(req, potFail..why = 'The provided song code is undefined');
+      _closeBadRequest(req, potFail..why = 'The provided song code is undefined.');
       return;
     }
 
