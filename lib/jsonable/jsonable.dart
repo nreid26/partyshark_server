@@ -20,9 +20,10 @@ abstract class Jsonable {
   /// as declared in its most derived subclass.
   Iterable<JsonProperty> get properties sync* {
     var im = reflect(this), cm = im.type;
+    var instanceFields = cm.declarations.values.where((dm) => dm is VariableMirror && !dm.isStatic);
 
-    for (VariableMirror dm in cm.declarations.values.where((dm) => dm is VariableMirror)) {
-      var p = im.getField(dm.simpleName).reflectee;
+    for (VariableMirror vm in instanceFields) {
+      var p = im.getField(vm.simpleName).reflectee;
       if(p is JsonProperty) { yield p; }
     }
   }

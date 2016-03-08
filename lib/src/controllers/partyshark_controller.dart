@@ -88,6 +88,8 @@ abstract class PartysharkController extends RouteController {
       prep.hadError = true;
     }
 
+    logger.finer('Pequest prepared');
+
     return prep;
   }
 

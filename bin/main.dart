@@ -76,6 +76,6 @@ void prepareLogger(Set<String> options) {
   logger
       ..level = level
       ..onRecord.listen((rec) {
-        print('${rec.level} ${rec.message}');
+        print('${rec.level} ${rec.message}\n');
       });
 }

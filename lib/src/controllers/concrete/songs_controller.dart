@@ -21,6 +21,11 @@ class SongsController extends PartysharkController {
       return;
     }
 
+    // Cache results
+    for (Song song in songs) {
+      datastore.songs.add(song);
+    }
+
     Iterable<SongMsg> msgs = songs.map(Controller.Song._convertToSongMsg);
     _closeGoodRequest(req, null, toJsonGroupString(msgs));
 
