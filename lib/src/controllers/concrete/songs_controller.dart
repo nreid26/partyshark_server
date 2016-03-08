@@ -21,7 +21,8 @@ class SongsController extends PartysharkController {
       return;
     }
 
-    datastore.songs.addAll(songs);
+    // TODO: Fix caching. Currently cannot since data may be missing.
+    // datastore.songs.addAll(songs);
 
     Iterable<SongMsg> msgs = songs.map(Controller.Song._convertToSongMsg);
     _closeGoodRequest(req, null, toJsonGroupString(msgs));

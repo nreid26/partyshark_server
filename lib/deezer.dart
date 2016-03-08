@@ -37,14 +37,7 @@ Future<Iterable<Song>> searchSongs(String query) async {
 
     if (body.containsKey('error')) { return null; }
 
-    extract() sync* {
-      for (dynamic songJson in body['data']) {
-        Song s =_songFromMap(songJson);
-        if (s != null) { yield s; }
-      }
-    }
-
-    return extract();
+    return body['data'].map(_songFromMap).where((s) => s != null);
   }
   catch (e) {
     return null;
@@ -57,11 +50,17 @@ Song _songFromMap(Map<String, dynamic> body) {
     if (code == null) { return null; }
 
     String title = body['title_short'];
-    String artist = body['artist']['name'];
-    int year = DateTime.parse(body['release_date'] as String).year;
-    Duration duration = new Duration(seconds: body['duration']);
 
-    return new Song(title, artist, year, duration)..identity = code;
+    Map artist = body['artist'];
+    String artistName = (artist == null) ? null : artist['name'];
+
+    int year = null;
+    try { year = DateTime.parse(body['release_date']).year; }
+    catch (e) { }
+
+    Duration duration = (body['duration'] is int) ? new Duration(seconds: body['duration']) : null;
+
+    return new Song(title, artistName, year, duration)..identity = code;
   }
   catch (e) {
     return null;
