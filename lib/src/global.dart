@@ -10,7 +10,7 @@ export 'package:logging/logging.dart';
 class PartySharkDatastore extends Datastore {
 
   /// Strongly typed getters.
-  Table<Ballot> get bzllots => this[Ballot];
+  Table<Ballot> get ballots => this[Ballot];
   Table<Party> get parties => this[Party];
   Table<PlayerTransfer> get transfers => this[PlayerTransfer];
   Table<Playthrough> get playthroughs => this[Playthrough];

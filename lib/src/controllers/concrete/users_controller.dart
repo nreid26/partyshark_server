@@ -23,14 +23,8 @@ class UsersController extends PartysharkController {
 
     var msg = prep.body as UserMsg;
 
-    /// Generate username
-    String username;
-    do {
-      username = rand_serve.username;
-    } while (prep.party.users.any((u) => u.username == username));
-
     /// Generate new objects
-    User user = new User(_genValidUserCode(), prep.party, username, msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode);
+    User user = new User(_genValidUserCode(), prep.party, __genValidUsername(prep.party), msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode);
     datastore.add(user);
 
     /// Link new objects
@@ -56,5 +50,19 @@ class UsersController extends PartysharkController {
     int u = rand_serve.userCode;
     while (datastore.users.containsIdentity(u)) { u++; }
     return u;
+  }
+
+  String __genValidUsername(Party party) {
+    String username;
+    int maxAttempts = 10;
+    Set<String> takenNames = party.users.map((u) => u.username).toSet();
+
+    do {
+      username = rand_serve.username;
+      maxAttempts--;
+    } while (maxAttempts > 0 && takenNames.contains(username));
+
+    if (maxAttempts == 0) { throw new Exception('Could not generate a unique username for party: ${party.partyCode}'); }
+    return username;
   }
 }

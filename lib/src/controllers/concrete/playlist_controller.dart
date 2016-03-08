@@ -9,7 +9,11 @@ class PlaylistController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    __respondWithPlaylist(req, pathParams, prep);
+      Iterable<PlaythroughMsg> msgs = prep.party.playthroughs
+          .map(Controller.Playthrough._playthroughToMsg)
+          ..forEach((PlaythroughMsg p) => p.completedDuration.isDefined = false);
+
+    _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(msgs));
 
     logger.fine('Served playlist for party: ${prep.party.partyCode}');
   }
@@ -39,28 +43,12 @@ class PlaylistController extends PartysharkController {
     play.party.playthroughs.add(play);
     play.ballots.add(ballot);
 
-    __respondWithPlaylist(req, pathParams, prep);
+    Map params = {Key.PlaythroughCode: play.identity, Key.PartyCode: prep.party};
+    Controller.Playthrough._respondWithPlaythrough(req, params, play);
 
     logger.fine('Created new playthrough: ${play.identity} for party: ${prep.party.partyCode}');
   }
 
-  void __respondWithPlaylist(HttpRequest req, Map pathParams, _Preperation prep) {
-    Iterable<PlaythroughMsg> getMessages() sync* {
-      for(Playthrough p in prep.party.playthroughs) {
-        yield new PlaythroughMsg()
-          ..completedDuration.isDefined = false
-          ..code.value = p.identity
-          ..position.value = p.position
-          ..songCode.value = p.song.identity
-          ..creationTime.value = p.creationTime
-          ..downvotes.value = p.downvotes
-          ..upvotes.value = p.upotes
-          ..vote.value = p.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null)?.vote;
-      }
-    }
-
-    _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(getMessages()));
-  }
 
   bool __suggestionIsValid(HttpRequest req, _Preperation prep) {
     Party party = prep.party;

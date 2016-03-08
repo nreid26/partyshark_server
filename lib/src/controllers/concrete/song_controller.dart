@@ -20,12 +20,12 @@ class SongController extends PartysharkController {
       return;
     }
 
-    _closeGoodRequest(req, recoverUri(pathParams), _convertToSongMsg(song).toJsonString());
+    _closeGoodRequest(req, recoverUri(pathParams), _songToMsg(song).toJsonString());
 
     logger.fine('Served song: $songCode');
   }
 
-  SongMsg _convertToSongMsg(Song song) {
+  SongMsg _songToMsg(Song song) {
     return new SongMsg()
       ..code.value = song.identity
       ..artist.value = song.artist

@@ -28,7 +28,7 @@ class PlaythroughController extends PartysharkController {
     var play = __getPlaythrough(req, pathParams, prep.party);
     if(play == null) { return; }
 
-    __respondWithPlaythrough(req, pathParams, prep, play);
+    _respondWithPlaythrough(req, pathParams, play);
 
     logger.fine('Served playthrough: ${play.identity} in party: ${prep.party.identity}');
   }
@@ -43,59 +43,78 @@ class PlaythroughController extends PartysharkController {
     var play = __getPlaythrough(req, pathParams, prep.party);
     if (play == null) { return; }
 
+    bool doRecompute = false;
     var msg = prep.body as PlaythroughMsg;
 
-    /// Change vote.
-    if (msg.vote.isDefined) {
-      Ballot ballot = play.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null);
-
-      if (ballot != null) {
-        ballot.vote = msg.vote.value;
-      }
-      else if(msg.vote.value != null) {
-        ballot = new Ballot(prep.requester, play, msg.vote.value);
-        play.ballots.add(ballot);
-        datastore.add(ballot);
-      }
-
-      /// Enforce veto condition
-      if (__playthroughHitVetoCondition(play)) {
-        __deletePlaythrough(play);
-
-        logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
-      }
-    }
-
     /// Update completed duration.
-    if (msg.completedDuration.isDefined && prep.requester.isPlayer && msg.completedDuration.value > play.completedDuration) {
+    if (msg.completedDuration.isDefined) {
+      _Failure potFail = new _Failure(HttpStatus.BAD_REQUEST, 'The completed duration of this playthrough could not be changed.', null);
+
+      if (!prep.requester.isPlayer) { // Requester must be player
+        _closeBadRequest(req, potFail..why = 'You are not the party player.');
+        return;
+      }
+      else if (msg.completedDuration.value < play.completedDuration) { // Playthrough cannot rewind
+        _closeBadRequest(req, potFail..why = 'The playthrough was already more complete than the submitted duration.');
+        return;
+      }
+
       play.completedDuration = msg.completedDuration.value;
 
       if (play.completedDuration >= play.song.duration) {
         __deletePlaythrough(play);
+        doRecompute = true;
 
         logger.finer('Completed playthrough: ${play.identity} in party: ${prep.party.partyCode}');
       }
     }
 
-    __recomputePlaylist(play.party);
-    __respondWithPlaythrough(req, pathParams, prep, play);
+    /// Change vote.
+    if (msg.vote.isDefined) {
+      Ballot ballot = play.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null);
+
+      if (ballot != null && ballot.vote != msg.vote.value) {
+        ballot.vote = msg.vote.value;
+        doRecompute = true;
+      }
+      else if(ballot == null && msg.vote.value != null) {
+        ballot = new Ballot(prep.requester, play, msg.vote.value);
+        doRecompute = true;
+
+        datastore.add(ballot);
+        play.ballots.add(ballot); // MUST HAPPEN AFTER DATASTORE INSERTION
+      }
+
+      /// Enforce veto condition
+      if (__playthroughHitVetoCondition(play)) {
+        __deletePlaythrough(play);
+        doRecompute = true;
+
+        logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
+      }
+    }
+
+    if (doRecompute) { __recomputePlaylist(play.party); }
+    _respondWithPlaythrough(req, pathParams, play);
 
     logger.fine('Updated playthrough: ${play.identity} in party: ${prep.party.partyCode}');
   }
 
+  void _respondWithPlaythrough(HttpRequest req, Map pathParams, Playthrough play) {
+    _closeGoodRequest(req, recoverUri(pathParams), _playthroughToMsg(play).toJsonString());
+  }
 
-  void __respondWithPlaythrough(HttpRequest req, Map pathParams, _Preperation prep, Playthrough p) {
-    var msg = new PlaythroughMsg()
-        ..completedDuration.value = p.completedDuration
-        ..code.value = p.identity
-        ..position.value = p.position
-        ..songCode.value = p.song.identity
-        ..creationTime.value = p.creationTime
-        ..downvotes.value = p.downvotes
-        ..upvotes.value = p.upotes
-        ..vote.value = p.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null)?.vote;
-
-    _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
+  PlaythroughMsg _playthroughToMsg(Playthrough p) {
+    return new PlaythroughMsg()
+      ..suggester.value = p.suggester.username
+      ..completedDuration.value = p.completedDuration
+      ..code.value = p.identity
+      ..position.value = p.position
+      ..songCode.value = p.song.identity
+      ..creationTime.value = p.creationTime
+      ..downvotes.value = p.downvotes
+      ..upvotes.value = p.upotes
+      ..vote.value = p.ballots.firstWhere((b) => b.voter == p.suggester, orElse: () => null)?.vote;
   }
 
   Playthrough __getPlaythrough(HttpRequest req, Map pathParams, Party party) {
@@ -128,7 +147,8 @@ class PlaythroughController extends PartysharkController {
 
   void __deletePlaythrough(Playthrough play) {
     play.party.playthroughs.remove(play);
-    datastore.bzllots.removeAll(play.ballots);
+
+    datastore.ballots.removeAll(play.ballots);
     datastore.playthroughs.remove(play);
   }
 
