@@ -31,16 +31,22 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// Returns an item from within the table with the provided [identity] is such
   /// and item exists; returns null otherwise.
   T operator[](int identity) {
+    if (identity == null) { return null; }
+
     int index = __search(identity);
     return (index.isNegative) ? null : __cells[index];
   }
 
   /// Insert [item] into the [Table] if no item with the same identity is
-  /// present. If [item] is a [MutableIdentifiable] and its identity has not
+  /// present.
+  ///
+  /// If [item] is a [MutableIdentifiable] and its identity has not
   /// been set, an identity that is not currently in use within the [Table] will
   /// be assigned. Returns true if the insertion is successful and false
   /// otherwise.
   bool add(T item) {
+    if (item == null) { return false; }
+
     if(item is MutableIdentifiable) {
       var i = item as MutableIdentifiable;
       if (!i.hasIdentity) { i.identity = ++__maxIdentity; }
@@ -68,6 +74,8 @@ class Table<T extends Identifiable> extends SetBase<T> {
   /// Remove an element from the [Table] with the provided [identity]. Returns
   /// true if such an element existed and false otherwise.
   bool removeIdentity(int identity) {
+    if (identity == null) { return false; }
+
     int index = __search(identity);
     if(!index.isNegative) {
       __length--;
@@ -78,16 +86,16 @@ class Table<T extends Identifiable> extends SetBase<T> {
     return false;
   }
 
-  bool remove(T item) => removeIdentity(item.identity);
+  bool remove(T item) => (item == null) ? false : removeIdentity(item.identity);
 
   /// Determine any element in the [Table] has the provided [identity].
-  bool containsIdentity(int identity) => __search(identity) >= 0;
+  bool containsIdentity(int identity) => (identity == null) ? false : __search(identity) >= 0;
 
-  bool contains(T item) => containsIdentity(item.identity);
+  bool contains(T item) => (item == null) ? false : containsIdentity(item.identity);
 
   /// Return an element from the [Table] with the same [identity] as [item].
   /// Returns null if no such element exists.
-  T lookup(T item) => this[item.identity];
+  T lookup(T item) => (item == null) ? null : this[item.identity];
 
   Iterator<T> get iterator => new _TableIterator(this);
 
