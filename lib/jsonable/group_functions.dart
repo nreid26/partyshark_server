@@ -53,7 +53,7 @@ Map<String, dynamic> toJsonGroupMap(Iterable<Jsonable> msgs) {
 
     for(JsonProperty prop in msg.properties) {
       int index = propNames.indexOf(prop.name);
-      if(index > 0) { valueList[index] = prop.encodableValue;}
+      if(index >= 0) { valueList[index] = prop.encodableValue;}
     }
 
     values.add(valueList);
