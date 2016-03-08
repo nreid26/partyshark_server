@@ -80,8 +80,8 @@ abstract class DeferredIdentifiableMixin implements MutableIdentifiable {
   bool get hasIdentity => __identity != null;
 
   int  get identity {
-    if (!hasIdentity) { return identity; }
-    throw new StateError('identity moy not be used before being set.');
+    if (hasIdentity) { return __identity; }
+    throw new StateError('identity may not be used before being set.');
   }
 
   void set identity(int i) {
