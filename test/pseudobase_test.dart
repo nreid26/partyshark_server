@@ -115,7 +115,7 @@ void main() {
 	group('${Datastore}s', () {
 		var store = new Datastore([ConcreteIdentifiable]), table = store[ConcreteIdentifiable];
 
-		test('can add to ${Table}s directly by $Type}', () {
+		test('can add to ${Table}s directly by $Type', () {
 			ConcreteIdentifiable c = new ConcreteIdentifiable(9);
 
       expect(store.add(c), isTrue);

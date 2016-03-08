@@ -45,7 +45,8 @@ class Table<T extends Identifiable> extends SetBase<T> {
       var i = item as MutableIdentifiable;
       if (!i.hasIdentity) { i.identity = ++__maxIdentity; }
     }
-    else if(item.identity > __maxIdentity) { __maxIdentity = item.identity; }
+
+    if(item.identity > __maxIdentity) { __maxIdentity = item.identity; }
 
     int index = __search(item.identity);
     if(index.isNegative) {
