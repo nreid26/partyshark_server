@@ -7,7 +7,7 @@ class UsersController extends PartysharkController {
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
-    if (prep == null) { return; }
+    if (prep.hadError) { return; }
 
     Iterable<UserMsg> msgs = prep.party.users.map(__convertToUserMsg);
     _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(msgs));
@@ -19,17 +19,17 @@ class UsersController extends PartysharkController {
   @HttpHandler(HttpMethod.Post)
   Future post(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new UserMsg(), getRequester: false, checkRequesterAdmin: false);
-    if (prep == null) { return; }
+    if (prep.hadError) { return; }
 
     var msg = prep.body as UserMsg;
 
     // Generate user variables
-    String usename;
+    String username;
     do {
-      usename = rand_serve.username;
-    } while (prep.party.users.any((u) => u.username == usename));
+      username = rand_serve.username;
+    } while (prep.party.users.any((u) => u.username == username));
 
-    User user = new User(prep.party, usename)
+    User user = new User(prep.party, username)
       ..isAdmin = msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode;
 
     datastore.add(user);

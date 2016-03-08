@@ -29,6 +29,7 @@ class SongController extends PartysharkController {
     return new SongMsg()
       ..code.value = song.identity
       ..artist.value = song.artist
+      ..title.value = song.title
       ..duration.value = song.duration
       ..year.value = song.year;
   }
