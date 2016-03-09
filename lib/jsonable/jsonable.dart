@@ -64,9 +64,14 @@ abstract class Jsonable {
   /// will have [isDefined] set to false.
   void fillFromJsonMap(Map<String, dynamic> source) {
     for(JsonProperty p in properties) {
-      p
+      if (source.containsKey(p.name)) {
+        p
           ..encodableValue = source[p.name]
-          ..isDefined = source.containsKey(p.name);
+          ..isDefined = true;
+      }
+      else {
+        p.isDefined = false;
+      }
     }
   }
 }

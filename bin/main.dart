@@ -43,14 +43,14 @@ main(List<String> arguments) async {
     return;
   }
 
-  logger.info('The PartyShark is swimming!');
+  logger.shout('The PartyShark is swimming!');
 
   await for (Future res in server.map(router.routeRequest)) {
     try {
       await res;
     }
     catch (e, trace) {
-      logger.severe('Uncaught exception during request handling.', e, trace);
+      logger.severe('Uncaught exception during request handling: $e', e, trace);
       if (e is Error) { rethrow; } // Errors should crash the server
     }
   }
@@ -70,10 +70,10 @@ Set<String> collectOptions(List<String> args) {
 }
 
 void prepareLogger(Set<String> options) {
-  var level = Level.CONFIG;
+  var level = Level.INFO;
 
   if (options.contains('v')) { level = Level.ALL; }
-  else if (options.contains('c')) { }
+  else if (options.contains('c')) { level = Level.CONFIG; }
   else if (options.contains('s')) { level = Level.OFF; }
 
   logger

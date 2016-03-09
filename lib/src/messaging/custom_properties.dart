@@ -40,7 +40,12 @@ class _DurationProperty extends JsonProperty<Duration> {
   int get encodableValue => value?.inMilliseconds;
 
   void set encodableValue(raw) {
-    value = (raw is num) ? new Duration(milliseconds: raw.toInt()) : null;
+    try {
+      value = new Duration(milliseconds: raw.toInt());
+    }
+    catch (e) {
+      throw new FormatException('$raw is not a valid $DateTime serialization.');
+    }
   }
 }
 

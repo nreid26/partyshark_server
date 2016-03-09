@@ -43,7 +43,7 @@ class PlaythroughController extends PartysharkController {
     var play = __getPlaythrough(req, pathParams, prep.party);
     if (play == null) { return; }
 
-    bool doRecompute = false;
+    bool doRecompute = false, playDeleted = false;
     var msg = prep.body as PlaythroughMsg;
 
     /// Update completed duration.
@@ -52,6 +52,10 @@ class PlaythroughController extends PartysharkController {
 
       if (!prep.requester.isPlayer) { // Requester must be player
         _closeBadRequest(req, potFail..why = 'You are not the party player.');
+        return;
+      }
+      else if(msg.completedDuration.value == null) {
+        _closeBadRequest(req, potFail..why = 'The playthrough cannot have a null completed duration.');
         return;
       }
       else if (msg.completedDuration.value < play.completedDuration) { // Playthrough cannot rewind
@@ -64,13 +68,14 @@ class PlaythroughController extends PartysharkController {
       if (play.completedDuration >= play.song.duration) {
         __deletePlaythrough(play);
         doRecompute = true;
+        playDeleted = true;
 
         logger.finer('Completed playthrough: ${play.identity} in party: ${prep.party.partyCode}');
       }
     }
 
     /// Change vote.
-    if (msg.vote.isDefined) {
+    if (msg.vote.isDefined && !playDeleted) {
       Ballot ballot = play.ballots.firstWhere((b) => b.voter == prep.requester, orElse: () => null);
 
       if (ballot != null && ballot.vote != msg.vote.value) {
@@ -89,6 +94,7 @@ class PlaythroughController extends PartysharkController {
       if (__playthroughHitVetoCondition(play)) {
         __deletePlaythrough(play);
         doRecompute = true;
+        playDeleted = true;
 
         logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
       }
