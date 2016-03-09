@@ -9,7 +9,7 @@ class UsersController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    Iterable<UserMsg> msgs = prep.party.users.map(__convertToUserMsg);
+    Iterable<UserMsg> msgs = prep.party.users.map(Controller.User._userToMsg);
     _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(msgs));
 
     logger.fine('Served users for party: ${prep.party.partyCode}');
@@ -33,19 +33,12 @@ class UsersController extends PartysharkController {
     prep.party.users.add(user); // MUST HAPPEN AFTER STORE INSERTION
 
     /// Make response
-    msg = __convertToUserMsg(user);
+    msg = Controller.User._userToMsg(user);
 
     //TODO: Recover Location from other controller
     _closeGoodRequest(req, null, msg.toJsonString(), null, user);
 
     logger.fine('Created new user: ${user.userCode}');
-  }
-
-  UserMsg __convertToUserMsg(User user) {
-    return new UserMsg()
-        ..adminCode.isDefined = false
-        ..username.value = user.username
-        ..isAdmin.value = user.isAdmin;
   }
 
   int _genValidUserCode() {

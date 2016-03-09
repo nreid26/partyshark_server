@@ -15,7 +15,10 @@ var definition = {
         Key.PlaythroughCode: Controller.Playthrough
       }],
       'settings': Controller.Settings,
-      'users':Controller.Users,
+      'users': [Controller.Users, {
+        'self': Controller.Self,
+        Key.Username: Controller.User
+      }]
     }],
   }],
   'songs': [Controller.Songs, {

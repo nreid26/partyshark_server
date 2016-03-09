@@ -34,6 +34,8 @@ class Controller {
   static final SongController Song = new SongController._();
   static final SongsController Songs = new SongsController._();
   static final UsersController Users = new UsersController._();
+  static final UserController User = new UserController._();
+  static final SelfController Self = new SelfController._();
 
   Controller.__();
 }

@@ -37,7 +37,7 @@ class PartyController extends PartysharkController {
       ..adminCode.isDefined = prep.requester.isAdmin
       ..code.value = prep.party.partyCode
       ..isPlaying.value = prep.party.isPlaying
-      ..player.value = prep.party.player.username;
+      ..player.value = prep.party.player?.username;
 
 
     _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
