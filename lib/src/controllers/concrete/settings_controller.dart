@@ -11,7 +11,7 @@ class SettingsController extends PartysharkController {
 
     __respondWithSettings(req, pathParams, prep);
 
-    logger.fine('Served settings for party: ${prep.party.partyCode}');
+    model.logger.fine('Served settings for party: ${prep.party.partyCode}');
   }
 
   /// Update a settings group.
@@ -41,7 +41,7 @@ class SettingsController extends PartysharkController {
 
     __respondWithSettings(req, pathParams, prep);
 
-    logger.fine('Updated settings for party: ${prep.party.partyCode}');
+    model.logger.fine('Updated settings for party: ${prep.party.partyCode}');
   }
 
   void __respondWithSettings(HttpRequest req, Map pathParams, _Preperation prep) {

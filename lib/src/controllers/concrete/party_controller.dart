@@ -11,7 +11,7 @@ class PartyController extends PartysharkController {
 
     __respondWithParty(req, pathParams, prep);
 
-    logger.fine('Served party: ${prep.party.partyCode}');
+    model.logger.fine('Served party: ${prep.party.partyCode}');
   }
 
   /// Update a party.
@@ -23,12 +23,14 @@ class PartyController extends PartysharkController {
     var msg = prep.body as PartyMsg;
 
     if (msg.isPlaying.isDefined && msg.isPlaying.value != null) {
-      prep.party.isPlaying = msg.isPlaying.value;
+      model.modifyEntity(prep.party, () {
+        prep.party.isPlaying = msg.isPlaying.value;
+      });
     }
 
     __respondWithParty(req, pathParams, prep);
 
-    logger.fine('Updated party: ${prep.party.partyCode}');
+    model.logger.fine('Updated party: ${prep.party.partyCode}');
   }
 
   void __respondWithParty(HttpRequest req, Map pathParams, _Preperation prep) {
@@ -39,7 +41,6 @@ class PartyController extends PartysharkController {
       ..isPlaying.value = prep.party.isPlaying
       ..player.value = prep.party.player?.username;
 
-
-    _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
+    _closeGoodRequest(req, recoverUri(pathParams), msg);
   }
 }

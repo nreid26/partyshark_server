@@ -27,42 +27,16 @@ Future<Song> getSong(int songId) async {
   }
 }
 
-Future<Iterable<Song>> searchSongs(String query) async {
-  try {
-    HttpClientRequest req = (await _client.getUrl(_baseUri.replace(path: 'search', query: 'q=$query')))
-        ..headers.contentType = ContentType.JSON;
-
-    HttpClientResponse res = await req.close();
-    Map<String, dynamic> body = JSON.decode(await UTF8.decodeStream(res));
-
-    if (body.containsKey('error')) { return null; }
-
-    return body['data'].map(_songFromMap).where((s) => s != null);
-  }
-  catch (e) {
-    return null;
-  }
-}
 
 Song _songFromMap(Map<String, dynamic> body) {
-  try {
     int code = body['id'];
     if (code == null) { return null; }
 
-    String title = body['title_short'];
+    Duration duration;
+    if (body['duration'] is num) {
+      duration = new Duration(seconds: body['duration'].toInt());
+    }
+    else { return null; }
 
-    Map artist = body['artist'];
-    String artistName = (artist == null) ? null : artist['name'];
-
-    int year = null;
-    try { year = DateTime.parse(body['release_date']).year; }
-    catch (e) { }
-
-    Duration duration = (body['duration'] is int) ? new Duration(seconds: body['duration']) : null;
-
-    return new Song(code, title, artistName, year, duration);
-  }
-  catch (e) {
-    return null;
-  }
+    return new Song(code, duration);
 }

@@ -12,7 +12,7 @@ class UsersController extends PartysharkController {
     Iterable<UserMsg> msgs = prep.party.users.map(Controller.User._userToMsg);
     _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(msgs));
 
-    logger.fine('Served users for party: ${prep.party.partyCode}');
+    model.logger.fine('Served users for party: ${prep.party.partyCode}');
   }
 
   /// Create a user.
@@ -38,28 +38,10 @@ class UsersController extends PartysharkController {
     //TODO: Recover Location from other controller
     _closeGoodRequest(req, null, msg.toJsonString(), null, user);
 
-    logger.fine('Created new user: ${user.userCode}');
+    model.logger.fine('Created new user: ${user.userCode}');
   }
 
-  int _genValidUserCode() {
-    int u = rand_serve.userCode;
-    while (datastore.users.containsIdentity(u)) { u++; }
-    return u;
-  }
 
-  String __genValidUsername(Party party) {
-    String username;
-    int maxAttempts = 10;
-    Set<String> takenNames = party.users.map((u) => u.username).toSet();
-
-    do {
-      username = rand_serve.username;
-      maxAttempts--;
-    } while (maxAttempts > 0 && takenNames.contains(username));
-
-    if (maxAttempts == 0) { throw new Exception('Could not generate a unique username for party: ${party.partyCode}'); }
-    return username;
-  }
 
   bool __userCanJoin(HttpRequest req, _Preperation prep) {
     if (prep.party.settings.userCap == null) { return true; }

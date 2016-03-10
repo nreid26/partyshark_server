@@ -13,7 +13,7 @@ class SelfController extends PartysharkController {
 
     _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
 
-    logger.fine('Served user: ${prep.requester.userCode} to self');
+    model.logger.fine('Served user: ${prep.requester.userCode} to self');
   }
 
   /// Update yourself.
@@ -31,7 +31,7 @@ class SelfController extends PartysharkController {
     String resString = Controller.User._userToMsg(prep.requester).toJsonString();
     _closeGoodRequest(req, recoverUri(pathParams), resString, null, prep.requester);
 
-    logger.fine('Updated user: ${prep.requester.userCode}');
+    model.logger.fine('Updated user: ${prep.requester.userCode}');
   }
 
   /// Leave the party.
@@ -49,6 +49,6 @@ class SelfController extends PartysharkController {
     /// TODO: Clean up party if empty
     /// will share code with cleanup service
 
-    logger.fine('Updated user: ${prep.requester.userCode}');
+    model.logger.fine('Updated user: ${prep.requester.userCode}');
   }
 }

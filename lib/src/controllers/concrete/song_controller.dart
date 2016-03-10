@@ -22,7 +22,7 @@ class SongController extends PartysharkController {
 
     _closeGoodRequest(req, recoverUri(pathParams), _songToMsg(song).toJsonString());
 
-    logger.fine('Served song: $songCode');
+    model.logger.fine('Served song: $songCode');
   }
 
   SongMsg _songToMsg(Song song) {
@@ -34,18 +34,5 @@ class SongController extends PartysharkController {
       ..year.value = song.year;
   }
 
-  Future<Song> _getSong(int songCode) async {
-    Song song = datastore.songs[songCode];
 
-    if (song == null) {
-      logger.finer('Queried Deezer for song: $songCode');
-      song = await deezer.getSong(songCode);
-
-      if (song != null) {
-        datastore.add(song);
-      }
-    }
-
-    return song;
-  }
 }

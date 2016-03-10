@@ -16,7 +16,7 @@ class PlaythroughController extends PartysharkController {
     __recomputePlaylist(play.party);
     _closeGoodRequest(req, null, null);
 
-    logger.fine('Vetoed playthrough: ${play.identity} in party: ${prep.party.identity}');
+    model.logger.fine('Vetoed playthrough: ${play.identity} in party: ${prep.party.identity}');
   }
 
   /// Get a playthrough.
@@ -30,7 +30,7 @@ class PlaythroughController extends PartysharkController {
 
     _respondWithPlaythrough(req, pathParams, play);
 
-    logger.fine('Served playthrough: ${play.identity} in party: ${prep.party.identity}');
+    model.logger.fine('Served playthrough: ${play.identity} in party: ${prep.party.identity}');
   }
 
 
@@ -70,7 +70,7 @@ class PlaythroughController extends PartysharkController {
         doRecompute = true;
         playDeleted = true;
 
-        logger.finer('Completed playthrough: ${play.identity} in party: ${prep.party.partyCode}');
+        model.logger.finer('Completed playthrough: ${play.identity} in party: ${prep.party.partyCode}');
       }
     }
 
@@ -96,14 +96,14 @@ class PlaythroughController extends PartysharkController {
         doRecompute = true;
         playDeleted = true;
 
-        logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
+        model.logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
       }
     }
 
     if (doRecompute) { __recomputePlaylist(play.party); }
     _respondWithPlaythrough(req, pathParams, play);
 
-    logger.fine('Updated playthrough: ${play.identity} in party: ${prep.party.partyCode}');
+    model.logger.fine('Updated playthrough: ${play.identity} in party: ${prep.party.partyCode}');
   }
 
   void _respondWithPlaythrough(HttpRequest req, Map pathParams, Playthrough play) {

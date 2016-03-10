@@ -7,7 +7,7 @@ import 'dart:async' show Future, Stream;
 import 'dart:convert' show UTF8, LineSplitter;
 import 'package:resource/resource.dart' show Resource;
 
-import 'package:partyshark_server/src/global.dart' show logger;
+import 'package:partyshark_server/src/target/global.dart' show logger;
 
 part './username_generator.dart';
 

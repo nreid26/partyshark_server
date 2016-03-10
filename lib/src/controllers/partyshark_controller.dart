@@ -7,8 +7,11 @@ abstract class PartysharkController extends RouteController {
   /// by known clients.
   PartysharkController._();
 
-  void _closeGoodRequest(HttpRequest req, Uri location, String body, [int status, User user]) {
-    body = body ?? '{ }';
+  void _closeGoodRequest(HttpRequest req, Uri location, body, [int status, User user]) {
+    if (body is String) { }
+    else if (body is Jsonable) { body = body.toJsonString(); }
+    else if (body is Iterable<Jsonable>) { body = toJsonGroupString(body); }
+    else if (body == null) { body = '{ }'; }
 
     req.response
         ..statusCode = status ?? HttpStatus.OK
@@ -17,17 +20,14 @@ abstract class PartysharkController extends RouteController {
         ..headers.set(Header.Location, location);
 
     if (user != null) {
-      req.response.headers.set(
-          Header.SetUserCode,
-          user.userCode
-      );
+      req.response.headers.set(Header.SetUserCode, user.userCode);
     }
 
     req.response
         ..write(body)
         ..close();
 
-    logger.finer('Succesful response with body: $body');
+    model.logger.finer('Succesful response with body: $body');
   }
 
   void _closeBadRequest(HttpRequest req, _Failure fail) {
@@ -38,7 +38,7 @@ abstract class PartysharkController extends RouteController {
         ..write(fail.toJsonString())
         ..close();
 
-    logger.fine('Failed response: ${fail.toJsonString()}');
+    model.logger.fine('Failed response: ${fail.toJsonString()}');
   }
 
   /// Retrieves entities and validates a request according to the requirements
@@ -50,7 +50,7 @@ abstract class PartysharkController extends RouteController {
   ) async {
     _Preperation prep = new _Preperation();
 
-    logger.finer('Preparing request with params: $pathParams');
+    model.logger.finer('Preparing request with params: $pathParams');
 
     Future<_Failure> getFail() async {
       if(getBodyAs != null) {
@@ -91,7 +91,7 @@ abstract class PartysharkController extends RouteController {
       prep.hadError = false;
     }
 
-    logger.finer('Pequest prepared');
+    model.logger.finer('Pequest prepared');
 
     return prep;
   }
@@ -104,7 +104,7 @@ abstract class PartysharkController extends RouteController {
 
     String getErr(){
       int partyCode = int.parse(partyCodeString, onError: (s) => null);
-      logger.finest('Request for party: $partyCode');
+      model.logger.finest('Request for party: $partyCode');
 
       if(partyCode == null) {
         return 'The party code was malformed.';
@@ -131,7 +131,7 @@ abstract class PartysharkController extends RouteController {
 
     String getWhy() {
       String userCodeString = req.headers.value(Header.UserCode);
-      logger.finest('Request had ${Header.UserCode}: $userCodeString');
+      model.logger.finest('Request had ${Header.UserCode}: $userCodeString');
 
       if(userCodeString == null) {
         return 'The request did not carry a ${Header.UserCode} header.';
@@ -162,7 +162,7 @@ abstract class PartysharkController extends RouteController {
       String json = await UTF8.decodeStream(req);
       msg.fillFromJsonString(json);
 
-      logger.finest('Request had valid body: $json');
+      model.logger.finest('Request had valid body: $json');
 
       return msg;
     }
@@ -179,7 +179,7 @@ abstract class PartysharkController extends RouteController {
   /// if not, a [_Failure] is returned instead.
   _Failure __isMember(Party party, User user) {
     if (party?.users?.contains(user) == true) {
-      logger.finest('Requesting user verified as party member');
+      model.logger.finest('Requesting user verified as party member');
       return null;
     }
     else {
@@ -195,7 +195,7 @@ abstract class PartysharkController extends RouteController {
   /// is returned; if not, a [_Failure] is returned instead.
   _Failure __requesterIsAdmin(User user) {
     if (user?.isAdmin == true) {
-      logger.finest('Requesting user verified as administrator');
+      model.logger.finest('Requesting user verified as administrator');
       return null;
     }
     else {

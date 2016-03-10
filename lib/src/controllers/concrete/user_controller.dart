@@ -16,7 +16,7 @@ class UserController extends PartysharkController {
       var msg = _userToMsg(withName.first);
       _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
 
-      logger.fine('Served user: ${prep.requester.userCode}');
+      model.logger.fine('Served user: ${prep.requester.userCode}');
 
       return;
     }

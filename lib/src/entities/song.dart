@@ -4,10 +4,8 @@ part of entities;
 class Song extends Object with IdentifiableMixin {
   //Data
   final int identity;
-  final int year;
   final Duration duration;
-  final String title, artist;
 
   //Constructor
-  Song(this.identity, this.title, this.artist, this.year, this.duration);
+  Song(this.identity, this.duration);
 }

@@ -9,13 +9,13 @@ class PlaylistController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-      Iterable<PlaythroughMsg> msgs = prep.party.playthroughs
+    Iterable<PlaythroughMsg> msgs = prep.party.playthroughs
           .map(Controller.Playthrough._playthroughToMsg)
           ..forEach((PlaythroughMsg p) => p.completedDuration.isDefined = false);
 
-    _closeGoodRequest(req, recoverUri(pathParams), toJsonGroupString(msgs));
+    _closeGoodRequest(req, recoverUri(pathParams), msgs);
 
-    logger.fine('Served playlist for party: ${prep.party.partyCode}');
+    model.logger.fine('Served playlist for party: ${prep.party.partyCode}');
   }
 
 
@@ -26,38 +26,23 @@ class PlaylistController extends PartysharkController {
     if (prep.hadError) { return; }
 
     var msg = prep.body as PlaythroughMsg;
+    var fail = new _Failure(HttpStatus.BAD_REQUEST, 'The suggested playthrough was rejected.', null);
 
-    Song song = await Controller.Song._getSong(msg.songCode.value);
-    if (song == null) { return; }
+    Song song = await model.getSong(msg.songCode.value);
+    if (song == null) {
+      _closeBadRequest(req, fail..why = 'The sugested song does not exist or is unavailable.');
+      return;
+    }
 
-    if (!__suggestionIsValid(req, prep)) { return; }
-
-    Playthrough play = new Playthrough(song, prep.party.playthroughs.length, prep.requester);
-    Ballot ballot = new Ballot(prep.requester, play, Vote.Up);
-
-    datastore
-        ..add(play)
-        ..add(ballot);
-
-    // MUST HAPPEN AFTER STORE INSERTION
-    play.party.playthroughs.add(play);
-    play.ballots.add(ballot);
+    Playthrough play = model.createPlaythrough(song, prep.party, prep.requester);
+    if (song == null) {
+      _closeBadRequest(req, fail..why = 'The suggestion violated party settings.');
+      return;
+    }
 
     Map params = {Key.PlaythroughCode: play.identity, Key.PartyCode: prep.party};
     Controller.Playthrough._respondWithPlaythrough(req, params, play);
 
-    logger.fine('Created new playthrough: ${play.identity} for party: ${prep.party.partyCode}');
-  }
-
-
-  bool __suggestionIsValid(HttpRequest req, _Preperation prep) {
-    Party party = prep.party;
-    if (party.settings.playthroughCap == null || party.playthroughs.length < party.settings.playthroughCap) {
-      return true;
-    }
-    else {
-      _closeBadRequest(req, new _Failure(HttpStatus.BAD_REQUEST, 'The playthrough suggestion could not be accepted.', 'The playlist is the maximum length allowed for this party.'));
-      return false;
-    }
+    model.logger.fine('Created new playthrough: ${play.identity} for party: ${prep.party.partyCode}');
   }
 }

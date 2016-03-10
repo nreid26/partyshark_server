@@ -18,8 +18,7 @@ class Key {
       PartyCode = new RouteKey(),
       Username = new RouteKey(),
       PlaythroughCode = new RouteKey(),
-      TransferRequestCode = new RouteKey(),
-      SongCode = new RouteKey();
+      TransferRequestCode = new RouteKey();
 
   Key.__();
 }
@@ -31,8 +30,6 @@ class Controller {
   static final PlaylistController Playlist = new PlaylistController._();
   static final PlaythroughController Playthrough = new PlaythroughController._();
   static final SettingsController Settings = new SettingsController._();
-  static final SongController Song = new SongController._();
-  static final SongsController Songs = new SongsController._();
   static final UsersController Users = new UsersController._();
   static final UserController User = new UserController._();
   static final SelfController Self = new SelfController._();

@@ -8,8 +8,7 @@ import 'package:partyshark_server/deezer.dart' as deezer;
 import 'package:partyshark_server/src/messaging/messaging.dart';
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/src/entities/entities.dart';
-import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
-import 'package:partyshark_server/src/global.dart';
+import 'package:partyshark_server/src/model/model.dart' as model;
 
 
 part './partyshark_controller.dart';
@@ -25,13 +24,4 @@ part './concrete/songs_controller.dart';
 part './concrete/users_controller.dart';
 part './concrete/self_controller.dart';
 part './concrete/user_controller.dart';
-
-
-/// Indicator for when library is ready to be used.
-///
-/// [controllers] requires some resources to be loaded asynchronously.
-/// This process is initiated automatically and is guaranteed to be complete
-/// when this [Future] completes. Functions in this library may throw errors if
-/// they are used before that time.
-final Future ready = rand_serve.ready;
 
