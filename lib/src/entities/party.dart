@@ -10,6 +10,7 @@ class Party extends Object with DeferredIdentifiableMixin {
 
   final List<Playthrough> playlist = [ ];
   final Set<User> users = new HashSet();
+  final Set<PlayerTransfer> transfers = new HashSet();
 
   //Constructor
   Party(this.adminCode, this.settings);

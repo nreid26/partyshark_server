@@ -20,6 +20,11 @@ String _genValidUsername(Party party) {
   return username;
 }
 
+bool _userCanJoin(Party party) {
+  if (party.settings.userCap == null) { return true; }
+  return party.users.length < party.settings.userCap;
+}
+
 
 Future<Song> _getSong(int songCode) async {
   Song song = _datastore[Song][songCode];
@@ -68,5 +73,26 @@ void _recomputePlaylist(Party party) {
   }
 }
 
-bool _playthroughHitVetoCondition(Playthrough play) =>
-    play.downvotes / play.party.users.length >= play.party.settings.vetoRatio;
+void _modifySettings(SettingsGroup set, Function callback) {
+  double prevVetoRatio = set.vetoRatio;
+  bool prevVirtualDj = set.usingVirtualDj;
+
+  callback();
+
+  if (set.vetoRatio == null) {
+    set.vetoRatio = prevVetoRatio;
+  }
+  else {
+    set.vetoRatio.clamp(0.0, 1.0);
+  }
+
+  if (set.usingVirtualDj == null) {
+    set.usingVirtualDj = prevVirtualDj;
+  }
+
+  logger.fine('Appected modification to settings group: ${set.identity}');
+}
+
+bool _playthroughHitVetoCondition(Playthrough play) {
+  return play.downvotes > play.party.settings.vetoRatio * play.party.users.length;
+}

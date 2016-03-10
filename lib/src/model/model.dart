@@ -44,7 +44,7 @@ void modifyEntity(entity, void modify()) {
     Party: null,
     Playthrough: _modifyPlaythrough,
     PlayerTransfer: null,
-    SettingsGroup: null,
+    SettingsGroup: _modifySettings,
     User: null
   };
 

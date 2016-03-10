@@ -1,11 +1,13 @@
 part of controllers;
 
-class UserController extends PartysharkController {
+class UserController extends PartysharkController with UserMessenger {
   UserController._(): super._();
 
   /// Get a user in the party.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+    model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
+
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
@@ -13,7 +15,7 @@ class UserController extends PartysharkController {
     Iterable<User> withName = prep.party.users.where((u) => u.username == reqUsername);
 
     if (withName.length == 1) {
-      var msg = _userToMsg(withName.first);
+      var msg = userToMsg(withName.first);
       _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
 
       model.logger.fine('Served user: ${prep.requester.userCode}');
@@ -27,12 +29,5 @@ class UserController extends PartysharkController {
 
       return;
     }
-  }
-
-  UserMsg _userToMsg(User user) {
-    return new UserMsg()
-      ..adminCode.isDefined = false
-      ..username.value = user.username
-      ..isAdmin.value = user.isAdmin;
   }
 }

@@ -24,6 +24,18 @@ Party createParty() {
   return party;
 }
 
+void deleteParty(Party party) {
+  _datastore[User].removeAll(party.users);
+  _datastore[SettingsGroup].remove(party.settings);
+  _datastore[PlayerTransfer].removeAll(party.transfers);
+
+  party.playlist.forEach((play) {
+    _datastore[Ballot].removeAll(play.ballots);
+    _datastore[Playthrough].remove(play);
+  });
+}
+
+
 Playthrough createPlaythrough(Song song, Party party, User suggester) {
   if (!_playthroughSuggestionValid(song, party)) { return null; }
 
@@ -68,10 +80,38 @@ void voteOnPlaythrough(User user, Playthrough play, Vote vote) {
     deletePlaythrough(play);
     recompute = false;
 
-    logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
+    logger.finer('Vetoed playthrough: ${play.identity} in party: ${play.party.partyCode} due to voting conditions');
   }
 
   if (recompute) {
-    _recomputePlalist(play.party);
+    _recomputePlaylist(play.party);
+  }
+}
+
+User createUser(Party party, bool isAdmin) {
+  if (!_userCanJoin(party)) {
+    return null;
+  }
+
+  String name = _genValidUsername(party);
+  int code = _genValidUserCode();
+
+  User user = new User(code, party, name, isAdmin);
+  party.users.add(user);
+  return user;
+}
+
+void deleteUser(User user) {
+  _datastore.remove(user);
+  user.party.users.remove(user);
+
+  if (user.party.users.length == 0) {
+    deleteParty(user.party);
+    return;
+  }
+
+  user.username = '[deleted]';
+  if (user.party.player == user) {
+    user.party.player = null;
   }
 }

@@ -4,7 +4,7 @@ part of entities;
 class User extends Object with IdentifiableMixin {
   //Data
   final int identity;
-  final String username;
+  String username;
   final Party party;
   bool isAdmin;
 
