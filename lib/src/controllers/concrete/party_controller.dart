@@ -6,17 +6,19 @@ class PartyController extends PartysharkController {
   /// Get a party.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+    model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
+
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
     __respondWithParty(req, pathParams, prep);
-
-    model.logger.fine('Served party: ${prep.party.partyCode}');
   }
 
   /// Update a party.
   @HttpHandler(HttpMethod.Put)
   Future put(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
+    model.logger.fine('Serving ${HttpMethod.Put} on ${recoverUri(pathParams)}');
+
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new PartyMsg());
     if (prep.hadError) { return; }
 
@@ -29,8 +31,6 @@ class PartyController extends PartysharkController {
     }
 
     __respondWithParty(req, pathParams, prep);
-
-    model.logger.fine('Updated party: ${prep.party.partyCode}');
   }
 
   void __respondWithParty(HttpRequest req, Map pathParams, _Preperation prep) {

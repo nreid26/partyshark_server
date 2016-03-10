@@ -6,6 +6,8 @@ class PlaylistController extends PartysharkController {
   /// Get a playlist.
   @HttpHandler(HttpMethod.Get)
   Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+    model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
+
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
@@ -14,21 +16,21 @@ class PlaylistController extends PartysharkController {
           ..forEach((PlaythroughMsg p) => p.completedDuration.isDefined = false);
 
     _closeGoodRequest(req, recoverUri(pathParams), msgs);
-
-    model.logger.fine('Served playlist for party: ${prep.party.partyCode}');
   }
 
 
   /// Suggest a playthrough.
   @HttpHandler(HttpMethod.Post)
   Future post(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
+    model.logger.fine('Serving ${HttpMethod.Post} on ${recoverUri(pathParams)}');
+
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new PlaythroughMsg(), checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
     var msg = prep.body as PlaythroughMsg;
     var fail = new _Failure(HttpStatus.BAD_REQUEST, 'The suggested playthrough was rejected.', null);
 
-    Song song = await model.getSong(msg.songCode.value);
+    Song song = await model.getEntity(Song, msg.songCode.value, useAsync: true);
     if (song == null) {
       _closeBadRequest(req, fail..why = 'The sugested song does not exist or is unavailable.');
       return;
@@ -41,8 +43,6 @@ class PlaylistController extends PartysharkController {
     }
 
     Map params = {Key.PlaythroughCode: play.identity, Key.PartyCode: prep.party};
-    Controller.Playthrough._respondWithPlaythrough(req, params, play);
-
-    model.logger.fine('Created new playthrough: ${play.identity} for party: ${prep.party.partyCode}');
+    _closeGoodRequest(req, Controller.Playthrough.recoverUri(params), Controller.Playthrough._playthroughToMsg(play));
   }
 }

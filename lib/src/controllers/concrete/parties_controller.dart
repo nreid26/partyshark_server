@@ -6,6 +6,8 @@ class PartiesController extends PartysharkController {
   /// Create a party.
   @HttpHandler(HttpMethod.Post)
   Future post(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+    model.logger.fine('Serving ${HttpMethod.Post} on ${recoverUri(pathParams)}');
+
     _Preperation prep = await _prepareRequest(req, pathParams, getRequester: false, getBodyAs: EmptyMsg.only, getParty: false);
     if (prep.hadError) { return; }
 

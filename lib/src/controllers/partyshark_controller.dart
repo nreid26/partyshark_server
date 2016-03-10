@@ -11,7 +11,8 @@ abstract class PartysharkController extends RouteController {
     if (body is String) { }
     else if (body is Jsonable) { body = body.toJsonString(); }
     else if (body is Iterable<Jsonable>) { body = toJsonGroupString(body); }
-    else if (body == null) { body = '{ }'; }
+    else if (body == null) { body = ''; }
+    else { body = '{ }'; }
 
     req.response
         ..statusCode = status ?? HttpStatus.OK

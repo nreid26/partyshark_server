@@ -39,35 +39,39 @@ Playthrough createPlaythrough(Song song, Party party, User suggester) {
     ..ballots.add(ballot);
 }
 
-Future<Song> getSong(int songCode) async {
-    Song song = _datastore[Song][songCode];
+void deletePlaythrough(Playthrough play) {
+  play.party.playthroughs.remove(play);
 
-    if (song == null) {
-      logger.finer('Queried Deezer for song: $songCode');
-      song = await deezer.getSong(songCode);
+  _datastore[Ballot].removeAll(play.ballots);
+  _datastore[Playthrough].remove(play);
 
-      if (song != null) { _datastore.add(song); }
-    }
-
-    return song;
+  _recomputePlaylist(play.party);
 }
 
-dynamic getEntity(Type type, int identity) {
-  Table table = _datastore[type];
-  return (table == null) ? null : table[identity];
-}
+void voteOnPlaythrough(User user, Playthrough play, Vote vote) {
+  bool recompute = false;
+  Ballot ballot = play.ballots.firstWhere((b) => b.voter == user, orElse: () => null);
 
-void modifyEntity(entity, void modify()) {
-  const Map<Type, Function> handlers = const {
-    Party: null,
-    Playthrough: null,
-    Ballot: null,
-    PlayerTransfer: null,
-    SettingsGroup: null,
-    User: null
-  };
+  if (ballot == null && vote != null) {
+    ballot = new Ballot(user, play, vote);
+    _datastore.add(ballot);
+    play.ballots.add(ballot);
+    recompute = true;
+  }
+  else if (ballot != null && ballot.vote != vote) {
+    ballot.vote = vote;
+    recompute = true;
+  }
 
-  Function handler = handlers[entity.runtimeType];
-  if (handler != null) { handler(entity, modify); }
-  else { modify(); }
+  /// Enforce veto condition
+  if (_playthroughHitVetoCondition(play)) {
+    deletePlaythrough(play);
+    recompute = false;
+
+    logger.finer('Vetoed playthrough: ${play.identity} in party: ${prep.party.partyCode} due to voting conditions');
+  }
+
+  if (recompute) {
+    _recomputePlalist(play.party);
+  }
 }
