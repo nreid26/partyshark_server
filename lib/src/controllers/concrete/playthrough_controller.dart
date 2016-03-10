@@ -91,7 +91,7 @@ class PlaythroughController extends PartysharkController {
     }
 
     Playthrough play = model.getEntity(Playthrough, code);
-    if (play == null || !party.playthroughs.contains(play)) {
+    if (play == null || !party.playlist.contains(play)) {
       _closeBadRequest(req, potFail..why = 'The supplied playthrough code does not exist.');
       return null;
     }

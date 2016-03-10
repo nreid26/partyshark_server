@@ -36,7 +36,7 @@ Future<Song> _getSong(int songCode) async {
 
 
 bool _playthroughSuggestionValid(Song song, Party party) =>
-    party.settings.playthroughCap == null || party.playthroughs.length < party.settings.playthroughCap;
+    party.settings.playthroughCap == null || party.playlist.length < party.settings.playthroughCap;
 
 void _modifyPlaythrough(Playthrough play, Function callback) {
   Duration prevCompletedDuration = play.completedDuration;
@@ -55,11 +55,15 @@ void _modifyPlaythrough(Playthrough play, Function callback) {
 }
 
 void _recomputePlaylist(Party party) {
-  List l = party.playthroughs.toList(growable: false)
-    ..sort((a, b) => b.netVotes - a.netVotes);
+  if (party.playlist.length < 3) { return; }
 
-  int i = 0;
-  for(Playthrough p in l) {
+  Playthrough p = party.playlist.removeAt(0);
+  party.playlist
+      ..sort((a, b) => b.netVotes - a.netVotes)
+      ..insert(0, p);
+
+  int i = 1;
+  for(Playthrough p in party.playlist) {
     p.position = i++;
   }
 }

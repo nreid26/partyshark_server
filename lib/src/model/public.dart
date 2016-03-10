@@ -27,7 +27,7 @@ Party createParty() {
 Playthrough createPlaythrough(Song song, Party party, User suggester) {
   if (!_playthroughSuggestionValid(song, party)) { return null; }
 
-  Playthrough play = new Playthrough(song, party.playthroughs.length, suggester);
+  Playthrough play = new Playthrough(song, party.playlist.length, suggester);
   Ballot ballot = new Ballot(suggester, play, Vote.Up);
 
   _datastore
@@ -35,12 +35,12 @@ Playthrough createPlaythrough(Song song, Party party, User suggester) {
     ..add(ballot);
 
   return play
-    ..party.playthroughs.add(play)
+    ..party.playlist.add(play)
     ..ballots.add(ballot);
 }
 
 void deletePlaythrough(Playthrough play) {
-  play.party.playthroughs.remove(play);
+  play.party.playlist.remove(play);
 
   _datastore[Ballot].removeAll(play.ballots);
   _datastore[Playthrough].remove(play);

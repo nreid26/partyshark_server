@@ -8,7 +8,7 @@ class Party extends Object with DeferredIdentifiableMixin {
   User player;
   bool isPlaying = false;
 
-  final Set<Playthrough> playthroughs = new HashSet();
+  final List<Playthrough> playlist = [ ];
   final Set<User> users = new HashSet();
 
   //Constructor

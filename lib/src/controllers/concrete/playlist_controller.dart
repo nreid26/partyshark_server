@@ -11,7 +11,7 @@ class PlaylistController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    Iterable<PlaythroughMsg> msgs = prep.party.playthroughs
+    Iterable<PlaythroughMsg> msgs = prep.party.playlist
           .map(Controller.Playthrough._playthroughToMsg)
           ..forEach((PlaythroughMsg p) => p.completedDuration.isDefined = false);
 
