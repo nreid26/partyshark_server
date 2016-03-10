@@ -60,14 +60,18 @@ void _modifyPlaythrough(Playthrough play, Function callback) {
 }
 
 void _recomputePlaylist(Party party) {
-  if (party.playlist.length < 3) { return; }
+  if (party.playlist.isEmpty) { return; }
 
-  Playthrough p = party.playlist.removeAt(0);
+  Playthrough playing = party.playlist.first;
+  if (playing.position != 0) { playing = null; }
+
   party.playlist
-      ..sort((a, b) => b.netVotes - a.netVotes)
-      ..insert(0, p);
+    ..remove(playing)
+    ..sort((a, b) => b.netVotes - a.netVotes);
 
-  int i = 1;
+  if (playing != null) { party.playlist.insert(0, playing); }
+
+  int i = 0;
   for(Playthrough p in party.playlist) {
     p.position = i++;
   }
