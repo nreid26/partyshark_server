@@ -111,7 +111,7 @@ abstract class PartysharkController extends RouteController {
         return 'The party code was malformed.';
       }
 
-      ret = datastore.parties[partyCode];
+      ret = model.getEntity(Party, partyCode);
       if(ret == null) {
         return 'The party code does not match a current party.';
       }
@@ -143,7 +143,7 @@ abstract class PartysharkController extends RouteController {
         return 'The user code in ${Header.UserCode} was malformed.';
       }
 
-      ret = datastore.users[userCode];
+      ret = model.getEntity(User, userCode);
       if(ret == null) {
         return 'The user specified by ${Header.UserCode} does not exist.';
       }

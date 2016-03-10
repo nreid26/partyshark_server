@@ -1,6 +1,6 @@
 part of controllers;
 
-class PlaylistController extends PartysharkController {
+class PlaylistController extends PartysharkController with PlaythroughMessenger {
   PlaylistController._(): super._();
 
   /// Get a playlist.
@@ -11,8 +11,7 @@ class PlaylistController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    Iterable<PlaythroughMsg> msgs = prep.party.playlist
-          .map(Controller.Playthrough._playthroughToMsg)
+    Iterable<PlaythroughMsg> msgs = prep.party.playlist.map(playthroughToMsg)
           ..forEach((PlaythroughMsg p) => p.completedDuration.isDefined = false);
 
     _closeGoodRequest(req, recoverUri(pathParams), msgs);
@@ -43,6 +42,6 @@ class PlaylistController extends PartysharkController {
     }
 
     Map params = {Key.PlaythroughCode: play.identity, Key.PartyCode: prep.party};
-    _closeGoodRequest(req, Controller.Playthrough.recoverUri(params), Controller.Playthrough._playthroughToMsg(play));
+    _closeGoodRequest(req, Controller.Playthrough.recoverUri(params), playthroughToMsg(play));
   }
 }

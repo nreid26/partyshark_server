@@ -1,6 +1,6 @@
 part of controllers;
 
-class SelfController extends PartysharkController {
+class SelfController extends PartysharkController with UserMessenger {
   SelfController._() : super._();
 
   /// Get yourself.
@@ -11,7 +11,7 @@ class SelfController extends PartysharkController {
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    var msg = Controller.User._userToMsg(prep.requester);
+    var msg = userToMsg(prep.requester);
 
     _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
 
@@ -33,7 +33,7 @@ class SelfController extends PartysharkController {
       });
     }
 
-    msg = Controller.User._userToMsg(prep.requester);
+    msg = userToMsg(prep.requester);
     _closeGoodRequest(req, recoverUri(pathParams), msg, null, prep.requester);
   }
 

@@ -1,6 +1,6 @@
 part of controllers;
 
-class PlaythroughController extends PartysharkController {
+class PlaythroughController extends PartysharkController with PlaythroughMessenger {
   PlaythroughController._(): super._();
 
   /// Veto a playthrough.
@@ -29,7 +29,7 @@ class PlaythroughController extends PartysharkController {
     var play = __getPlaythrough(req, pathParams, prep.party);
     if(play == null) { return; }
 
-    _closeGoodRequest(req, recoverUri(pathParams), _playthroughToMsg(play));
+    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play));
   }
 
 
@@ -65,20 +65,7 @@ class PlaythroughController extends PartysharkController {
       model.voteOnPlaythrough(prep.requester, play, msg.vote.value);
     }
 
-    _closeGoodRequest(req, recoverUri(pathParams), _playthroughToMsg(play));
-  }
-
-  PlaythroughMsg _playthroughToMsg(Playthrough p) {
-    return new PlaythroughMsg()
-      ..suggester.value = p.suggester.username
-      ..completedDuration.value = p.completedDuration
-      ..code.value = p.identity
-      ..position.value = p.position
-      ..songCode.value = p.song.identity
-      ..creationTime.value = p.creationTime
-      ..downvotes.value = p.downvotes
-      ..upvotes.value = p.upotes
-      ..vote.value = p.ballots.firstWhere((b) => b.voter == p.suggester, orElse: () => null)?.vote;
+    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play));
   }
 
   Playthrough __getPlaythrough(HttpRequest req, Map pathParams, Party party) {

@@ -21,11 +21,3 @@ part './concrete/settings_controller.dart';
 part './concrete/users_controller.dart';
 part './concrete/self_controller.dart';
 part './concrete/user_controller.dart';
-
-part './mixins/user_messenger.dart';
-
-SongMsg _songToMsg(Song song) {
-  return new SongMsg()
-    ..code.value = song.identity
-    ..duration.value = song.duration;
-}
