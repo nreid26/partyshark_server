@@ -110,8 +110,28 @@ void deleteUser(User user) {
     return;
   }
 
-  user.username = '[deleted]';
+  user.party.transfers
+      .where((t) => t.requester == user)
+      .forEach(deleteTransfer);
   if (user.party.player == user) {
     user.party.player = null;
   }
+}
+
+
+PlayerTransfer createTransfer(User user) {
+  if (!_transferCreationValid(user)) {
+    return null;
+  }
+
+  PlayerTransfer trans = new PlayerTransfer(user);
+  _datastore.add(trans);
+  user.party.transfers.add(trans);
+
+  return trans;
+}
+
+void deleteTransfer(PlayerTransfer trans) {
+  _datastore.remove(trans);
+  trans.requester.party.transfers.remove(trans);
 }

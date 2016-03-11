@@ -39,11 +39,13 @@ dynamic getEntity(Type type, int identity, {useAsync: false}) {
   return syncRet;
 }
 
+typedef void IntegrityEnforcer<T>(T item, void callback());
+
 void modifyEntity(entity, void modify()) {
-  const Map<Type, Function> handlers = const {
+  const Map<Type, IntegrityEnforcer> handlers = const {
     Party: null,
     Playthrough: _modifyPlaythrough,
-    PlayerTransfer: null,
+    PlayerTransfer: _modifyTransfer,
     SettingsGroup: _modifySettings,
     User: null
   };

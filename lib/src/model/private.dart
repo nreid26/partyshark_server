@@ -43,7 +43,7 @@ Future<Song> _getSong(int songCode) async {
 bool _playthroughSuggestionValid(Song song, Party party) =>
     party.settings.playthroughCap == null || party.playlist.length < party.settings.playthroughCap;
 
-void _modifyPlaythrough(Playthrough play, Function callback) {
+void _modifyPlaythrough(Playthrough play, void callback()) {
   Duration prevCompletedDuration = play.completedDuration;
 
   callback();
@@ -77,7 +77,12 @@ void _recomputePlaylist(Party party) {
   }
 }
 
-void _modifySettings(SettingsGroup set, Function callback) {
+bool _playthroughHitVetoCondition(Playthrough play) {
+  return play.downvotes > play.party.settings.vetoRatio * play.party.users.length;
+}
+
+
+void _modifySettings(SettingsGroup set, void callback()) {
   double prevVetoRatio = set.vetoRatio;
   bool prevVirtualDj = set.usingVirtualDj;
 
@@ -97,6 +102,24 @@ void _modifySettings(SettingsGroup set, Function callback) {
   logger.fine('Appected modification to settings group: ${set.identity}');
 }
 
-bool _playthroughHitVetoCondition(Playthrough play) {
-  return play.downvotes > play.party.settings.vetoRatio * play.party.users.length;
+
+void _modifyTransfer(PlayerTransfer trans, void callback()) {
+  TransferStatus prevStatus = trans.status;
+
+  callback();
+
+  if (trans.status == TransferStatus.Closed && prevStatus == TransferStatus.Open) {
+    trans.requester.party.player = trans.requester;
+    trans.closureTime = new DateTime.now();
+  }
+  else if (prevStatus == TransferStatus.Closed || trans.status == null) {
+    trans.status = prevStatus;
+  }
+}
+
+bool _transferCreationValid(User user) {
+  if (user.party.transfers.any((t) => t.status == TransferStatus.Open && t.requester == User)) {
+    return false;
+  }
+  return true;
 }

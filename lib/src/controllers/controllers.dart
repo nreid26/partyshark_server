@@ -21,3 +21,32 @@ part './concrete/settings_controller.dart';
 part './concrete/users_controller.dart';
 part './concrete/self_controller.dart';
 part './concrete/user_controller.dart';
+part './concrete/player_transfer_controller.dart';
+part './concrete/player_transfers_controller.dart';
+
+/// A namespace class defining [RouteKey] constants used by this library.
+class Key {
+  static final RouteKey
+      PartyCode = new RouteKey(),
+      Username = new RouteKey(),
+      PlaythroughCode = new RouteKey(),
+      PlayerTransferCode = new RouteKey();
+
+  Key.__();
+}
+
+/// A namespace class defining [RouteController] constatnts from this library.
+class Controller {
+  static final PartyController Party = new PartyController._();
+  static final PartiesController Parties = new PartiesController._();
+  static final PlaylistController Playlist = new PlaylistController._();
+  static final PlaythroughController Playthrough = new PlaythroughController._();
+  static final SettingsController Settings = new SettingsController._();
+  static final UsersController Users = new UsersController._();
+  static final UserController User = new UserController._();
+  static final SelfController Self = new SelfController._();
+  static final PlayerTransferController Transfer = new PlayerTransferController._();
+  static final PlayerTransfersController Transfers = new PlayerTransfersController._();
+
+  Controller.__();
+}

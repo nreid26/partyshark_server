@@ -23,3 +23,13 @@ class PlaythroughMessenger {
       ..vote.value = p.ballots.firstWhere((b) => b.voter == p.suggester, orElse: () => null)?.vote;
   }
 }
+
+class PlayerTransferMessenger {
+  PlayerTransferMsg transferToMsg(PlayerTransfer trans) {
+    return new PlayerTransferMsg()
+        ..code.value = trans.identity
+        ..creationTime.value = trans.creationTime
+        ..requester.value = trans.requester.username
+        ..status.value = trans.status;
+  }
+}
