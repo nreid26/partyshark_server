@@ -17,6 +17,9 @@ var definition = {
       'users': [Controller.Users, {
         'self': Controller.Self,
         Key.Username: Controller.User
+      }],
+      'playertransfers': [Controller.Transfers, {
+        Key.PlayerTransferCode: Controller.Transfer
       }]
     }],
   }]

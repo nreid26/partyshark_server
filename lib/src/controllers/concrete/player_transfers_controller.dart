@@ -30,7 +30,7 @@ class PlayerTransfersController extends PartysharkController with PlayerTransfer
     if (prep.hadError) { return; }
 
     var msg = prep.body as PlayerTransferMsg;
-    
+
     PlayerTransfer trans = model.createTransfer(prep.requester);
     if (trans == null) {
       const String what = 'Your request to be player was pre-emptively rejected.';

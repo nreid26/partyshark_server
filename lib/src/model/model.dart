@@ -42,7 +42,7 @@ dynamic getEntity(Type type, int identity, {useAsync: false}) {
 typedef void IntegrityEnforcer<T>(T item, void callback());
 
 void modifyEntity(entity, void modify()) {
-  const Map<Type, IntegrityEnforcer> handlers = const {
+  const Map<Type, IntegrityEnforcer> enforcers = const {
     Party: null,
     Playthrough: _modifyPlaythrough,
     PlayerTransfer: _modifyTransfer,
@@ -50,7 +50,7 @@ void modifyEntity(entity, void modify()) {
     User: null
   };
 
-  Function handler = handlers[entity.runtimeType];
-  if (handler != null) { handler(entity, modify); }
+  IntegrityEnforcer enf = enforcers[entity.runtimeType];
+  if (enf != null) { enf(entity, modify); }
   else { modify(); }
 }
