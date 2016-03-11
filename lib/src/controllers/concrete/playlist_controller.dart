@@ -3,9 +3,15 @@ part of controllers;
 class PlaylistController extends PartysharkController with PlaythroughMessenger {
   PlaylistController._(): super._();
 
+  /// Handle CORS preflight.
+  @HttpHandler(HttpMethod.Options)
+  void options(HttpRequest req, Map<RouteKey, String> pathParams) {
+    super.options(req, pathParams);
+  }
+
   /// Get a playlist.
   @HttpHandler(HttpMethod.Get)
-  Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future get(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
@@ -20,7 +26,7 @@ class PlaylistController extends PartysharkController with PlaythroughMessenger 
 
   /// Suggest a playthrough.
   @HttpHandler(HttpMethod.Post)
-  Future post(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
+  Future post(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Post} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new PlaythroughMsg(), checkRequesterAdmin: false);

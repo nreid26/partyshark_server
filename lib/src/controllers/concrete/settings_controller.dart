@@ -3,9 +3,15 @@ part of controllers;
 class SettingsController extends PartysharkController {
   SettingsController._(): super._();
 
+  /// Handle CORS preflight.
+  @HttpHandler(HttpMethod.Options)
+  void options(HttpRequest req, Map<RouteKey, String> pathParams) {
+    super.options(req, pathParams);
+  }
+
   /// Get a settings group.
   @HttpHandler(HttpMethod.Get)
-  Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future get(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);

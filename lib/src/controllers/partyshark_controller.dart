@@ -7,6 +7,19 @@ abstract class PartysharkController extends RouteController {
   /// by known clients.
   PartysharkController._();
 
+  @HttpHandler(HttpMethod.Options)
+  void options(HttpRequest req, Map<RouteKey, String> pathParams) {
+    model.logger.fine('Serving preflight on ${recoverUri(pathParams)}');
+
+    req.response.statusCode = HttpStatus.OK;
+    req.response.headers
+        ..set('Allow', supportedMethods)
+        ..set(Header.CorsAllowOrigin, '*')
+        ..set(Header.CorsAllowMethods, supportedMethods)
+        ..set(Header.CorsAllowHeaders, req.headers[Header.CorsRequestHeaders]);
+    req.response.close();
+  }
+
   void _closeGoodRequest(HttpRequest req, Uri location, body, [int status, User user]) {
     if (body is String) { }
     else if (body is Jsonable) { body = body.toJsonString(); }
@@ -17,11 +30,13 @@ abstract class PartysharkController extends RouteController {
     req.response
         ..statusCode = status ?? HttpStatus.OK
         ..headers.contentType = ContentType.JSON
-        ..headers.set(Header.CrossOrigin, '*')
+        ..headers.set(Header.CorsAllowOrigin, '*')
         ..headers.set(Header.Location, location);
 
     if (user != null) {
-      req.response.headers.set(Header.SetUserCode, user.userCode);
+      req.response.headers
+          ..set(Header.CorsExposeHeaders, Header.SetUserCode)
+          ..set(Header.SetUserCode, user.userCode);
     }
 
     req.response
@@ -35,7 +50,7 @@ abstract class PartysharkController extends RouteController {
     req.response
         ..statusCode = fail.status
         ..headers.contentType = ContentType.JSON
-        ..headers.set(Header.CrossOrigin, '*')
+        ..headers.set(Header.CorsAllowOrigin, '*')
         ..write(fail.toJsonString())
         ..close();
 

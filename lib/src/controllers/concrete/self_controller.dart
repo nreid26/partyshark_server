@@ -3,9 +3,15 @@ part of controllers;
 class SelfController extends PartysharkController with UserMessenger {
   SelfController._() : super._();
 
+  /// Handle CORS preflight.
+  @HttpHandler(HttpMethod.Options)
+  void options(HttpRequest req, Map<RouteKey, String> pathParams) {
+    super.options(req, pathParams);
+  }
+
   /// Get yourself.
   @HttpHandler(HttpMethod.Get)
-  Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future get(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
@@ -19,7 +25,7 @@ class SelfController extends PartysharkController with UserMessenger {
 
   /// Update yourself.
   @HttpHandler(HttpMethod.Put)
-  Future put(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future put(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Put} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new UserMsg(), checkRequesterAdmin: false);
@@ -39,7 +45,7 @@ class SelfController extends PartysharkController with UserMessenger {
 
   /// Leave the party.
   @HttpHandler(HttpMethod.Delete)
-  Future delete(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future delete(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Delete} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);

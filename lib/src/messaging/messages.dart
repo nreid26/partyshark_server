@@ -42,10 +42,7 @@ class UserMsg extends Jsonable {
 
 class SongMsg extends Jsonable {
   final JsonProperty<int> code = new SimpleProperty('code');
-  final JsonProperty<int> year = new SimpleProperty('year');
   final JsonProperty<Duration> duration = new _DurationProperty('duration');
-  final JsonProperty<String> title = new SimpleProperty('title');
-  final JsonProperty<String> artist = new SimpleProperty('artist');
 }
 
 class EmptyMsg extends Object with Jsonable {

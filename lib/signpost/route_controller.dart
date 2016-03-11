@@ -9,7 +9,6 @@ abstract class RouteController {
   Uri _constantUri;
   Map<String, Function> _methodMap = { };
   Router _router;
-  String _supportedMethodsString;
 
   /// The default generative constructor of a [RouteController].
   RouteController() {
@@ -26,9 +25,9 @@ abstract class RouteController {
     if(_methodMap.containsKey(HttpMethod.Get) && !_methodMap.containsKey(HttpMethod.Head)) {
       _methodMap[HttpMethod.Head] = _methodMap[HttpMethod.Get];
     }
-
-    _supportedMethodsString = (_methodMap.keys.toList()..sort()).join(',');
   }
+
+  Iterable<String> get supportedMethods => _methodMap.keys;
 
   /// Set the path segments of the route leading to this controller and perform
   /// some member updating.
@@ -71,7 +70,7 @@ abstract class RouteController {
     req.response
       ..statusCode = HttpStatus.METHOD_NOT_ALLOWED
       ..headers.contentType = ContentType.JSON
-      ..headers.set('Allow', _supportedMethodsString)
+      ..headers.set('Allow', supportedMethods)
       ..write(errorJson(
           'The request could not be handled.',
           'The requested rousource exists but does not suppost the requested method.'
@@ -82,7 +81,7 @@ abstract class RouteController {
   void _options(HttpRequest req, Map<RouteKey, String> pathParams) {
     req.response
       ..statusCode = HttpStatus.OK
-      ..headers.set('Allow', _supportedMethodsString)
+      ..headers.set('Allow', supportedMethods)
       ..close();
   }
 }

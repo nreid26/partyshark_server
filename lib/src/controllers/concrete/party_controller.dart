@@ -3,9 +3,15 @@ part of controllers;
 class PartyController extends PartysharkController {
   PartyController._(): super._();
 
+  /// Handle CORS preflight.
+  @HttpHandler(HttpMethod.Options)
+  void options(HttpRequest req, Map<RouteKey, String> pathParams) {
+    super.options(req, pathParams);
+  }
+
   /// Get a party.
   @HttpHandler(HttpMethod.Get)
-  Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future get(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
@@ -16,7 +22,7 @@ class PartyController extends PartysharkController {
 
   /// Update a party.
   @HttpHandler(HttpMethod.Put)
-  Future put(HttpRequest req, [Map<RouteKey, String> pathParams]) async {
+  Future put(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Put} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, getBodyAs: new PartyMsg());

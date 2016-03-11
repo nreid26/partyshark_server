@@ -3,9 +3,15 @@ part of controllers;
 class PlaythroughController extends PartysharkController with PlaythroughMessenger {
   PlaythroughController._(): super._();
 
+  /// Handle CORS preflight.
+  @HttpHandler(HttpMethod.Options)
+  void options(HttpRequest req, Map<RouteKey, String> pathParams) {
+    super.options(req, pathParams);
+  }
+
   /// Veto a playthrough.
   @HttpHandler(HttpMethod.Delete)
-  Future delete(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future delete(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Delete} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams);
@@ -20,7 +26,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
 
   /// Get a playthrough.
   @HttpHandler(HttpMethod.Get)
-  Future get(HttpRequest req, [Map<RouteKey, dynamic> pathParams]) async {
+  Future get(HttpRequest req, Map<RouteKey, String> pathParams) async {
     model.logger.fine('Serving ${HttpMethod.Get} on ${recoverUri(pathParams)}');
 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);

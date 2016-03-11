@@ -47,11 +47,14 @@ main(List<String> arguments) async {
     }
     catch (e, trace) {
       model.logger.severe('Uncaught exception during request handling: $e', e, trace);
-      if (e is Error) { rethrow; } // Errors should crash the server
+
+      if (e is Error) {
+        model.logger.severe('The PartyShark died!');
+        rethrow;
+      }
     }
   }
 
-  model.logger.severe('The PartyShark died!');
 }
 
 Set<String> collectOptions(List<String> args) {

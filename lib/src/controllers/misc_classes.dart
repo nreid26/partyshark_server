@@ -7,7 +7,11 @@ class Header {
       SetUserCode = 'X-Set-User-Code',
       UserCode = 'X-User-Code',
       Location = 'Location',
-      CrossOrigin = 'Access-Control-Allow-Origin';
+      CorsExposeHeaders = 'Access-Control-Expose-Headers',
+      CorsAllowOrigin = 'Access-Control-Allow-Origin',
+      CorsAllowHeaders = 'Access-Control-Allow-Headers',
+      CorsAllowMethods = 'Access-Control-Allow-Methods',
+      CorsRequestHeaders = 'Access-Control-Request-Headers';
 
   Header.__();
 }
