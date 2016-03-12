@@ -8,13 +8,15 @@ Party createParty() {
   Party party = new Party(rand_serve.adminCode, settings);
   _datastore.add(party);
 
-  User user = new User(_genValidUserCode(), party, rand_serve.username, true);
-  _datastore.add(user);
-
-  /// Link new object
-  party
-        ..users.add(user)
-        ..player = user;
+  User user = createUser(party, true);
+  if (user == null) { //Bad luck
+    _datastore
+        ..remove(settings)
+        ..remove(party);
+    return null;
+  }
+  
+  party.player = user;
   settings.party = party;
 
   logger
@@ -97,6 +99,7 @@ User createUser(Party party, bool isAdmin) {
   int code = _genValidUserCode();
 
   User user = new User(code, party, name, isAdmin);
+  _datastore.add(user);
   party.users.add(user);
   return user;
 }
