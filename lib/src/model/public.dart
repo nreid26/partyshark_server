@@ -15,7 +15,7 @@ Party createParty() {
         ..remove(party);
     return null;
   }
-  
+
   party.player = user;
   settings.party = party;
 

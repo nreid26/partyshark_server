@@ -19,8 +19,10 @@ final Datastore _datastore = new Datastore(const [Ballot, Party, PlayerTransfer,
 Logger get logger => Logger.root;
 
 
+
+typedef Future<T> AsyncGetter<T>(int code);
 dynamic getEntity(Type type, int identity, {useAsync: false}) {
-  const Map<Type, Function> asyncBackups = const {
+  const Map<Type, AsyncGetter> asyncBackups = const {
     Song: _getSong
   };
 
@@ -40,10 +42,9 @@ dynamic getEntity(Type type, int identity, {useAsync: false}) {
 }
 
 typedef void IntegrityEnforcer<T>(T item, void callback());
-
 void modifyEntity(entity, void modify()) {
   const Map<Type, IntegrityEnforcer> enforcers = const {
-    Party: null,
+    Party: _modifyParty,
     Playthrough: _modifyPlaythrough,
     PlayerTransfer: _modifyTransfer,
     SettingsGroup: _modifySettings,

@@ -40,6 +40,17 @@ Future<Song> _getSong(int songCode) async {
 }
 
 
+void _modifyParty(Party party, void callback()) {
+  bool prevIsPlaying = party.isPlaying;
+
+  callback();
+
+  if (party.isPlaying == null) {
+    party.isPlaying = prevIsPlaying;
+  }
+}
+
+
 bool _playthroughSuggestionValid(Song song, Party party) =>
     party.settings.playthroughCap == null || party.playlist.length < party.settings.playthroughCap;
 
@@ -48,7 +59,7 @@ void _modifyPlaythrough(Playthrough play, void callback()) {
 
   callback();
 
-  if (play.completedDuration == null || prevCompletedDuration > play.completedDuration) {
+  if (!play.party.isPlaying || play.completedDuration == null || play.completedDuration < prevCompletedDuration ) {
     play.completedDuration = prevCompletedDuration;
   }
   else if (play.completedDuration >= play.song.duration) {
