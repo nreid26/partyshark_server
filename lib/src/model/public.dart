@@ -27,6 +27,7 @@ Party createParty() {
 }
 
 void deleteParty(Party party) {
+  _datastore[Party].remove(party);
   _datastore[User].removeAll(party.users);
   _datastore[SettingsGroup].remove(party.settings);
   _datastore[PlayerTransfer].removeAll(party.transfers);

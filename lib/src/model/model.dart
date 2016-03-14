@@ -20,7 +20,7 @@ Logger get logger => Logger.root;
 
 
 
-typedef Future<T> AsyncGetter<T>(int code);
+typedef Future<T> AsyncGetter<T>(int identity);
 dynamic getEntity(Type type, int identity, {useAsync: false}) {
   const Map<Type, AsyncGetter> asyncBackups = const {
     Song: _getSong
