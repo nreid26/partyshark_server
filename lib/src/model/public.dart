@@ -116,7 +116,9 @@ void deleteUser(User user) {
 
   user.party.transfers
       .where((t) => t.requester == user)
+      .toList(growable: false)
       .forEach(deleteTransfer);
+
   if (user.party.player == user) {
     user.party.player = null;
   }

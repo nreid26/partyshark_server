@@ -33,9 +33,9 @@ class SelfController extends PartysharkController with UserMessenger {
 
     var msg = prep.body as UserMsg;
 
-    if (msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode) {
+    if (msg.adminCode.isDefined) {
       model.modifyEntity(prep.requester, () {
-        prep.requester.isAdmin = true;
+        prep.requester.isAdmin = msg.adminCode.value == prep.party.adminCode;
       });
     }
 

@@ -11,7 +11,6 @@ class PlayerTransfer extends Object with DeferredIdentifiableMixin {
   //Data
   final User requester;
   final DateTime creationTime = new DateTime.now();
-  DateTime closureTime;
   TransferStatus status = TransferStatus.Open;
 
   //Constructor

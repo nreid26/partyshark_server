@@ -25,6 +25,19 @@ bool _userCanJoin(Party party) {
   return party.users.length < party.settings.userCap;
 }
 
+void _modifyUser(User user, void callback()) {
+  bool prevAdmin = user.isAdmin;
+
+  callback();
+
+  if (user.isAdmin == null) {
+    user.isAdmin = prevAdmin;
+  }
+  else if (prevAdmin == true) {
+    user.isAdmin = true;
+  }
+}
+
 
 Future<Song> _getSong(int songCode) async {
   Song song = _datastore[Song][songCode];
@@ -121,7 +134,6 @@ void _modifyTransfer(PlayerTransfer trans, void callback()) {
 
   if (trans.status == TransferStatus.Closed && prevStatus == TransferStatus.Open) {
     trans.requester.party.player = trans.requester;
-    trans.closureTime = new DateTime.now();
   }
   else if (prevStatus == TransferStatus.Closed || trans.status == null) {
     trans.status = prevStatus;

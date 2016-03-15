@@ -17,7 +17,11 @@ class PlayerTransfersController extends PartysharkController with PlayerTransfer
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    Iterable<UserMsg> msgs = prep.party.transfers.map(transferToMsg);
+    Iterable<UserMsg> msgs = prep.party.transfers
+        .where((t) => t.status != TransferStatus.Closed)
+        .map(transferToMsg)
+        ..forEach((PlayerTransferMsg t) => t.status.isDefined = false);
+
     _closeGoodRequest(req, recoverUri(pathParams), msgs);
   }
 
@@ -40,7 +44,7 @@ class PlayerTransfersController extends PartysharkController with PlayerTransfer
     }
 
     msg = transferToMsg(trans);
-    Uri location = Controller.Transfer.recoverUri({Key.PartyCode: prep.party.partyCode, Key.Username: trans.identity});
+    Uri location = Controller.Transfer.recoverUri({Key.PartyCode: prep.party.partyCode, Key.PlayerTransferCode: trans.identity});
     _closeGoodRequest(req, location, msg);
   }
 }

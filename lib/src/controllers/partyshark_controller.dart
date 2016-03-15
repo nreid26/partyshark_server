@@ -185,8 +185,8 @@ abstract class PartysharkController extends RouteController {
     catch (e) {
       return new _Failure(
           HttpStatus.BAD_REQUEST,
-          'The request body could not be interpreted',
-          'The body was malformed'
+          'The request body could not be interpreted.',
+          'The body was malformed.'
       );
     }
   }

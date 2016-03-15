@@ -48,7 +48,7 @@ void modifyEntity(entity, void modify()) {
     Playthrough: _modifyPlaythrough,
     PlayerTransfer: _modifyTransfer,
     SettingsGroup: _modifySettings,
-    User: null
+    User: _modifyUser
   };
 
   IntegrityEnforcer enf = enforcers[entity.runtimeType];
