@@ -6,8 +6,7 @@ import 'dart:async' show Future;
 
 import 'package:partyshark_server/src/messaging/messaging.dart';
 import 'package:partyshark_server/signpost/signpost.dart';
-import 'package:partyshark_server/src/entities/entities.dart';
-import 'package:partyshark_server/src/model/model.dart' as model;
+import 'package:partyshark_server/src/model/model.dart';
 
 
 part './partyshark_controller.dart';
