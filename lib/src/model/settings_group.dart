@@ -15,8 +15,6 @@ enum Genre {
 /// A class representing the settings on a party
 class SettingsGroup extends PartySharkEntity with IdentifiableMixin {
   //Data
-  final PartySharkModel __model;
-  final int identity;
   Party _party;
   bool __usingVirtualDj = false;
   Genre defaultGenre = null;

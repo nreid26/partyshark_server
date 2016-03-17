@@ -8,9 +8,6 @@ enum TransferStatus {
 
 /// A class representing a request for transfer of player privilege
 class PlayerTransfer extends PartySharkEntity with DeferredIdentifiableMixin {
-  // Statics
-  static const Duration lifetime = const Duration(minutes: 10);
-
   //Data
   final User requester;
   final DateTime creationTime = new DateTime.now();
@@ -24,25 +21,12 @@ class PlayerTransfer extends PartySharkEntity with DeferredIdentifiableMixin {
   //Methods
   TransferStatus get status => __status;
   void           set status(TransferStatus t) {
-    if (__status == TransferStatus.Closed) {  }
+    if (__status == TransferStatus.Closed || t == null) {  }
     else {
-      __status ??= t;
+      __status = t;
       __closureTime = new DateTime.now();
     }
   }
 
   DateTime get closureTime => __closureTime;
-
-  bool get hasExpired {
-    DateTime now = new DateTime.now();
-
-    switch (status) {
-      case TransferStatus.Open:
-        return now.difference(creationTime) > lifetime;
-      case TransferStatus.Closed:
-        return now.difference(closureTime) > lifetime;
-      default:
-        return true;
-    }
-  }
 }

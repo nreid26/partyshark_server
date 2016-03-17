@@ -4,7 +4,8 @@ import 'dart:io';
 import 'dart:convert' show UTF8, JSON;
 import 'dart:async' show Future;
 
-import 'package:partyshark_server/src/messaging/messaging.dart';
+import 'package:partyshark_server/src/messaging/messaging.dart' show SongMsg;
+export 'package:partyshark_server/src/messaging/messaging.dart' show SongMsg;
 
 final HttpClient _client = new HttpClient();
 final Uri _baseUri = Uri.parse('https://api.deezer.com');

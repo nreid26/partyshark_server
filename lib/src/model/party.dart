@@ -3,14 +3,12 @@ part of model;
 /// A class representing a party
 class Party extends PartySharkEntity with IdentifiableMixin {
   //Data
-  final PartySharkModel __model;
-  final int identity;
   final int adminCode;
   final SettingsGroup settings;
 
   User player;
   bool __isPlaying = false;
-  DateTime __lastRetrieved = new DateTime.now();
+  DateTime __lastRecomputed = new DateTime.now();
 
   final List<Playthrough> playlist = [ ];
   final Set<User> users = new Set();
@@ -28,7 +26,11 @@ class Party extends PartySharkEntity with IdentifiableMixin {
   bool get isPlaying => __isPlaying;
   void set isPlaying(bool b) { __isPlaying ??= b; }
 
+  DateTime get lastRecomputed => __lastRecomputed;
+
   void _recomputePlaylist() {
+    __lastRecomputed = new DateTime.now();
+
     if (playlist.length < 3) { return; }
 
     Playthrough playing = playlist.first;

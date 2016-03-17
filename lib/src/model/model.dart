@@ -6,59 +6,64 @@ import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
 import 'package:partyshark_server/src/deezer.dart' as deezer;
 
+part './misc.dart';
 
-part './public.dart';
-part './private.dart';
+part './party.dart';
+part './user.dart';
+part './settings_group.dart';
+part './song.dart';
+part './playthrough.dart';
+part './ballot.dart';
+part './player_transfer.dart';
 
-part './entities/party.dart';
-part './entities/user.dart';
-part './entities/settings_group.dart';
-part './entities/song.dart';
-part './entities/playthrough.dart';
-part './entities/ballot.dart';
-part './entities/player_transfer.dart';
-
-
-typedef Future<T> AsyncGetter<T>(int identity);
-
-abstract class PartySharkEntity {
-  final PartySharkModel __model;
-  final int identity;
-
-  PartySharkEntity(this.__model, this.identity);
-}
 
 class PartySharkModel {
   /// The datastore for this model
   final Datastore _datastore = new Datastore(const [Ballot, Party, PlayerTransfer, Playthrough, SettingsGroup, Song, User]);
 
-
   /// Get an [Entity] out of this by type and identity.
   dynamic getEntity(Type type, int identity, {bool useAsync: false}) {
-    const Map<Type, AsyncGetter> asyncBackups = const {
+    const Map asyncGetters = const {
       Song: _getSong
     };
 
-    Table table = _datastore[type];
-    var syncRet = (table == null) ? null : table[identity];
+    var syncRet = _datastore[type][identity];
 
     if (useAsync) {
-      if (syncRet == null) {
-        Function backup = asyncBackups[type];
-        if (backup != null) { return backup(identity); }
+      if (syncRet != null) {
+        _prepareRetrievedEntity(syncRet);
+        return new Future.value(syncRet);
       }
 
-      return new Future.value(syncRet);
+      return (() async {
+        if (asyncGetters.containsKey(type)) {
+          return _prepareRetrievedEntity(await asyncGetters[type](identity));
+        }
+        return null;
+      })();
     }
 
+    _prepareRetrievedEntity(syncRet);
     return syncRet;
   }
 
 
-  /// Get an [Iterable] of [Entity] objects out of this by predicate.
-  Iterable<dynamic> getEntites(Type type, [bool predicate(dynamic item)]) =>
-      _datastore[type].where(predicate ?? (item) => true);
 
+  /// Get an [Iterable] of [Entity] objects out of this by predicate.
+  Iterable<dynamic> getEntites(Type type, [bool predicate(dynamic item)]) {
+    return _datastore[type]
+        .where(predicate ?? (item) => true)
+        .map(_prepareRetrievedEntity);
+  }
+
+  /// Prepare entity object for retrieval.
+  dynamic _prepareRetrievedEntity(dynamic entity) {
+    if (entity is User) {
+      (entity as User)._lastQueried = new DateTime.now();
+    }
+
+    return entity;
+  }
 
   void voteOnPlaythrough(User voter, Playthrough play, Vote vote) {
     bool recompute = true;
@@ -186,6 +191,8 @@ class PartySharkModel {
 
     _datastore[Ballot].removeAll(play.ballots);
     _datastore[Playthrough].remove(play);
+
+    play.party._recomputePlaylist();
   }
 
 
