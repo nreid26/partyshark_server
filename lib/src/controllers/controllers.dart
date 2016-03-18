@@ -4,6 +4,8 @@ import 'dart:io' show HttpRequest, HttpResponse, HttpHeader, HttpStatus, Content
 import 'dart:convert' show JSON, UTF8;
 import 'dart:async' show Future;
 
+import 'package:logging/logging.dart';
+
 import 'package:partyshark_server/src/messaging/messaging.dart';
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/src/model/model.dart';
@@ -34,18 +36,25 @@ class Key {
   Key.__();
 }
 
-/// A namespace class defining [RouteController] constatnts from this library.
-class Controller {
-  static final PartyController Party = new PartyController._();
-  static final PartiesController Parties = new PartiesController._();
-  static final PlaylistController Playlist = new PlaylistController._();
-  static final PlaythroughController Playthrough = new PlaythroughController._();
-  static final SettingsController Settings = new SettingsController._();
-  static final UsersController Users = new UsersController._();
-  static final UserController User = new UserController._();
-  static final SelfController Self = new SelfController._();
-  static final PlayerTransferController Transfer = new PlayerTransferController._();
-  static final PlayerTransfersController Transfers = new PlayerTransfersController._();
+class ControllerSet {
+  final PartyController party = new PartyController._();
+  final PartiesController parties = new PartiesController._();
+  final PlaylistController playlist = new PlaylistController._();
+  final PlaythroughController playthrough = new PlaythroughController._();
+  final SettingsController settings = new SettingsController._();
+  final UsersController users = new UsersController._();
+  final UserController user = new UserController._();
+  final SelfController self = new SelfController._();
+  final PlayerTransferController transfer = new PlayerTransferController._();
+  final PlayerTransfersController transfers = new PlayerTransfersController._();
 
-  Controller.__();
+  final PartysharkModel model;
+
+  ControllerSet(this.model) {
+    var all = [party, parties, playlist, playthrough, settings, users, self, transfer, transfers];
+
+    for (PartysharkController con in all) {
+      con._parentSet = this;
+    }
+  }
 }

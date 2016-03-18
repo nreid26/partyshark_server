@@ -41,13 +41,13 @@ class PlaylistController extends PartysharkController with PlaythroughMessenger 
       return;
     }
 
-    Playthrough play = model.createPlaythrough(song, prep.party, prep.requester);
+    Playthrough play = model.createPlaythrough(song, prep.requester);
     if (song == null) {
       _closeBadRequest(req, fail..why = 'The suggestion violated party settings.');
       return;
     }
 
     Map params = {Key.PlaythroughCode: play.identity, Key.PartyCode: prep.party};
-    _closeGoodRequest(req, Controller.Playthrough.recoverUri(params), playthroughToMsg(play));
+    _closeGoodRequest(req, _parentSet.playthrough.recoverUri(params), playthroughToMsg(play));
   }
 }

@@ -2,11 +2,13 @@ library model;
 
 import 'dart:async' show Future;
 
+import 'package:logging/logging.dart';
+
 import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
 import 'package:partyshark_server/src/deezer.dart' as deezer;
 
-part './misc.dart';
+part './entity.dart';
 
 part './party.dart';
 part './user.dart';
@@ -17,16 +19,16 @@ part './ballot.dart';
 part './player_transfer.dart';
 
 
-class PartySharkModel {
+class PartysharkModel {
   /// The datastore for this model
   final Datastore _datastore = new Datastore(const [Ballot, Party, PlayerTransfer, Playthrough, SettingsGroup, Song, User]);
 
+  final Logger logger;
+
+  PartysharkModel(this.logger);
+
   /// Get an [Entity] out of this by type and identity.
   dynamic getEntity(Type type, int identity, {bool useAsync: false}) {
-    const Map asyncGetters = const {
-      Song: _getSong
-    };
-
     var syncRet = _datastore[type][identity];
 
     if (useAsync) {
@@ -36,15 +38,22 @@ class PartySharkModel {
       }
 
       return (() async {
-        if (asyncGetters.containsKey(type)) {
-          return _prepareRetrievedEntity(await asyncGetters[type](identity));
+        var temp;
+
+        switch (type) {
+          case Song:
+            temp = await _createSong(identity); break;
+          default:
+            temp = null; break;
         }
-        return null;
+
+        return _prepareRetrievedEntity(temp);
       })();
     }
-
-    _prepareRetrievedEntity(syncRet);
-    return syncRet;
+    else {
+      _prepareRetrievedEntity(syncRet);
+      return syncRet;
+    }
   }
 
 
@@ -212,6 +221,19 @@ class PartySharkModel {
   void deleteTransfer(PlayerTransfer trans) {
     _datastore.remove(trans);
     trans.requester.party.transfers.remove(trans);
+  }
+
+  Future<Song> _createSong(int songCode) async {
+    deezer.SongMsg msg = await deezer.getSong(songCode);
+
+    if (!msg.code.isDefined || !msg.duration.isDefined || msg.code.value != songCode) {
+      return null;
+    }
+    else {
+      Song ret = new Song._(this, songCode, msg.duration.value);
+      _datastore.add(ret);
+      return ret;
+    }
   }
 }
 

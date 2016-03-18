@@ -6,7 +6,7 @@ import 'package:partyshark_server/src/model/model.dart';
 
 class Collector {
   /// The model this [Collector] collects on
-  final PartySharkModel model;
+  final PartysharkModel model;
 
   /// The lifetime this [Collector] allows a [PlayerTransfer].
   final Duration transferLifetime;
@@ -37,6 +37,8 @@ class Collector {
   void collectParties() {
     final DateTime now = new DateTime.now();
 
+    model.logger.info('Collecting expired parties');
+
     model
         .getEntites(Party, (Party p) => now.difference(p.lastRecomputed) > partyLifetime)
         .toList(growable: false)
@@ -60,6 +62,8 @@ class Collector {
       }
     }
 
+    model.logger.info('Collecting expired player transfers');
+
     model
         .getEntites(Party, transPredicate)
         .toList(growable: false)
@@ -73,13 +77,16 @@ class Collector {
   void collectUsers() {
     final DateTime now = new DateTime.now();
 
+    model.logger.info('Collecting expired users');
+
     model
         .getEntites(User, (User u) => now.difference(u.lastQueried) > userLifetime)
         .toList(growable: false)
         .forEach(model.deleteUser);
   }
 
-  void dispose() {
+  void cancel() {
+    model.logger.info('Collection cancelled');
     __timers.forEach((t) => t.cancel());
   }
 }

@@ -61,9 +61,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
         return;
       }
 
-      model.modifyEntity(play, () {
-        play.completedDuration = msg.completedDuration.value;
-      });
+      play.completedDuration = msg.completedDuration.value;
     }
 
     /// Change vote.

@@ -13,7 +13,7 @@ enum Genre {
 }
 
 /// A class representing the settings on a party
-class SettingsGroup extends PartySharkEntity with IdentifiableMixin {
+class SettingsGroup extends PartysharkEntity with IdentifiableMixin {
   //Data
   Party _party;
   bool __usingVirtualDj = false;
@@ -22,7 +22,7 @@ class SettingsGroup extends PartySharkEntity with IdentifiableMixin {
   double __vetoRatio = 0.5;
 
   //Constructor
-  SettingsGroup._(PartySharkModel model, int identity) : super(model, identity);
+  SettingsGroup._(PartysharkModel model, int identity) : super(model, identity);
 
   //Methods
   bool get hasDefaultGenre => defaultGenre != null;

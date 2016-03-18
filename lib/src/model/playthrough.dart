@@ -1,7 +1,7 @@
 part of model;
 
 /// A class representing an instance of a song to be played at a party
-class Playthrough extends PartySharkEntity with IdentifiableMixin {
+class Playthrough extends PartysharkEntity with IdentifiableMixin {
   //Data
   Duration __completedDuration = const Duration();
 
@@ -13,7 +13,7 @@ class Playthrough extends PartySharkEntity with IdentifiableMixin {
   final Set<Ballot> ballots = new Set();
 
   //Constructor
-  Playthrough._(PartySharkModel model, int identity, this.song, User suggester) : super(model, identity), suggester = suggester, party = suggester.party;
+  Playthrough._(PartysharkModel model, int identity, this.song, User suggester) : super(model, identity), suggester = suggester, party = suggester.party;
 
   //Methods
   int get upotes => ballots.where((Ballot b) => b.vote == Vote.Up).length;

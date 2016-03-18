@@ -40,7 +40,7 @@ class UsersController extends PartysharkController with UserMessenger {
     }
 
     msg = userToMsg(user);
-    Uri location = Controller.User.recoverUri({Key.PartyCode: prep.party.partyCode, Key.Username: user.username});
+    Uri location = _parentSet.user.recoverUri({Key.PartyCode: prep.party.partyCode, Key.Username: user.username});
     _closeGoodRequest(req, location, msg, null, user);
   }
 
