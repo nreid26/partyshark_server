@@ -1,5 +1,6 @@
 part of main_test;
 
+isUndefinedOrValue(Matcher m) => new UndefinedOrValueMatcher(m);
 class UndefinedOrValueMatcher extends Matcher {
   final Matcher supplied;
 
@@ -7,14 +8,30 @@ class UndefinedOrValueMatcher extends Matcher {
 
   bool matches(item, Map matchSate) {
     if (item is! JsonProperty) { return false; }
-    else if (item.isDefined) { return true; }
-    else { return supplied.matches(item, matchSate); }
+    return !item.isDefined || supplied.matches(item.value, matchSate);
   }
 
   Description describe(Description d) {
-    d.add('is a JsonProperty that is undefied or whose value matches $supplied');
+    d.add('a JsonProperty that is undefined or whose value matches');
+    supplied.describe(d);
     return d;
   }
 }
 
-isUndefinedOrValue(Matcher m) => new UndefinedOrValueMatcher(m);
+isDefinedAndValue(Matcher m) => new DefinedAndValueMatcher(m);
+class DefinedAndValueMatcher extends Matcher {
+  final Matcher supplied;
+
+  DefinedAndValueMatcher(this.supplied);
+
+  bool matches(item, Map matchSate) {
+    if (item is! JsonProperty) { return false; }
+    return item.isDefined && supplied.matches(item.value, matchSate);
+  }
+
+  Description describe(Description d) {
+    d.add('is a JsonProperty that is defined and whose value matches');
+    supplied.describe(d);
+    return d;
+  }
+}

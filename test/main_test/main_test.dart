@@ -1,3 +1,5 @@
+library main_test;
+
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
@@ -32,8 +34,8 @@ main() async {
     test('can create a party with a default user', () async {
       FullResponse<PartyMsg> p = await createParty();
 
-      expect(p.body.code.value, isNonNegative);
-      expect(p.body.adminCode.value, isNonNegative);
+      expect(p.body.code, isDefinedAndValue(isNonNegative));
+      expect(p.body.adminCode, isDefinedAndValue(isNonNegative));
       expect(p.userCode, isNonNegative);
     });
 
@@ -41,8 +43,7 @@ main() async {
       FullResponse<PartyMsg> p = await createParty();
       FullResponse<UserMsg> u = await getSelf(p.body.code.value, p.userCode);
 
-      expect(u.body.username.isDefined, isTrue);
-      expect(u.body.username.value is String, isTrue);
+      expect(u.body.username, isDefinedAndValue(new isInstanceOf<String>()));
     });
 
     test('assignes default admin/player on party creation', () async {
@@ -50,8 +51,7 @@ main() async {
       FullResponse<UserMsg> u = await getSelf(p.body.code.value, p.userCode);
 
       expect(p.body.player.value, equals(u.body.username.value));
-      expect(u.body.isAdmin.isDefined, isTrue);
-      expect(u.body.isAdmin.value, isTrue);
+      expect(u.body.isAdmin, isDefinedAndValue(isTrue));
     });
 
     test('can add users to a party', () async {
@@ -67,17 +67,74 @@ main() async {
       FullResponse<PartyMsg> p = await createParty();
       FullResponse<UserMsg> u = await createUser(p.body.code.value);
 
-      expect(u.body.isAdmin, isUndefinedOrValue(equals(false)));
+      expect(u.body.isAdmin, isUndefinedOrValue(isFalse));
 
       FullResponse<UserMsg> u_c2 = await promoteUser(p.body.code.value, u.userCode, null);
       expect(u_c2.body.isAdmin, isUndefinedOrValue(equals(false)));
 
       FullResponse<UserMsg> u_c3 = await promoteUser(p.body.code.value, u.userCode, p.body.adminCode.value);
-      expect(u_c3.body.isAdmin.isDefined, equals(true));
-      expect(u_c3.body.isAdmin.value, equals(true));
+      expect(u_c3.body.isAdmin, isDefinedAndValue(isTrue));
     });
 
+    test('allows users to query their party', () async {
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<PartyMsg> p_c1 = await getParty(p.body.code.value, p.userCode);
 
+      expect(p.body.code.value, equals(p_c1.body.code.value));
+    });
+
+    test('allows users to submit playthroughs with default upvote', () async {
+      final int songCode = 95945830;
+
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<UserMsg> u = await createUser(p.body.code.value);
+
+      for (int i = 0; i < 3; i++) {
+        FullResponse<PlaythroughMsg> pt = await createPlaythrough(p.body.code.value, u.userCode, songCode);
+
+        expect(pt.body.code, isDefinedAndValue(isNonNegative));
+        expect(pt.body.songCode, isDefinedAndValue(equals(songCode)));
+        expect(pt.body.upvotes, isDefinedAndValue(equals(1)));
+        expect(pt.body.downvotes, isDefinedAndValue(equals(0)));
+        expect(pt.body.vote.encodableValue, equals(Vote.Up.index));
+      }
+    });
+
+    test('allows users to vote on playthroughs', () async {
+      final int songCode = 95945830;
+
+      FullResponse<PartyMsg> p = await createParty();
+      int partyCode = p.body.code.value;
+
+      List<Future<FullResponse<UserMsg>>> fus = new List.generate(3, (i) => createUser(p.body.code.value));
+      List<FullResponse<UserMsg>> us = [ ];
+      for (var f in fus) { us.add(await f); }
+
+      FullResponse<PlaythroughMsg> pt = await createPlaythrough(partyCode, us[0].userCode, songCode);
+      /*
+      List<Future<FullResponse<PlaythroughMsg>>> fps = new List.generate(3, (i) => createPlaythrough(partyCode, us[i].userCode, songCode));
+      List<FullResponse<PlaythroughMsg>> ps = [ ];
+      for (var p in fps) { ps.add(await p); }
+      */
+
+      FullResponse<PlaythroughMsg> pt_copy;
+      pt_copy = await voteOnPlaythrough(partyCode, us[0].userCode, pt.body.code.value, Vote.Up);
+      expect(pt_copy.body.vote.encodableValue, equals(Vote.Up.index));
+
+      pt_copy = await voteOnPlaythrough(partyCode, us[1].userCode, pt.body.code.value, Vote.Up);
+      expect(pt_copy.body.vote.encodableValue, equals(Vote.Up.index));
+      expect(pt_copy.body.upvotes, isDefinedAndValue(equals(2)));
+
+      pt_copy = await voteOnPlaythrough(partyCode, us[2].userCode, pt.body.code.value, Vote.Down);
+      expect(pt_copy.body.vote.encodableValue, equals(Vote.Down.index));
+      expect(pt_copy.body.upvotes, isDefinedAndValue(equals(2)));
+      expect(pt_copy.body.downvotes, isDefinedAndValue(equals(1)));
+
+      pt_copy = await voteOnPlaythrough(partyCode, us[0].userCode, pt.body.code.value, null);
+      expect(pt_copy.body.vote.encodableValue, equals(null));
+      expect(pt_copy.body.upvotes, isDefinedAndValue(equals(1)));
+      expect(pt_copy.body.downvotes, isDefinedAndValue(equals(1)));
+    });
   });
 
 

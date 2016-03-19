@@ -35,7 +35,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
     var play = __getPlaythrough(req, pathParams, prep.party);
     if(play == null) { return; }
 
-    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play));
+    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play, prep.requester));
   }
 
 
@@ -69,7 +69,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
       model.voteOnPlaythrough(prep.requester, play, msg.vote.value);
     }
 
-    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play));
+    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play, prep.requester));
   }
 
   Playthrough __getPlaythrough(HttpRequest req, Map pathParams, Party party) {

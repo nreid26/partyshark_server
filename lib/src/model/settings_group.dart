@@ -19,7 +19,7 @@ class SettingsGroup extends PartysharkEntity with IdentifiableMixin {
   bool __usingVirtualDj = false;
   Genre defaultGenre = null;
   int userCap = null, playthroughCap = null;
-  double __vetoRatio = 0.5;
+  double __vetoRatio = 0.25;
 
   //Constructor
   SettingsGroup._(PartysharkModel model, int identity) : super(model, identity);
