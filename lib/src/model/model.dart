@@ -123,7 +123,10 @@ class PartysharkModel {
 
     if (maxAttempts == 0) { throw new Exception('Could not generate a unique username for party: ${party.partyCode}'); }
 
-    return new User._(this, identity, party, username, isAdmin);
+    User ret = new User._(this, identity, party, username, isAdmin);
+    _datastore.add(ret);
+    party.users.add(ret);
+    return ret;
   }
 
   void deleteUser(User user) {
@@ -226,11 +229,11 @@ class PartysharkModel {
   Future<Song> _createSong(int songCode) async {
     deezer.SongMsg msg = await deezer.getSong(songCode);
 
-    if (!msg.code.isDefined || !msg.duration.isDefined || msg.code.value != songCode) {
+    if (msg == null || !msg.code.isDefined || msg.code.value != songCode) {
       return null;
     }
     else {
-      Song ret = new Song._(this, songCode, msg.duration.value);
+      Song ret = new Song._(this, songCode);
       _datastore.add(ret);
       return ret;
     }

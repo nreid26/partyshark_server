@@ -3,7 +3,7 @@ part of model;
 /// A class representing an instance of a song to be played at a party
 class Playthrough extends PartysharkEntity with IdentifiableMixin {
   //Data
-  Duration __completedDuration = const Duration();
+  double __completedRatio = 0.0;
 
   final Party party;
   final Song song;
@@ -22,13 +22,13 @@ class Playthrough extends PartysharkEntity with IdentifiableMixin {
 
   int get position => party.playlist.indexOf(this);
 
-  Duration get completedDuration => __completedDuration;
-  void     set completedDuration(Duration d) {
-    if (d == null || __completedDuration > d) { return; }
+  double get completedRatio => __completedRatio;
+  void     set completedRatio(double d) {
+    if (d == null || __completedRatio > d) { return; }
 
-    __completedDuration = d;
+    __completedRatio = d.clamp(0.0, 1.0);
 
-    if (__completedDuration >= song.duration) { __model.deletePlaythrough(this); }
+    if (__completedRatio >= 1.0) { __model.deletePlaythrough(this); }
   }
 
   bool get _hitVetoCondition => downvotes > party.settings.vetoRatio * party.users.length;

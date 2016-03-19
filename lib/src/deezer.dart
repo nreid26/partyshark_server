@@ -24,13 +24,10 @@ Future<SongMsg> getSong(int songId) async {
     if (body.containsKey('error')) { return null; }
 
     return new SongMsg()
-        ..code.encodableValue = body['id']
-        ..duration.value = new Duration(seconds: body['duration'].toInt());
+        ..code.encodableValue = body['id'];
   }
   catch (e) {
-    msg
-        ..code.isDefined = false
-        ..duration.isDefined = false;
+    return null;
   }
 
   return msg;

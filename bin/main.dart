@@ -19,7 +19,8 @@ Future main(List<String> allArgs) async {
   final Logger logger = prepareLogger(args.logLevel);
   final PartysharkModel model = new PartysharkModel(logger);
 
-  final serverSub = await launchApiServer(model, args.baseUri, args.port);
+  final address = (args.isTesting) ? InternetAddress.LOOPBACK_IP_V4 : InternetAddress.ANY_IP_V4;
+  final serverSub = await launchApiServer(model, args.baseUri, args.port, address);
 
   final Collector collector = new Collector(
       model,
@@ -68,7 +69,7 @@ void listenOnStdin(dynamic handler(String line, StreamSubscription sub)) {
       .listen((line) { handler(line, sub); });
 }
 
-Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri, int port) async {
+Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri, int port, InternetAddress address) async {
   final ControllerSet set = new ControllerSet(model);
 
   final definition = {
@@ -93,7 +94,7 @@ Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri
   await rand_serve.ready;
 
   final router = new Router(baseUri, new MisrouteController(), definition);
-  final server = await HttpServer.bind(InternetAddress.ANY_IP_V4, port);
+  final server = await HttpServer.bind(address, port);
 
   final sub = server.map(router.routeRequest).listen((Future res) async {
     try { await res; }
@@ -113,9 +114,11 @@ Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri
 
 class ArgManager {
   static const String __Logging = 'logging';
+  static const __Testing = 'testing';
 
   static final ArgParser __parser = new ArgParser()
-    ..addOption(__Logging, abbr: 'l');
+    ..addOption(__Logging, abbr: 'l')
+    ..addFlag(__Testing, abbr: 'T');
 
 
   final List<String> __args;
@@ -129,4 +132,5 @@ class ArgManager {
   String get baseUri => __args[0];
   int get port => int.parse(__args[1]);
   int get logLevel => __argMap.wasParsed(__Logging) ? int.parse(__argMap[__Logging]) : 4;
+  bool get isTesting => __argMap[__Testing];
 }

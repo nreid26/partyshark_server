@@ -22,7 +22,7 @@ class PlaythroughMsg extends Jsonable {
   final JsonProperty<int> downvotes = new SimpleProperty<int>('downvotes');
   final JsonProperty<String> suggester = new SimpleProperty<String>('suggester');
   final JsonProperty<Vote> vote = new _VoteProperty('vote');
-  final JsonProperty<Duration> completedDuration = new _DurationProperty('completed_duration');
+  final JsonProperty<num> completedRatio = new SimpleProperty<num>('completed_ratio');
   final JsonProperty<DateTime> creationTime = new DateTimeProperty('creation_time');
 }
 
@@ -42,7 +42,6 @@ class UserMsg extends Jsonable {
 
 class SongMsg extends Jsonable {
   final JsonProperty<int> code = new SimpleProperty<int>('code');
-  final JsonProperty<Duration> duration = new _DurationProperty('duration');
 }
 
 class EmptyMsg extends Object with Jsonable {

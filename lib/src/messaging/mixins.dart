@@ -13,7 +13,7 @@ class PlaythroughMessenger {
   PlaythroughMsg playthroughToMsg(Playthrough p) {
     return new PlaythroughMsg()
       ..suggester.value = p.suggester.username
-      ..completedDuration.value = p.completedDuration
+      ..completedRatio.value = p.completedRatio
       ..code.value = p.identity
       ..position.value = p.position
       ..songCode.value = p.song.identity
