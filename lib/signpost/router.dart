@@ -1,75 +1,106 @@
 part of signpost;
 
-///A class that can accept [HttpRequest]s can route them to [RouteController]s
-/// based on a provided definition.
+/// A class that passes [HttpRequest]s to [RouteController]s based on a provided
+/// definition.
 class Router {
-  //Data
-  final _Route _root;
-  final Uri _baseUri;
+  //Statics
+  static void handleInternalException(HttpRequest req, Exception e, StackTrace trace) {
+    req.response
+    ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
+    ..headers.contentType = ContentType.JSON
+    ..write(errorJson(
+      'The server could not handle this request.',
+      'The code to handle this request is buggy.'
+    ))
+    ..close();
+  }
 
-  ///The default generative constructor of a [Router]. [hostUri] should be a
-  /// a [String] representation of the scheme and host that this [Router] is
-  /// using as its public face. [definition] should be nested [Map]s with
-  /// [String] or [ParameterPathKey] keys describing the routing tree and values
-  /// which are the associated [RouteController]; for routes with both a
-  /// controller and subroutes, a [List] containing the [RouteController]
-  /// followed by the subroute [Map] should be used as the value.
-  Router(String baseUri, MisrouteController controller, Map definition): _root = new _Route(null, null, controller), _baseUri = Uri.parse(baseUri) {
+  //Data
+  final _Route __root;
+  final Function _handleInternalException;
+
+  /// The base of all URIs this [Router] is intended to route to.
+  final Uri baseUri;
+
+  /// The default generative constructor of a [Router].
+  ///
+  /// [baseUri] should be a [String] representation of root address that this
+  /// [Router] is using as its public face. [definition] should be a
+  /// [Map] whose keys are [String] or [RouteKey], and whose values are
+  /// [RouteController], further definitions, or a [List] containing both.
+  /// Example:
+  ///
+  ///     RouteController C0, C1, C2;
+  ///     PathParameterKey K0, K1;
+  ///
+  ///     var definition = {
+  ///       'posts': [C0, {
+  ///         K0: C1
+  ///       }],
+  ///       'users': {
+  ///         'standard': {
+  ///           K1: C1
+  ///         },
+  ///         'admin': C2
+  ///       }
+  ///     }
+  ///
+  /// [handleInternalException] will receive any [Exception] thrown by an
+  /// [HttpHandler] method in a [RouteController], as well as the [HttpRequest]
+  /// which caused it. The [Exception] is always asynchronously rethrown but
+  /// this function provides a chance to do logging or attempt an error response.
+  Router(String baseUri, MisrouteController controller, Map definition, [void handleInternalException(HttpRequest, Exception, StackTrace)])
+      : __root = new _Route(null, null, controller), baseUri = Uri.parse(baseUri), _handleInternalException = handleInternalException ?? Router.handleInternalException
+  {
     if(controller == null) { throw new ArgumentError.notNull('controller'); }
     _translateDefinition(definition);
   }
 
-  ///Traverses the routing tree according to the path of the [HttpRequest]
-  /// [Uri] and dispatches the request to the associated [RouteController].
+  /// Traverses the routing tree according to the path of [req.uri]
+  /// and dispatches the request to the associated [RouteController].
   /// If the route does not exist, the tree is traversed upwards until the first
   /// [MisrouteController] is found.
-  void routeRequest(HttpRequest req) {
-    Iterator<String> segmentItr = req.uri.pathSegments.iterator;
-    Map<PathParameterKey, String> pathParams = {};
-    _Route route = _root;
-    bool misroute = false;
+  Future routeRequest(HttpRequest req) async {
+    Map<RouteKey, String> pathParams = {};
+    _Route route = __root;
+    bool routeMissing = false;
 
-    traversal: while(segmentItr.moveNext() && !misroute) { //For each path segment
+    traversal: for(String seg in req.uri.pathSegments) {
       bool segMatch = false;
 
       for (_Route subroute in route._subroutes) { //For each subroute
-        if (subroute._segment is PathParameterKey) {
-          pathParams[subroute._segment] = segmentItr.current;
+        if (subroute._segment is RouteKey) {
+          pathParams[subroute._segment] = seg;
           segMatch = true;
         }
-        else if (subroute._segment == segmentItr.current) { segMatch = true; };
+        else if (subroute._segment == seg) { segMatch = true; };
 
-        if(segMatch) {
+        if (segMatch) {
           route = subroute;
           continue traversal;
         }
       }
 
-      misroute = true; //If no matching subroute (or no subroutes at all)
+      routeMissing = true; //If no matching subroute (or no subroutes at all)
+      break traversal;
     }
 
-    //Final route must have controller
-    if(route._controller == null) { misroute = true; }
-
-    //Ensure request is closed regardless of client code
     try {
-      if(misroute) {
-        while(route._controller is! MisrouteController) { route = route._parent; }
-        (route._controller as MisrouteController).handleUnroutableRequest(req, pathParams);
-      }
-      else { route._controller._distributeByMethod(req, pathParams); }
-    }
-    catch (e) {
-      try {
-        req.response
-          ..statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-          ..write(errorJson(
-              'The server could not handle this request',
-              'The code to handle this request is buggy'
-          ));
-      }
-      catch(e) { }
+      var potFuture;
 
+      if (routeMissing || route._controller == null) { //Routing failed or final route has no controller
+        while(route._controller is! MisrouteController) { route = route._parent; }
+        potFuture = (route._controller as MisrouteController).handleUnroutableRequest(req, pathParams);
+      }
+      else { //Route found
+        potFuture = route._controller._distributeByMethod(req, pathParams);
+      }
+
+      if (potFuture is Future) { await potFuture; }
+    }
+    on Exception catch (e, trace) {
+      try { _handleInternalException(req, e, trace); }
+      on Exception { }
       rethrow;
     }
     finally {
@@ -78,9 +109,9 @@ class Router {
   }
 
   void _translateDefinition(Map definition) {
-    List<_Route> routePath = [_root];
+    List<_Route> routePath = [__root];
 
-    _root._controller
+    __root._controller
       .._router = this
       .._pathSegments = [];
 
@@ -93,12 +124,12 @@ class Router {
 
         //Segment
         if(segment is String) { }
-        else if(segment is PathParameterKey) {
+        else if(segment is RouteKey) {
           if(routePath.map((r) => r._segment).contains(segment)) { //Ensure keys are unique
-            throw new RouterDefinitionError('Found duplicate $PathParameterKey in path in $Router definition; ${PathParameterKey}s must be unique in a path');
+            throw new RouterDefinitionError('Found duplicate $RouteKey in path in $Router definition; ${RouteKey}s must be unique in a path');
           }
         }
-        else { throw new RouterDefinitionError('Found $segment as segment in $Router definition; expected a $String or $PathParameterKey'); }
+        else { throw new RouterDefinitionError('Found $segment as segment in $Router definition; expected a $String or $RouteKey'); }
 
         //Argument extraction
         if(right is RouteController) { con = right; }

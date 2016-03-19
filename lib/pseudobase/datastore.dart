@@ -1,54 +1,56 @@
 part of pseudobase;
 
-///A class representing an object database but lacking long-term storage
+/// A class representing an object database but lacking long-term storage
 class Datastore {
   //Static
-  static TypeMirror _identifiableMirror = reflectType(Identifiable);
+  static final TypeMirror _identifiableMirror = reflectType(Identifiable);
 
   //Data
-  final List<_TableNode> _tables;
+  final Map<Type, Table> _tables = new HashMap();
 
-  //Constructor
-  Datastore(List<Type> types): _tables = new List<_TableNode>(types.length) {
-    int i = 0;
+  /// The basic generative constructor of a [Datastore]. For each [Type] in the
+  /// provided [List] of types, a [Table] containing that type will be created
+  /// within the store. If any of the provided types are a assignable to one
+  /// another relationship or are not assignable to [Identifiable] this
+  /// constructor throws an [ArgumentError].
+  Datastore(List<Type> types) {
+    Set<TypeMirror> mirrors = new Set<TypeMirror>();
+
     for(Type type in types) {
-      if (!reflectType(type).isSubtypeOf(_identifiableMirror)) {
-        throw new ArgumentError('All Tables in a Datastore must have types which subclass Identifiable');
-      }
+      TypeMirror tm = reflectType(type);
 
-      for(int j = 0; j < i; j++) {
-        if(_search(type) >= 0) {
-          throw new ArgumentError('Each Type may only have one associated Table in a Dattastore');
-        }
+      if (!tm.isAssignableTo(_identifiableMirror)) {
+        throw new ArgumentError('All ${Table}s in a $Datastore must have types which are assignable to Identifiable');
       }
-
-      _tables[i++] = new _TableNode(type, this);
+      else if(mirrors.any((TypeMirror om) => om.isAssignableTo(tm) || tm.isAssignableTo(om))) {
+        throw new ArgumentError('No two tables in a $Datastore may have types whise are assignable to one another');
+      }
+      else {
+        _tables[type] = new Table._(this);
+        mirrors.add(tm);
+      }
     }
   }
 
-  //Methods
-  int _search(Type type) {
-    for(int i = 0; i < _tables.length; i++) {
-      if(type == _tables[i].type) { return i; }
-    }
-    return -1;
-  }
+  /// A convenience method that forwards the addition of [item] to a [Table] of
+  /// the same type as [item]. Returns true if the addition succeeds and false
+  /// otherwise. Throws an [ArgumentError] of no suitable [Table] exists.
+  bool add(Identifiable item) => this[item.runtimeType].add(item);
 
+  /// A convenience method that forwards the removal of [item] to a [Table] of
+  /// the same type as [item]. Returns true if the removal was possible and
+  /// false otherwise. Throws an [ArgumentError] of no suitable [Table] exists.
+  bool remove(Identifiable item) => this[item.runtimeType].remove(item);
+
+  /// Returns a {Table] of type [type] from the store if one exists; otherwise
+  /// throws an [ArgumentError] since all types with the store should be known
+  /// statically.
   Table operator[](Type type) {
-    int index = _search(type);
-    if(index >= 0) { return _tables[index].table; }
+    if(hasTable(type)) { return _tables[type]; }
     else { throw new ArgumentError('No Table exists for the specified Type.'); }
   }
 
-  bool hasTable(Type type) => _search(type) >= 0;
-}
-
-///An internal class providing pairing between Types and Tables for uses in a Datastore
-class _TableNode {
-  //Data
-  final Type type;
-  final Table table;
-
-  //Constructor
-  _TableNode(this.type, Datastore parent): table = new Table._internal(parent);
+  /// Returns true of this [Datastore] contains a [Table] of type [type]; returns
+  /// false otherwise.
+  bool hasTable(Type type) => _tables.containsKey(type);
 }

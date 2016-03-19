@@ -1,21 +1,22 @@
 part of entities;
 
-///A class representing a party
-class Party extends Object with Identifiable {
+/// A class representing a party
+class Party extends Object with DeferredIdentifiableMixin {
   //Data
-  final int identity, adminCode;
+  final int adminCode;
   final SettingsGroup settings;
   User player;
   bool isPlaying = false;
 
-  final Set<Playthrough> playthroughs = new HashSet();
+  final List<Playthrough> playlist = [ ];
   final Set<User> users = new HashSet();
+  final Set<PlayerTransfer> transfers = new HashSet();
 
   //Constructor
-  Party(this.identity, this.adminCode, this.settings);
+  Party(this.adminCode, this.settings);
 
   //Methods
-  int get partycode => identity;
+  int get partyCode => identity;
 
   bool get isPaused => !isPlaying;
   void set isPaused(bool pause) { isPlaying = !pause; }

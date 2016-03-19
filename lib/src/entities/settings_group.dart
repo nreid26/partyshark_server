@@ -1,6 +1,6 @@
 part of entities;
 
-///An enum representing a basic musical genre
+/// An enum representing a basic musical genre
 enum Genre {
   Rock,
   Metal,
@@ -12,17 +12,17 @@ enum Genre {
   Electronic
 }
 
-///A class representing the settings on a party
-class SettingsGroup extends Object with Identifiable {
+/// A class representing the settings on a party
+class SettingsGroup extends Object with DeferredIdentifiableMixin {
   //Data
-  final int identity;
-  final Party party;
+  Party party;
   bool usingVirtualDj = false;
   Genre defaultGenre = null;
-  int userCap = -1, playthroughCap = -1;
+  int userCap = null, playthroughCap = null;
+  double vetoRatio = 0.5;
 
   //Constructor
-  SettingsGroup(this.identity, this.party);
+  SettingsGroup();
 
   //Methods
   bool get hasDefaultGenre => defaultGenre != null;
