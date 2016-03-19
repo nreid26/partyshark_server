@@ -17,16 +17,29 @@ class FullResponse<T extends Jsonable> {
 }
 
 
-Future<FullResponse> createParty() async {
+Future<FullResponse<PartyMsg>> createParty() async {
   var req = await client.postUrl(baseUri.replace(path: 'parties'));
   req.write('{ }');
 
   return FullResponse.deferred(req, new PartyMsg());
 }
 
-Future<FullResponse> createUser(int partCode) async {
-  var req = await client.postUrl(baseUri.replace(path: 'parties/$partCode/users'));
+Future<FullResponse<UserMsg>> createUser(int partyCode) async {
+  var req = await client.postUrl(baseUri.replace(path: 'parties/$partyCode/users'));
   req.write('{ }');
+
+  return FullResponse.deferred(req, new UserMsg());
+}
+
+Future<FullResponse<UserMsg>> promoteUser(int partyCode, int userCode, int adminCode) async {
+  UserMsg msg = new UserMsg()
+      ..adminCode.value = adminCode
+      ..adminCode.isDefined = true;
+
+  var req = await client.putUrl(baseUri.replace(path: 'parties/$partyCode/users/self'));
+  req
+    ..headers.set(Header.UserCode, userCode)
+    ..write(msg.toJsonString());
 
   return FullResponse.deferred(req, new UserMsg());
 }
