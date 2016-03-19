@@ -31,7 +31,8 @@ class UsersController extends PartysharkController with UserMessenger {
 
     var msg = prep.body as UserMsg;
 
-    User user = model.createUser(prep.party, msg.isAdmin.value);
+    bool isAdmin = msg.adminCode.isDefined && msg.adminCode.value == prep.party.adminCode;
+    User user = model.createUser(prep.party, isAdmin);
     if (user == null) {
       const String what = 'You could not join the party.';
       const String why = 'Your request violated party settings.';

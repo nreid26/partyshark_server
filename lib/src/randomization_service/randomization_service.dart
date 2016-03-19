@@ -7,7 +7,6 @@ import 'dart:async' show Future, Stream;
 import 'dart:convert' show UTF8, LineSplitter;
 
 import 'package:resource/resource.dart' show Resource;
-import 'package:logging/logging.dart';
 
 part './username_generator.dart';
 
@@ -17,10 +16,8 @@ part './username_generator.dart';
 /// This process is initiated automatically and is guaranteed to be complete
 /// when this [Future] completes. Functions in this library may throw errors if
 /// they are used before that time.
-final Future ready = _UsernameGenerator._onlyReady
-  ..then((v) => logger.info('randomization_service assets loaded'));
+Future get ready => _UsernameGenerator._onlyReady;
 
-Logger logger;
 
 /// A sorted string containing all the lowercase characters.
 const String lowercaseAlphabet = 'abcdefghijklmnopqrstuvwxyz';

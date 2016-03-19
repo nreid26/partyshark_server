@@ -8,8 +8,6 @@ import 'package:partyshark_server/pseudobase/pseudobase.dart';
 import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
 import 'package:partyshark_server/src/deezer.dart' as deezer;
 
-part './entity.dart';
-
 part './party.dart';
 part './user.dart';
 part './settings_group.dart';
@@ -19,7 +17,19 @@ part './ballot.dart';
 part './player_transfer.dart';
 
 
+abstract class PartysharkEntity {
+  final PartysharkModel __model;
+  final int identity;
+
+  Logger get logger => __model.logger;
+
+  PartysharkEntity(this.__model, this.identity);
+}
+
+
 class PartysharkModel {
+  static Future get ready => rand_serve.ready;
+
   /// The datastore for this model
   final Datastore _datastore = new Datastore(const [Ballot, Party, PlayerTransfer, Playthrough, SettingsGroup, Song, User]);
 
@@ -121,7 +131,9 @@ class PartysharkModel {
       username = rand_serve.username;
     } while (maxAttempts-- > 0 && takenNames.contains(username));
 
-    if (maxAttempts == 0) { throw new Exception('Could not generate a unique username for party: ${party.partyCode}'); }
+    if (maxAttempts == 0) {
+      throw new Exception('Could not generate a unique username for party: ${party.partyCode}');
+    }
 
     User ret = new User._(this, identity, party, username, isAdmin);
     _datastore.add(ret);

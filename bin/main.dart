@@ -7,7 +7,6 @@ import 'package:logging/logging.dart';
 
 import 'package:partyshark_server/src/model/model.dart';
 import 'package:partyshark_server/src/controllers/controllers.dart';
-import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
 import 'package:partyshark_server/signpost/signpost.dart';
 import 'package:partyshark_server/src/collector.dart';
 
@@ -17,6 +16,9 @@ Future main(List<String> allArgs) async {
   final ArgManager args = new ArgManager(allArgs);
 
   final Logger logger = prepareLogger(args.logLevel);
+
+  await PartysharkModel.ready;
+  logger.info('Model resources loaded');
   final PartysharkModel model = new PartysharkModel(logger);
 
   final address = (args.isTesting) ? InternetAddress.LOOPBACK_IP_V4 : InternetAddress.ANY_IP_V4;
@@ -33,7 +35,7 @@ Future main(List<String> allArgs) async {
     if (line.toLowerCase() == 'exit') {
       sub.cancel();
       serverSub.cancel();
-      collector.dispose();
+      collector.cancel();
 
       print('Sever shutdown');
       print('Hit enter to continue');
@@ -89,9 +91,6 @@ Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri
       }],
     }]
   };
-
-  rand_serve.logger = model.logger;
-  await rand_serve.ready;
 
   final router = new Router(baseUri, new MisrouteController(), definition);
   final server = await HttpServer.bind(address, port);

@@ -48,7 +48,7 @@ abstract class PartysharkController extends RouteController {
         ..write(body)
         ..close();
 
-    logger.finer('Succesful response with body: $body');
+    logger.finer('Successful response with body: $body');
   }
 
   void _closeBadRequest(HttpRequest req, _Failure fail) {
