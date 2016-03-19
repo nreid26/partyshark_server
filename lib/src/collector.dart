@@ -65,7 +65,7 @@ class Collector {
     model.logger.info('Collecting expired player transfers');
 
     model
-        .getEntites(Party, transPredicate)
+        .getEntites(PlayerTransfer, transPredicate)
         .toList(growable: false)
         .forEach(model.deleteTransfer);
   }
