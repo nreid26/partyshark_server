@@ -15,7 +15,7 @@ import 'package:partyshark_server/src/collector.dart';
 Future main(List<String> allArgs) async {
   final ArgManager args = new ArgManager(allArgs);
 
-  final Logger logger = prepareLogger(args.logLevel);
+  final Logger logger = prepareLogger(args.logLevel, args.isTesting);
 
   await PartysharkModel.ready;
   logger.info('Model resources loaded');
@@ -37,30 +37,49 @@ Future main(List<String> allArgs) async {
       serverSub.cancel();
       collector.cancel();
 
+      logger.info('Sever shutdown');
       print('Sever shutdown');
       print('Hit enter to continue');
     }
   });
 }
 
-Logger prepareLogger(int levelIndex) {
-  final log = new File('log.txt');
+Logger prepareLogger(int levelIndex, bool toConsole) {
+  final Logger logger = Logger.root
+    ..level = Level.LEVELS[levelIndex];
 
-  if (log.existsSync()) {
-    log.delete();
+  String buildMessage(LogRecord rec) =>
+      '${rec.level} ${rec.time} ${rec.message} \r\n';
+
+  // If output was directed to file
+  if (toConsole == false) {
+    final log = new File('log.txt');
+
+    if (log.existsSync()) {
+      log.delete();
+    }
+
+    logger.onRecord.listen((rec) {
+        String line = buildMessage(rec);
+        log.writeAsStringSync(line, mode: FileMode.APPEND);
+    });
+  }
+  // If output was directed to consle
+  else if (toConsole == true) {
+    logger.onRecord.listen((rec) {
+        String line = buildMessage(rec);
+
+        if (rec.error != null || rec.stackTrace != null) {
+          stderr.write(line);
+          stderr.addError(rec.error, rec.stackTrace);
+        }
+        else  {
+          stdout.write(line);
+        }
+    });
   }
 
-  Logger.root
-      ..level = Level.LEVELS[levelIndex]
-      ..onRecord.listen((rec) {
-        String message = '${rec.level} ${rec.message}';
-        if (rec.error != null) { message += rec.error.toString(); }
-        message += '\r\n';
-
-        log.writeAsStringSync(message, mode: FileMode.APPEND);
-      });
-
-  return Logger.root;
+  return logger;
 }
 
 void listenOnStdin(dynamic handler(String line, StreamSubscription sub)) {

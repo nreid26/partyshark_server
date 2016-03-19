@@ -6,7 +6,10 @@ import 'package:test/test.dart';
 import 'package:partyshark_server/src/controllers/controllers.dart';
 import 'package:partyshark_server/src/messaging/messaging.dart';
 
-part './misc.dart';
+part './extracted_functions.dart';
+part './custom_matchers.dart';
+
+
 
 main() async {
 
@@ -15,38 +18,8 @@ main() async {
 
     setUpAll(() async {
       server = await Process.start('dart C:/Users/Nick/Desktop/partyshark_server/bin/main.dart', ['$baseUri', '3000', '-l', '0', '-T']);
-      server.stderr.transform(UTF8.decoder).transform(new LineSplitter()).listen(stderr.add);
-    });
-
-    test('can create a party', () async {
-      FullResponse<PartyMsg> p = await createParty();
-
-      expect(p.body.code.value, isNonNegative);
-      expect(p.body.adminCode.value, isNonNegative);
-      expect(() => int.parse(p.res.headers.value(Header.SetUserCode)), returnsNormally);
-    });
-
-    test('can add users to a party', () async {
-      FullResponse<PartyMsg> p = await createParty();
-      FullResponse<UserMsg> u = await createUser(p.body.code.value);
-
-      expect(u.body.username.value is String, isTrue);
-      expect(() => int.parse(p.res.headers.value(Header.SetUserCode)), returnsNormally);
-    });
-
-    test('can promote users to admin', () async {
-      FullResponse<PartyMsg> p = await createParty();
-      FullResponse<UserMsg> u1 = await createUser(p.body.code.value);
-
-      expect(u1.body.isAdmin.isDefined == false || u1.body.isAdmin.value == false, isTrue);
-
-      int userCode = int.parse(p.res.headers.value(Header.SetUserCode));
-
-      FullResponse<UserMsg> u2 = await promoteUser(p.body.code.value, userCode, null);
-      expect(u2.body.isAdmin.isDefined == false || u2.body.isAdmin.value != true, isTrue);
-
-      FullResponse<UserMsg> u3 = await promoteUser(p.body.code.value, userCode, p.body.adminCode.value);
-      expect(u3.body.isAdmin.isDefined == true && u3.body.isAdmin.value == true, isTrue);
+      server.stderr.pipe(stderr);
+      server.stdout.pipe(stdout);
     });
 
     tearDownAll(() {
@@ -55,6 +28,55 @@ main() async {
 
       expect(server.exitCode, completion(equals(0)));
     });
+
+    test('can create a party with a default user', () async {
+      FullResponse<PartyMsg> p = await createParty();
+
+      expect(p.body.code.value, isNonNegative);
+      expect(p.body.adminCode.value, isNonNegative);
+      expect(p.userCode, isNonNegative);
+    });
+
+    test('allows users to query thesleves', () async {
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<UserMsg> u = await getSelf(p.body.code.value, p.userCode);
+
+      expect(u.body.username.isDefined, isTrue);
+      expect(u.body.username.value is String, isTrue);
+    });
+
+    test('assignes default admin/player on party creation', () async {
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<UserMsg> u = await getSelf(p.body.code.value, p.userCode);
+
+      expect(p.body.player.value, equals(u.body.username.value));
+      expect(u.body.isAdmin.isDefined, isTrue);
+      expect(u.body.isAdmin.value, isTrue);
+    });
+
+    test('can add users to a party', () async {
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<UserMsg> u = await createUser(p.body.code.value);
+
+      expect(u.body.username.value is String, isTrue);
+      expect(u.userCode, isNonNegative);
+      expect(u.userCode, isNot(equals(p.userCode)));
+    });
+
+    test('can promote users to admin', () async {
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<UserMsg> u = await createUser(p.body.code.value);
+
+      expect(u.body.isAdmin, isUndefinedOrValue(equals(false)));
+
+      FullResponse<UserMsg> u_c2 = await promoteUser(p.body.code.value, u.userCode, null);
+      expect(u_c2.body.isAdmin, isUndefinedOrValue(equals(false)));
+
+      FullResponse<UserMsg> u_c3 = await promoteUser(p.body.code.value, u.userCode, p.body.adminCode.value);
+      expect(u_c3.body.isAdmin.isDefined, equals(true));
+      expect(u_c3.body.isAdmin.value, equals(true));
+    });
+
 
   });
 
