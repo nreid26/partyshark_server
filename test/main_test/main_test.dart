@@ -19,7 +19,7 @@ main() async {
     Process server;
 
     setUpAll(() async {
-      server = await Process.start('dart C:/Users/Nick/Desktop/partyshark_server/bin/main.dart', ['$baseUri', '3000', '-l', '0', '-T']);
+      server = await Process.start('dart C:/Users/Nick/Desktop/partyshark_server/bin/main.dart $baseUri 3000 -cl -v 0', []);
       server.stderr.pipe(stderr);
       server.stdout.pipe(stdout);
     });

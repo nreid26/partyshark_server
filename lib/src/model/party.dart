@@ -7,7 +7,7 @@ class Party extends PartysharkEntity with IdentifiableMixin {
   final SettingsGroup settings;
 
   User player;
-  bool __isPlaying = true;
+  bool __isPlaying = false;
   DateTime __lastRecomputed = new DateTime.now();
 
   final List<Playthrough> playlist = [ ];

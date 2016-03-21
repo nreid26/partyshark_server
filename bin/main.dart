@@ -15,14 +15,14 @@ import 'package:partyshark_server/src/collector.dart';
 Future main(List<String> allArgs) async {
   final ArgManager args = new ArgManager(allArgs);
 
-  final Logger logger = prepareLogger(args.logLevel, args.isTesting);
+  final Logger logger = prepareLogger(args.verbosity, args.logFileName, args.usingConsole);
 
   await PartysharkModel.ready;
   logger.info('Model resources loaded');
   final PartysharkModel model = new PartysharkModel(logger);
 
-  final address = (args.isTesting) ? InternetAddress.LOOPBACK_IP_V4 : InternetAddress.ANY_IP_V4;
-  final serverSub = await launchApiServer(model, args.baseUri, args.port, address);
+  final address = (args.isLocal) ? InternetAddress.LOOPBACK_IP_V4 : InternetAddress.ANY_IP_V4;
+  final serverSub = await launchApiServer(model, args.basePublicUrl, args.port, address);
 
   final Collector collector = new Collector(
       model,
@@ -44,16 +44,15 @@ Future main(List<String> allArgs) async {
   });
 }
 
-Logger prepareLogger(int levelIndex, bool toConsole) {
+Logger prepareLogger(int levelIndex, String logFileName, bool usingConsole) {
   final Logger logger = Logger.root
     ..level = Level.LEVELS[levelIndex];
 
   String buildMessage(LogRecord rec) =>
       '${rec.level} ${rec.time} ${rec.message} \r\n';
 
-  // If output was directed to file
-  if (toConsole == false) {
-    final log = new File('log.txt');
+  if (logFileName != null) {
+    final log = new File(logFileName);
 
     if (log.existsSync()) {
       log.delete();
@@ -64,8 +63,8 @@ Logger prepareLogger(int levelIndex, bool toConsole) {
         log.writeAsStringSync(line, mode: FileMode.APPEND);
     });
   }
-  // If output was directed to consle
-  else if (toConsole == true) {
+
+  if (usingConsole) {
     logger.onRecord.listen((rec) {
         String line = buildMessage(rec);
 
@@ -126,18 +125,21 @@ Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri
     }
   });
 
-  model.logger.info('API server launched');
+  model.logger.info('API server launched on ${address.address}:$port');
   return sub;
 }
 
 class ArgManager {
-  static const String __Logging = 'logging';
-  static const __Testing = 'testing';
+  static const String __File = 'log';
+  static const String __Verbosity = 'verbosity';
+  static const String __Local = 'public';
+  static const String __Console = 'console';
 
   static final ArgParser __parser = new ArgParser()
-    ..addOption(__Logging, abbr: 'l')
-    ..addFlag(__Testing, abbr: 'T');
-
+    ..addOption(__File, abbr: 'f')
+    ..addOption(__Verbosity, abbr: 'v')
+    ..addFlag(__Console, abbr: 'c')
+    ..addFlag(__Local, abbr: 'l');
 
   final List<String> __args;
   final ArgResults __argMap;
@@ -147,8 +149,11 @@ class ArgManager {
         __argMap = __parser.parse(args.skip(2).toList(growable: false));
 
 
-  String get baseUri => __args[0];
+  String get basePublicUrl => __args[0];
   int get port => int.parse(__args[1]);
-  int get logLevel => __argMap.wasParsed(__Logging) ? int.parse(__argMap[__Logging]) : 4;
-  bool get isTesting => __argMap[__Testing];
+
+  int get verbosity => __argMap.wasParsed(__Verbosity) ? int.parse(__argMap[__Verbosity]) : 4;
+  String get logFileName => __argMap[__File];
+  bool get isLocal => __argMap[__Local];
+  bool get usingConsole => __argMap[__Console];
 }
