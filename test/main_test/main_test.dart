@@ -31,12 +31,13 @@ main() async {
       expect(server.exitCode, completion(equals(0)));
     });
 
-    test('can create a party with a default user', () async {
+    test('can create a party with a default user that starts paused', () async {
       FullResponse<PartyMsg> p = await createParty();
 
       expect(p.body.code, isDefinedAndValue(isNonNegative));
       expect(p.body.adminCode, isDefinedAndValue(isNonNegative));
       expect(p.userCode, isNonNegative);
+      expect(p.body.isPlaying, isDefinedAndValue(isFalse));
     });
 
     test('allows users to query thesleves', () async {
@@ -162,6 +163,23 @@ main() async {
       FullResponse<Iterable<PlaythroughMsg>> pl = await getPlaylist(p.body.code.value, p.userCode);
       expect(pt_c.res.statusCode, equals(404));
       expect(pl.body, isEmpty);
+    });
+
+    test('allows admins to pause and play the party', () async {
+      FullResponse<PartyMsg> p = await createParty();
+
+      FullResponse<PartyMsg> p_c;
+      var msg = new PartyMsg()
+          ..properties.forEach((p) => p.isDefined = false)
+          ..isPlaying.isDefined = true;
+
+      msg.isPlaying.value = true;
+      p_c = await updateParty(p.body.code.value, p.userCode, msg);
+      expect(p_c.body.isPlaying, isDefinedAndValue(isTrue));
+
+      msg.isPlaying.value = false;
+      p_c = await updateParty(p.body.code.value, p.userCode, msg);
+      expect(p_c.body.isPlaying, isDefinedAndValue(isFalse));
     });
   });
 

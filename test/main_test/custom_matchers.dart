@@ -12,7 +12,7 @@ class UndefinedOrValueMatcher extends Matcher {
   }
 
   Description describe(Description d) {
-    d.add('a JsonProperty that is undefined or whose value matches');
+    d.add('a JsonProperty that is undefined or whose value matches ');
     supplied.describe(d);
     return d;
   }
@@ -30,7 +30,7 @@ class DefinedAndValueMatcher extends Matcher {
   }
 
   Description describe(Description d) {
-    d.add('is a JsonProperty that is defined and whose value matches');
+    d.add('a JsonProperty that is defined and whose value matches ');
     supplied.describe(d);
     return d;
   }

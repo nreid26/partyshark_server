@@ -30,8 +30,8 @@ class SettingsGroup extends PartysharkEntity with IdentifiableMixin {
   Party get party => _party;
 
   bool get usingVitualDj => __usingVirtualDj;
-  void set usingVirtualDj(bool b) { __usingVirtualDj ??= b;  }
+  void set usingVirtualDj(bool b) { __usingVirtualDj = b ?? __usingVirtualDj;  }
 
   double get vetoRatio => __vetoRatio;
-  void   set vetoRatio(double d) { __vetoRatio ??= d?.clamp(0.0, 1.0); }
+  void   set vetoRatio(double d) { __vetoRatio = d?.clamp(0.0, 1.0) ?? __vetoRatio; }
 }

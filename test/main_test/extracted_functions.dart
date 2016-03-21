@@ -43,6 +43,14 @@ Future<FullResponse<PartyMsg>> createParty() async {
   return FullResponse.deferred(req, new PartyMsg());
 }
 
+Future<FullResponse<PartyMsg>> updateParty(int partyCode, int userCode, PartyMsg msg) async {
+  var req = await client.putUrl(baseUri.replace(path: 'parties/$partyCode'));
+  setUserCode(req, userCode);
+  req.write(msg);
+
+  return FullResponse.deferred(req, new PartyMsg());
+}
+
 Future<FullResponse<UserMsg>> createUser(int partyCode) async {
   var req = await client.postUrl(baseUri.replace(path: 'parties/$partyCode/users'));
   req.write('{ }');

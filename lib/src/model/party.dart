@@ -24,7 +24,7 @@ class Party extends PartysharkEntity with IdentifiableMixin {
   void set isPaused(bool b) { if (b != null) { isPlaying = !b; } }
 
   bool get isPlaying => __isPlaying;
-  void set isPlaying(bool b) { __isPlaying ??= b; }
+  void set isPlaying(bool b) { __isPlaying = b ?? __isPlaying; }
 
   DateTime get lastRecomputed => __lastRecomputed;
 
