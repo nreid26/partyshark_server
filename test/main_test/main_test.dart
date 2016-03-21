@@ -135,6 +135,34 @@ main() async {
       expect(pt_copy.body.upvotes, isDefinedAndValue(equals(1)));
       expect(pt_copy.body.downvotes, isDefinedAndValue(equals(1)));
     });
+
+    test('allows a the player to update and complete a playthrough', () async {
+      final int songCode = 95945830;
+
+      FullResponse<PartyMsg> p = await createParty();
+      FullResponse<PlaythroughMsg> pt = await createPlaythrough(p.body.code.value, p.userCode, songCode);
+
+      final PlaythroughMsg input = new PlaythroughMsg()
+          ..properties.forEach((p) => p.isDefined = false)
+          ..completedRatio.isDefined = true;
+
+      Future check(double i, double o) async {
+        input.completedRatio.value = i;
+        FullResponse<PlaythroughMsg> pt_c = await updatePlaythrough(p.body.code.value, p.userCode, pt.body.code.value, input);
+        expect(pt_c.body.completedRatio, isDefinedAndValue(equals(o)));
+      }
+
+      await check(0.0, 0.0);
+      await check(0.5, 0.5);
+      await check(0.25, 0.5);
+      await check(null, 0.5);
+      await check(1.1, 1.0);
+
+      FullResponse<PlaythroughMsg> pt_c = await getPlaythrough(p.body.code.value, p.userCode, pt.body.code.value);
+      FullResponse<Iterable<PlaythroughMsg>> pl = await getPlaylist(p.body.code.value, p.userCode);
+      expect(pt_c.res.statusCode, equals(404));
+      expect(pl.body, isEmpty);
+    });
   });
 
 

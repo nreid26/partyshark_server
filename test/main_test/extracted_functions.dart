@@ -96,3 +96,25 @@ Future<FullResponse<PlaythroughMsg>> voteOnPlaythrough(int partyCode, int userCo
 
   return FullResponse.deferred(req, new PlaythroughMsg());
 }
+
+Future<FullResponse<PlaythroughMsg>> updatePlaythrough(int partyCode, int userCode, int playthroughCode, PlaythroughMsg msg) async {
+  var req = await client.putUrl(baseUri.replace(path: 'parties/$partyCode/playlist/$playthroughCode'));
+  setUserCode(req, userCode);
+  req.write(msg);
+
+  return FullResponse.deferred(req, new PlaythroughMsg());
+}
+
+Future<FullResponse<PlaythroughMsg>> getPlaythrough(int partyCode, int userCode, int playthroughCode) async {
+  var req = await client.getUrl(baseUri.replace(path: 'parties/$partyCode/playlist/$playthroughCode'));
+  setUserCode(req, userCode);
+
+  return FullResponse.deferred(req, new PlaythroughMsg());
+}
+
+Future<FullResponse<Iterable<PlaythroughMsg>>> getPlaylist(int partyCode, int userCode) async {
+  var req = await client.getUrl(baseUri.replace(path: 'parties/$partyCode/playlist'));
+  setUserCode(req, userCode);
+
+  return FullResponse.deferred(req, () => new PlaythroughMsg());
+}

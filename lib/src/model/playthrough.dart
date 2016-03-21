@@ -23,8 +23,8 @@ class Playthrough extends PartysharkEntity with IdentifiableMixin {
   int get position => party.playlist.indexOf(this);
 
   double get completedRatio => __completedRatio;
-  void     set completedRatio(double d) {
-    if (d == null || __completedRatio > d) { return; }
+  void   set completedRatio(double d) {
+    if (d == null || d < __completedRatio) { return; }
 
     __completedRatio = d.clamp(0.0, 1.0);
 
