@@ -7,8 +7,8 @@ class Party extends PartysharkEntity with IdentifiableMixin {
   final SettingsGroup settings;
 
   User player;
-  bool __isPlaying = false;
-  DateTime __lastRecomputed = new DateTime.now();
+  bool __isPlaying = true;
+  DateTime _lastRecomputed = new DateTime.now();
 
   final List<Playthrough> playlist = [ ];
   final Set<User> users = new Set();
@@ -26,18 +26,5 @@ class Party extends PartysharkEntity with IdentifiableMixin {
   bool get isPlaying => __isPlaying;
   void set isPlaying(bool b) { __isPlaying = b ?? __isPlaying; }
 
-  DateTime get lastRecomputed => __lastRecomputed;
-
-  void _recomputePlaylist() {
-    __lastRecomputed = new DateTime.now();
-
-    if (playlist.length < 3) { return; }
-
-    Playthrough playing = playlist.first;
-
-    playlist
-      ..remove(playing)
-      ..sort((a, b) => b.netVotes - a.netVotes)
-      ..insert(0, playing);
-  }
+  DateTime get lastRecomputed => _lastRecomputed;
 }

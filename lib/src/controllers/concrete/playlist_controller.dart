@@ -42,7 +42,7 @@ class PlaylistController extends PartysharkController with PlaythroughMessenger 
     }
 
     Playthrough play = model.createPlaythrough(song, prep.requester);
-    if (song == null) {
+    if (play == null) {
       _closeBadRequest(req, fail..why = 'The suggestion violated party settings.');
       return;
     }

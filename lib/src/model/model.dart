@@ -104,13 +104,13 @@ class PartysharkModel {
     }
 
     // Enforce veto condition
-    if (play._hitVetoCondition) {
+    if (_hitVetoCondition(play)) {
       deletePlaythrough(play);
       recompute = false;
     }
 
     if (recompute) {
-      play.party._recomputePlaylist();
+      _recomputePlaylist(play.party);
     }
   }
 
@@ -216,7 +216,7 @@ class PartysharkModel {
     _datastore[Ballot].removeAll(play.ballots);
     _datastore[Playthrough].remove(play);
 
-    play.party._recomputePlaylist();
+    _recomputePlaylist(play.party);
   }
 
 
@@ -250,6 +250,22 @@ class PartysharkModel {
       return ret;
     }
   }
+
+  void _recomputePlaylist(Party party) {
+    party._lastRecomputed = new DateTime.now();
+
+    if (party.playlist.length < 3) { return; }
+
+    Playthrough playing = party.playlist.first;
+
+    party.playlist
+      ..remove(playing)
+      ..sort((a, b) => b.netVotes - a.netVotes)
+      ..insert(0, playing);
+  }
+
+  bool _hitVetoCondition(Playthrough play) => play.downvotes > play.party.settings.vetoRatio * play.party.users.length;
+
 }
 
 

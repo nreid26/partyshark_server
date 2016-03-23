@@ -25,6 +25,8 @@ class PlayerTransfer extends PartysharkEntity with DeferredIdentifiableMixin {
     else {
       __status = t;
       __closureTime = new DateTime.now();
+
+      requester.party.player = requester;
     }
   }
 

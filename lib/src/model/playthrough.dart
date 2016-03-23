@@ -30,6 +30,4 @@ class Playthrough extends PartysharkEntity with IdentifiableMixin {
 
     if (__completedRatio >= 1.0) { __model.deletePlaythrough(this); }
   }
-
-  bool get _hitVetoCondition => downvotes > party.settings.vetoRatio * party.users.length;
 }
