@@ -51,21 +51,20 @@ class Collector {
   void collectTransfers() {
     final DateTime now = new DateTime.now();
 
-    bool transPredicate(PlayerTransfer trans) {
-      switch (trans.status) {
-        case TransferStatus.Closed:
-          return now.difference(trans.closureTime) > transferLifetime;
-        case TransferStatus.Open:
-          return now.difference(trans.creationTime) > transferLifetime;
-        default:
-          return true;
-      }
-    }
+    bool closePred(PlayerTransfer trans) =>
+        trans.status == TransferStatus.Open && now.difference(trans.creationTime) > transferLifetime;
+
+    bool deletePred(PlayerTransfer trans) =>
+        trans.status == TransferStatus.Closed && now.difference(trans.closureTime) > transferLifetime;
 
     model.logger.info('Collecting expired player transfers');
 
     model
-        .getEntites(PlayerTransfer, transPredicate)
+        .getEntites(PlayerTransfer, closePred)
+        .forEach(model.rejectTransfer);
+
+    model
+        .getEntites(PlayerTransfer, deletePred)
         .toList(growable: false)
         .forEach(model.deleteTransfer);
   }

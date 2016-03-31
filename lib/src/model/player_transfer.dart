@@ -12,23 +12,14 @@ class PlayerTransfer extends PartysharkEntity with DeferredIdentifiableMixin {
   final User requester;
   final DateTime creationTime = new DateTime.now();
 
-  DateTime __closureTime;
-  TransferStatus __status = TransferStatus.Open;
+  DateTime _closureTime;
+  TransferStatus _status = TransferStatus.Open;
 
   //Constructor
   PlayerTransfer._(PartysharkModel model, int identity, this.requester) : super(model, identity);
 
   //Methods
-  TransferStatus get status => __status;
-  void           set status(TransferStatus t) {
-    if (__status == TransferStatus.Closed || t == null) {  }
-    else {
-      __status = t;
-      __closureTime = new DateTime.now();
+  TransferStatus get status => _status;
 
-      requester.party.player = requester;
-    }
-  }
-
-  DateTime get closureTime => __closureTime;
+  DateTime get closureTime => _closureTime;
 }

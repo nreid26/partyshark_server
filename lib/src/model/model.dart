@@ -238,6 +238,25 @@ class PartysharkModel {
     trans.requester.party.transfers.remove(trans);
   }
 
+  void acceptTransfer(PlayerTransfer trans) {
+    if (_closeTransfer(trans)) {
+      trans.requester.party.player = trans.requester;
+    }
+  }
+
+  void rejectTransfer(PlayerTransfer trans) {
+    _closeTransfer(trans);
+  }
+
+  bool _closeTransfer(PlayerTransfer trans) {
+    if (trans.status == TransferStatus.Open) {
+      trans._status = TransferStatus.Closed;
+      trans._closureTime = new DateTime.now();
+      return true;
+    }
+    return false;
+  }
+
   Future<Song> _createSong(int songCode) async {
     deezer.SongMsg msg = await deezer.getSong(songCode);
 

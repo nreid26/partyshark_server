@@ -37,8 +37,8 @@ class PlayerTransferController extends PartysharkController with PlayerTransferM
     if (trans == null) { return; }
 
     /// Update status.
-    if (msg.status.isDefined) {
-      trans.status = msg.status.value;
+    if (msg.status.isDefined && msg.status.value == TransferStatus.Closed) {
+      model.acceptTransfer(trans);
     }
 
     _closeGoodRequest(req, recoverUri(pathParams), transferToMsg(trans));
