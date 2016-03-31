@@ -4,13 +4,16 @@ import 'dart:io';
 import 'dart:convert' show UTF8, JSON;
 import 'dart:async' show Future;
 
-import 'package:partyshark_server/src/entities/entities.dart';
+import 'package:partyshark_server/src/messaging/messaging.dart' show SongMsg;
+export 'package:partyshark_server/src/messaging/messaging.dart' show SongMsg;
 
 final HttpClient _client = new HttpClient();
 final Uri _baseUri = Uri.parse('https://api.deezer.com');
 
 
-Future<Song> getSong(int songId) async {
+Future<SongMsg> getSong(int songId) async {
+  final SongMsg msg = new SongMsg();
+
   try {
     HttpClientRequest req = (await _client.getUrl(_baseUri.replace(path: 'track/$songId')))
         ..headers.contentType = ContentType.JSON;
@@ -20,23 +23,12 @@ Future<Song> getSong(int songId) async {
 
     if (body.containsKey('error')) { return null; }
 
-    return _songFromMap(body);
+    return new SongMsg()
+        ..code.encodableValue = body['id'];
   }
   catch (e) {
     return null;
   }
-}
 
-
-Song _songFromMap(Map<String, dynamic> body) {
-    int code = body['id'];
-    if (code == null) { return null; }
-
-    Duration duration;
-    if (body['duration'] is num) {
-      duration = new Duration(seconds: body['duration'].toInt());
-    }
-    else { return null; }
-
-    return new Song(code, duration);
+  return msg;
 }

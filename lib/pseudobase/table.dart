@@ -23,8 +23,11 @@ class Table<T extends Identifiable> extends SetBase<T> {
     clear();
   }
 
-  /// The number of items in the table.
+  /// The number of items in this.
   int get length => __length;
+
+  ///  A guaranteed free identity in this.
+  int get freeIdentity => __maxIdentity + 1;
 
   bool __isDeleted(int index) => identical(__cells[index], _Deleted.only);
 

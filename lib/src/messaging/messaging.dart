@@ -1,7 +1,7 @@
 library messaging;
 
 import 'package:partyshark_server/jsonable/jsonable.dart';
-import 'package:partyshark_server/src/entities/entities.dart';
+import 'package:partyshark_server/src/model/model.dart';
 
 export 'package:partyshark_server/jsonable/jsonable.dart';
 

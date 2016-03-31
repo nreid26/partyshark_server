@@ -35,7 +35,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
     var play = __getPlaythrough(req, pathParams, prep.party);
     if(play == null) { return; }
 
-    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play));
+    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play, prep.requester));
   }
 
 
@@ -53,7 +53,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
     if (play == null) { return; }
 
     /// Update completed duration.
-    if (msg.completedDuration.isDefined) {
+    if (msg.completedRatio.isDefined) {
       if (prep.requester.isPlayer == false) {
         const String what = 'The completed duration of this playthrough could not be changed.';
         const String why = 'You are not the party player.';
@@ -61,9 +61,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
         return;
       }
 
-      model.modifyEntity(play, () {
-        play.completedDuration = msg.completedDuration.value;
-      });
+      play.completedRatio = msg.completedRatio.value;
     }
 
     /// Change vote.
@@ -71,7 +69,7 @@ class PlaythroughController extends PartysharkController with PlaythroughMesseng
       model.voteOnPlaythrough(prep.requester, play, msg.vote.value);
     }
 
-    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play));
+    _closeGoodRequest(req, recoverUri(pathParams), playthroughToMsg(play, prep.requester));
   }
 
   Playthrough __getPlaythrough(HttpRequest req, Map pathParams, Party party) {

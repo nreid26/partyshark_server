@@ -44,7 +44,7 @@ class PlayerTransfersController extends PartysharkController with PlayerTransfer
     }
 
     msg = transferToMsg(trans);
-    Uri location = Controller.Transfer.recoverUri({Key.PartyCode: prep.party.partyCode, Key.PlayerTransferCode: trans.identity});
+    Uri location = _parentSet.transfer.recoverUri({Key.PartyCode: prep.party.partyCode, Key.PlayerTransferCode: trans.identity});
     _closeGoodRequest(req, location, msg);
   }
 }

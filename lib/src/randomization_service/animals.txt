@@ -33,7 +33,7 @@ hake
 halibut
 herring
 irukandji
-isopods
+isopod
 jellyfish
 dory
 mackerel
@@ -77,7 +77,7 @@ starfish
 swordfish
 tilefish
 trumpetfish
-worms
+worm
 shell
 unicornfish
 snail

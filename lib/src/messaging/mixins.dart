@@ -10,17 +10,17 @@ class UserMessenger {
 }
 
 class PlaythroughMessenger {
-  PlaythroughMsg playthroughToMsg(Playthrough p) {
+  PlaythroughMsg playthroughToMsg(Playthrough p, User u) {
     return new PlaythroughMsg()
       ..suggester.value = p.suggester.username
-      ..completedDuration.value = p.completedDuration
+      ..completedRatio.value = p.completedRatio
       ..code.value = p.identity
       ..position.value = p.position
       ..songCode.value = p.song.identity
       ..creationTime.value = p.creationTime
       ..downvotes.value = p.downvotes
       ..upvotes.value = p.upotes
-      ..vote.value = p.ballots.firstWhere((b) => b.voter == p.suggester, orElse: () => null)?.vote;
+      ..vote.value = p.ballots.firstWhere((b) => b.voter == u, orElse: () => null)?.vote;
   }
 }
 

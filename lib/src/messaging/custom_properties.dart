@@ -33,7 +33,7 @@ class _GenreProperty extends _EnumProperty<Genre> {
 }
 
 
-
+/*
 class _DurationProperty extends JsonProperty<Duration> {
   _DurationProperty(String name, [bool isDefined, Duration value]) : super(name, isDefined, value);
 
@@ -49,7 +49,6 @@ class _DurationProperty extends JsonProperty<Duration> {
   }
 }
 
-/*
 class _UriProperty extends JsonProperty<Uri> {
   _UriProperty(String name, [bool isDefined, Uri value]) : super(name, isDefined, value);
 

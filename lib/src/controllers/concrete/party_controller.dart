@@ -31,9 +31,7 @@ class PartyController extends PartysharkController {
     var msg = prep.body as PartyMsg;
 
     if (msg.isPlaying.isDefined) {
-      model.modifyEntity(prep.party, () {
-        prep.party.isPlaying = msg.isPlaying.value;
-      });
+      prep.party.isPlaying = msg.isPlaying.value;
     }
 
     __respondWithParty(req, pathParams, prep);

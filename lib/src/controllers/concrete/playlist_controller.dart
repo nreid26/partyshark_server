@@ -17,8 +17,8 @@ class PlaylistController extends PartysharkController with PlaythroughMessenger 
     _Preperation prep = await _prepareRequest(req, pathParams, checkRequesterAdmin: false);
     if (prep.hadError) { return; }
 
-    Iterable<PlaythroughMsg> msgs = prep.party.playlist.map(playthroughToMsg)
-          ..forEach((PlaythroughMsg p) => p.completedDuration.isDefined = false);
+    PlaythroughMsg con(Playthrough p) => playthroughToMsg(p, prep.requester);
+    Iterable<PlaythroughMsg> msgs = prep.party.playlist.map(con);
 
     _closeGoodRequest(req, recoverUri(pathParams), msgs);
   }
@@ -41,13 +41,13 @@ class PlaylistController extends PartysharkController with PlaythroughMessenger 
       return;
     }
 
-    Playthrough play = model.createPlaythrough(song, prep.party, prep.requester);
-    if (song == null) {
+    Playthrough play = model.createPlaythrough(song, prep.requester);
+    if (play == null) {
       _closeBadRequest(req, fail..why = 'The suggestion violated party settings.');
       return;
     }
 
     Map params = {Key.PlaythroughCode: play.identity, Key.PartyCode: prep.party};
-    _closeGoodRequest(req, Controller.Playthrough.recoverUri(params), playthroughToMsg(play));
+    _closeGoodRequest(req, _parentSet.playthrough.recoverUri(params), playthroughToMsg(play, prep.requester));
   }
 }

@@ -32,23 +32,21 @@ class SettingsController extends PartysharkController {
 
     var msg = prep.body as SettingsMsg;
 
-    model.modifyEntity(s, () {
-      if (msg.virtualDj.isDefined) {
-        s.usingVirtualDj = msg.virtualDj.value;
-      }
-      if (msg.userCap.isDefined) {
-        s.userCap = msg.userCap.value;
-      }
-      if (msg.playthroughCap.isDefined) {
-        s.playthroughCap = msg.playthroughCap.value;
-      }
-      if (msg.defaultGenre.isDefined) {
-        s.defaultGenre = msg.defaultGenre.value;
-      }
-      if (msg.vetoRatio.isDefined) {
-        s.vetoRatio = msg.vetoRatio.value;
-      }
-    });
+    if (msg.virtualDj.isDefined) {
+      s.usingVirtualDj = msg.virtualDj.value;
+    }
+    if (msg.userCap.isDefined) {
+      s.userCap = msg.userCap.value;
+    }
+    if (msg.playthroughCap.isDefined) {
+      s.playthroughCap = msg.playthroughCap.value;
+    }
+    if (msg.defaultGenre.isDefined) {
+      s.defaultGenre = msg.defaultGenre.value;
+    }
+    if (msg.vetoRatio.isDefined) {
+      s.vetoRatio = msg.vetoRatio.value;
+    }
 
     __respondWithSettings(req, pathParams, prep);
   }
@@ -61,7 +59,7 @@ class SettingsController extends PartysharkController {
         ..vetoRatio.value = s.vetoRatio
         ..playthroughCap.value = s.playthroughCap
         ..userCap.value = s.userCap
-        ..virtualDj.value = s.usingVirtualDj;
+        ..virtualDj.value = s.usingVitualDj;
 
     _closeGoodRequest(req, recoverUri(pathParams), msg.toJsonString());
   }
