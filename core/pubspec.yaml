@@ -1,0 +1,16 @@
+name: partyshark_server_core
+version: 0.0.1
+description: The PartyShark API server.
+author: Nick Reid <nreid26@uwo.ca>
+#homepage: https://www.example.com
+
+environment:
+    sdk: '^1.0.0'
+
+dependencies:
+    resource: '^1.1.0'
+    logging: '^0.11.0'
+    args: "^0.13.3+6"
+
+dev_dependencies:
+    test: '>=0.12.0 <0.13.0'
