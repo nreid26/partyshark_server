@@ -1,12 +1,19 @@
+/// A library implementing stale entity collection of the API server.
+///
+/// The functions and classes defined within represent a specialised client for
+/// a [PartySharkModel] instance intended to detect and delete stale entities from
+/// that model using the same methods available to normal clients.
 library cleanup;
 
 import 'dart:async';
 
-import 'package:partyshark_server/src/model/model.dart';
+import 'package:partyshark_server_core/model/model.dart';
 
+
+/// A class implementing the entire required functionality of this library.
 class Collector {
   /// The model this [Collector] collects on
-  final PartysharkModel model;
+  final PartySharkModel model;
 
   /// The lifetime this [Collector] allows a [PlayerTransfer].
   final Duration transferLifetime;
@@ -85,6 +92,7 @@ class Collector {
         .forEach(model.deleteUser);
   }
 
+  /// Permanently and gracefully halt the operation of this object.
   void cancel() {
     model.logger.info('Collection cancelled');
     __timers.forEach((t) => t.cancel());

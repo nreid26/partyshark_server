@@ -9,7 +9,7 @@ abstract class PartysharkController extends RouteController {
 
   ControllerSet _parentSet;
 
-  PartysharkModel get model => _parentSet.model;
+  PartySharkModel get model => _parentSet.model;
   Logger get logger => model.logger;
 
   @HttpHandler(HttpMethod.Options)

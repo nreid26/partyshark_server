@@ -1,3 +1,7 @@
+/// A library defining HTTP request controllers for handling PartyShark API requests.
+///
+/// All controllers in this library should be instantiated as part of a
+/// [ControllerSet] and subsequently bound to a single [PartySharkModel].
 library controllers;
 
 import 'dart:io' show HttpRequest, HttpResponse, HttpHeader, HttpStatus, ContentType;
@@ -6,9 +10,9 @@ import 'dart:async' show Future;
 
 import 'package:logging/logging.dart';
 
-import 'package:partyshark_server/src/messaging/messaging.dart';
-import 'package:partyshark_server/signpost/signpost.dart';
-import 'package:partyshark_server/src/model/model.dart';
+import 'package:partyshark_server_core/messaging/messaging.dart';
+import 'package:partyshark_server_support/signpost/signpost.dart';
+import 'package:partyshark_server_core/model/model.dart';
 
 
 part './partyshark_controller.dart';
@@ -48,7 +52,7 @@ class ControllerSet {
   final PlayerTransferController transfer = new PlayerTransferController._();
   final PlayerTransfersController transfers = new PlayerTransfersController._();
 
-  final PartysharkModel model;
+  final PartySharkModel model;
 
   ControllerSet(this.model) {
     var all = [party, parties, playlist, playthrough, settings, users, self, transfer, transfers];

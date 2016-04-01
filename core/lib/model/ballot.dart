@@ -6,7 +6,7 @@ enum Vote {
 }
 
 /// A class representing a ballot cast by a user on a playthrough
-class Ballot extends PartysharkEntity with IdentifiableMixin {
+class Ballot extends PartySharkEntity with IdentifiableMixin {
   //Data
   final User voter;
   final Playthrough playthrough;
@@ -14,5 +14,5 @@ class Ballot extends PartysharkEntity with IdentifiableMixin {
   Vote vote;
 
   //Constructor
-  Ballot._(PartysharkModel model, int identity, this.voter, this.playthrough, this.vote) : super(model, identity);
+  Ballot._(PartySharkModel model, int identity, this.voter, this.playthrough, this.vote) : super(model, identity);
 }

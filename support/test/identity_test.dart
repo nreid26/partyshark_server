@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:partyshark_server/identity.dart';
+import 'package:partyshark_server_support/identity.dart';
 
 class ConcreteIdentifiable extends Object with IdentifiableMixin {
   //Data

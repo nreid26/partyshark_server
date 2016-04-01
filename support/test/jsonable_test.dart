@@ -1,4 +1,4 @@
-import 'package:partyshark_server/jsonable/jsonable.dart';
+import 'package:partyshark_server_support/jsonable/jsonable.dart';
 import 'package:test/test.dart';
 
 class ExampleMsg extends Jsonable {

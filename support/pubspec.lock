@@ -127,12 +127,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.3"
-  resource:
-    description:
-      name: resource
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.0"
   shelf:
     description:
       name: shelf
@@ -193,12 +187,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.12.11+2"
-  typed_data:
-    description:
-      name: typed_data
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.2"
   utf:
     description:
       name: utf

@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import 'package:partyshark_server/identity.dart';
-import 'package:partyshark_server/pseudobase/pseudobase.dart';
+import 'package:partyshark_server_support/identity.dart';
+import 'package:partyshark_server_support/pseudobase/pseudobase.dart';
 
 class ConcreteIdentifiable extends Object with DeferredIdentifiableMixin {
 	//Data

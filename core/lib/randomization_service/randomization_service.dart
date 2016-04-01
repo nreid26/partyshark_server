@@ -21,7 +21,7 @@ Future get ready => _UsernameGenerator._onlyReady;
 
 /// A sorted string containing all the lowercase characters.
 const String lowercaseAlphabet = 'abcdefghijklmnopqrstuvwxyz';
-const String packageBase = 'package:partyshark_server/src/randomization_service';
+const String packageBase = 'package:partyshark_server_core/randomization_service';
 
 /// The internal random number generator at the core of the provided services.
 final Random _rand = new Random();

@@ -1,4 +1,4 @@
-import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
+import 'package:partyshark_server_core/randomization_service/randomization_service.dart' as rand_serve;
 import 'package:test/test.dart';
 
 main() async {

@@ -5,10 +5,10 @@ import 'dart:convert';
 import 'package:args/args.dart';
 import 'package:logging/logging.dart';
 
-import 'package:partyshark_server/src/model/model.dart';
-import 'package:partyshark_server/src/controllers/controllers.dart';
-import 'package:partyshark_server/signpost/signpost.dart';
-import 'package:partyshark_server/src/collector.dart';
+import 'package:partyshark_server_core/model/model.dart';
+import 'package:partyshark_server_core/controllers/controllers.dart';
+import 'package:partyshark_server_support/signpost/signpost.dart';
+import 'package:partyshark_server_core/collector.dart';
 
 
 
@@ -17,9 +17,9 @@ Future main(List<String> allArgs) async {
 
   final Logger logger = prepareLogger(args.verbosity, args.logFileName, args.usingConsole);
 
-  await PartysharkModel.ready;
+  await PartySharkModel.ready;
   logger.info('Model resources loaded');
-  final PartysharkModel model = new PartysharkModel(logger);
+  final PartySharkModel model = new PartySharkModel(logger);
 
   final address = (args.isLocal) ? InternetAddress.LOOPBACK_IP_V4 : InternetAddress.ANY_IP_V4;
   final serverSub = await launchApiServer(model, args.basePublicUrl, args.port, address);
@@ -44,6 +44,9 @@ Future main(List<String> allArgs) async {
   });
 }
 
+
+/// Retrieves and configures the [Logger] instance injected throughout the
+/// core API server libraries.
 Logger prepareLogger(int levelIndex, String logFileName, bool usingConsole) {
   final Logger logger = Logger.root
     ..level = Level.LEVELS[levelIndex];
@@ -81,6 +84,9 @@ Logger prepareLogger(int levelIndex, String logFileName, bool usingConsole) {
   return logger;
 }
 
+
+/// Opens an asynchronous, line based, reader on stdin and directs its output
+/// at the supplied callback.
 void listenOnStdin(dynamic handler(String line, StreamSubscription sub)) {
   var sub;
   sub = stdin
@@ -89,7 +95,10 @@ void listenOnStdin(dynamic handler(String line, StreamSubscription sub)) {
       .listen((line) { handler(line, sub); });
 }
 
-Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri, int port, InternetAddress address) async {
+
+/// Constructs a [signpost] [Router] with controllers from a [ControllerSet]
+/// and then registers it to listen on an [HttpServer].
+Future<StreamSubscription> launchApiServer(PartySharkModel model, String baseUri, int port, InternetAddress address) async {
   final ControllerSet set = new ControllerSet(model);
 
   final definition = {
@@ -129,6 +138,8 @@ Future<StreamSubscription> launchApiServer(PartysharkModel model, String baseUri
   return sub;
 }
 
+/// A convenience class wrapping an [ArgParser] providing a convenient place to
+/// define parser rules and getters for type-converted values.
 class ArgManager {
   static const String __File = 'log';
   static const String __Verbosity = 'verbosity';

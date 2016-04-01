@@ -5,8 +5,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:test/test.dart';
-import 'package:partyshark_server/src/controllers/controllers.dart';
-import 'package:partyshark_server/src/messaging/messaging.dart';
+import 'package:partyshark_server_core/controllers/controllers.dart';
+import 'package:partyshark_server_core/messaging/messaging.dart';
 
 part './extracted_functions.dart';
 part './custom_matchers.dart';
@@ -19,7 +19,7 @@ main() async {
     Process server;
 
     setUpAll(() async {
-      server = await Process.start('dart C:/Users/Nick/Desktop/partyshark_server/bin/main.dart $baseUri 3000 -cl -v 0', []);
+      server = await Process.start('dart bin/main.dart $baseUri 3000 -cl -v 0', []);
       server.stderr.pipe(stderr);
       server.stdout.pipe(stdout);
     });
@@ -37,7 +37,7 @@ main() async {
       expect(p.body.code, isDefinedAndValue(isNonNegative));
       expect(p.body.adminCode, isDefinedAndValue(isNonNegative));
       expect(p.userCode, isNonNegative);
-      expect(p.body.isPlaying, isDefinedAndValue(isFalse));
+      expect(p.body.isPlaying, isDefinedAndValue(isTrue));
     });
 
     test('allows users to query thesleves', () async {

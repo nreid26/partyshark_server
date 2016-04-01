@@ -1,12 +1,16 @@
+/// A library defining an object oriented model of a PartyShark API server instance.
+///
+/// This library defines entity classes and the [PartySharkModel] class and is
+/// responsible for maintaining data integrity.
 library model;
 
 import 'dart:async' show Future;
 
 import 'package:logging/logging.dart';
 
-import 'package:partyshark_server/pseudobase/pseudobase.dart';
-import 'package:partyshark_server/src/randomization_service/randomization_service.dart' as rand_serve;
-import 'package:partyshark_server/src/deezer.dart' as deezer;
+import 'package:partyshark_server_support/pseudobase/pseudobase.dart';
+import 'package:partyshark_server_core/randomization_service/randomization_service.dart' as rand_serve;
+import 'package:partyshark_server_core/deezer.dart' as deezer;
 
 part './party.dart';
 part './user.dart';
@@ -17,27 +21,46 @@ part './ballot.dart';
 part './player_transfer.dart';
 
 
-abstract class PartysharkEntity {
-  final PartysharkModel __model;
+/// A base class provided members and getters common to all entity objects in the model.
+abstract class PartySharkEntity {
+  final PartySharkModel __model;
   final int identity;
 
   Logger get logger => __model.logger;
 
-  PartysharkEntity(this.__model, this.identity);
+  PartySharkEntity(this.__model, this.identity);
 }
 
+/// An object oriented representation of a PartyShark API server.
+///
+/// This class provides methods for managing the lifecycle of the various model
+/// entities, specifically creation and deletion.
+class PartySharkModel {
 
-class PartysharkModel {
+  /// An indicator of the readiness of all model instances.
+  ///
+  /// This class partially depends on asynchronously loaded resources and thus
+  /// is not guaranteed to function correctly until this [Future] is complete.
   static Future get ready => rand_serve.ready;
 
-  /// The datastore for this model
+  /// The datastore for this model.
   final Datastore _datastore = new Datastore(const [Ballot, Party, PlayerTransfer, Playthrough, SettingsGroup, Song, User]);
 
+  /// The [Logger] used by this model and its owned entities.
   final Logger logger;
 
-  PartysharkModel(this.logger);
+  /// A basic generative constructor supporting [Logger] dependency injection.
+  PartySharkModel(this.logger);
 
-  /// Get an [Entity] out of this by type and identity.
+
+
+  /// Get a [PartySharkEntity] out of this by type and identity.
+  ///
+  /// If the entity should be retrieved asynchronously, because the model may
+  /// be incomplete, set [useAsync] = true. In this case, if no cached entity
+  /// is available and am asynchronous lookup method is, that method will be invoked
+  /// and its [Future] returned; the result will also be cached internally. Regardless,
+  /// a [Future] will be returned.
   dynamic getEntity(Type type, int identity, {bool useAsync: false}) {
     var syncRet = _datastore[type][identity];
 
@@ -68,7 +91,7 @@ class PartysharkModel {
 
 
 
-  /// Get an [Iterable] of [Entity] objects out of this by predicate.
+  /// Get an [Iterable] of [PartySharkEntity] objects out of this by predicate.
   Iterable<dynamic> getEntites(Type type, [bool predicate(dynamic item)]) {
     return _datastore[type]
         .where(predicate ?? (item) => true)
@@ -84,6 +107,8 @@ class PartysharkModel {
     return entity;
   }
 
+  /// Create or modify a [Ballot] on a specified [Playthrough] to indicate a
+  /// user [Vote].
   void voteOnPlaythrough(User voter, Playthrough play, Vote vote) {
     bool recompute = true;
     Ballot ballot = play.ballots.firstWhere((b) => b.voter == voter, orElse: () => null);
@@ -115,6 +140,7 @@ class PartysharkModel {
   }
 
 
+  /// Create a new [User] in a [Party] and manage all internal reference assignments.
   User createUser(Party party, [bool isAdmin = false]) {
     if (party.settings.userCap == null) { }
     else if (party.users.length < party.settings.userCap) { }
@@ -141,6 +167,10 @@ class PartysharkModel {
     return ret;
   }
 
+  /// Remove a [User] from this model and clean up all invalidated references.
+  ///
+  /// If the specified [User] is the last member of their [Party], the party will
+  /// also be disposed.
   void deleteUser(User user) {
     _datastore.remove(user);
     user.party.users.remove(user);
@@ -160,7 +190,7 @@ class PartysharkModel {
     }
   }
 
-
+  /// Create and link a new [Party] in this model as well as a default admin [User].
   Party createParty() {
     // Make and store new objects
     SettingsGroup settings = new SettingsGroup._(this, _datastore[SettingsGroup].freeIdentity);
@@ -177,6 +207,7 @@ class PartysharkModel {
     return party;
   }
 
+  /// Remove a [Party] and all its associated entities from this model.
   void deleteParty(Party party) {
     _datastore[Party].remove(party);
     _datastore[User].removeAll(party.users);
@@ -189,7 +220,7 @@ class PartysharkModel {
     });
   }
 
-
+  /// Create an link a [Playthrough] in this model assigned to a specified [Party].
   Playthrough createPlaythrough(Song song, User suggester) {
     final Party party = suggester.party;
 
@@ -210,6 +241,7 @@ class PartysharkModel {
       ..ballots.add(ballot);
   }
 
+  /// Remove and unlink a [Playthrough].
   void deletePlaythrough(Playthrough play) {
     play.party.playlist.remove(play);
 
@@ -251,6 +283,8 @@ class PartysharkModel {
     }
   }
 
+  /// Calculate and sort the [Playthrough] entities assigned to the specified
+  /// [Party] according to the requsite ordering rules.
   void _recomputePlaylist(Party party) {
     party._lastRecomputed = new DateTime.now();
 
@@ -264,6 +298,8 @@ class PartysharkModel {
       ..insert(0, playing);
   }
 
+  /// Returns true if the specified [Playthrough] should be vetoed based on its
+  /// state within the model; false otherwise.
   bool _hitVetoCondition(Playthrough play) => play.downvotes > play.party.settings.vetoRatio * play.party.users.length;
 
 }

@@ -4,8 +4,8 @@ import 'dart:io';
 import 'dart:async' show Future;
 
 import 'package:test/test.dart';
-import 'package:partyshark_server/signpost/signpost.dart';
-import 'package:partyshark_server/espionage.dart';
+import 'package:partyshark_server_support/signpost/signpost.dart';
+import 'package:partyshark_server_support/espionage.dart';
 
 part './http_stubs.dart';
 part './basic_route_controller.dart';
@@ -100,7 +100,7 @@ void main() {
 
       await router.routeRequest(req);
 
-      expect(req.response.headers['Allow'], equals((methodNames..sort()).join(',')));
+      expect(req.response.headers['Allow'], unorderedEquals(methodNames));
     });
 
     test('close responses to unsupported methods with appropriate status', () async {

@@ -1,7 +1,7 @@
 part of model;
 
 /// A class representing a party
-class Party extends PartysharkEntity with IdentifiableMixin {
+class Party extends PartySharkEntity with IdentifiableMixin {
   //Data
   final int adminCode;
   final SettingsGroup settings;
@@ -15,7 +15,7 @@ class Party extends PartysharkEntity with IdentifiableMixin {
   final Set<PlayerTransfer> transfers = new Set();
 
   //Constructor
-  Party._(PartysharkModel model, int identity, this.adminCode, this.settings) : super(model, identity);
+  Party._(PartySharkModel model, int identity, this.adminCode, this.settings) : super(model, identity);
 
   //Methods
   int get partyCode => identity;
