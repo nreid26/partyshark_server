@@ -110,7 +110,6 @@ class PartySharkModel {
   /// Create or modify a [Ballot] on a specified [Playthrough] to indicate a
   /// user [Vote].
   void voteOnPlaythrough(User voter, Playthrough play, Vote vote) {
-    bool recompute = true;
     Ballot ballot = play.ballots.firstWhere((b) => b.voter == voter, orElse: () => null);
 
     // There is no existing Ballot and there is a Vote
@@ -119,22 +118,14 @@ class PartySharkModel {
 
       _datastore.add(ballot);
       play.ballots.add(ballot);
+
+      _recomputePlaylist(play.party);
+
     }
     // There is an existing Ballot and its Vote is different
     else if (ballot != null && ballot.vote != vote) {
       ballot.vote = vote;
-    }
-    else {
-      recompute = false;
-    }
 
-    // Enforce veto condition
-    if (_hitVetoCondition(play)) {
-      deletePlaythrough(play);
-      recompute = false;
-    }
-
-    if (recompute) {
       _recomputePlaylist(play.party);
     }
   }
@@ -142,9 +133,7 @@ class PartySharkModel {
 
   /// Create a new [User] in a [Party] and manage all internal reference assignments.
   User createUser(Party party, [bool isAdmin = false]) {
-    if (party.settings.userCap == null) { }
-    else if (party.users.length < party.settings.userCap) { }
-    else { return null; };
+    if (!_canAddUser(party)) { return null; };
 
     int identity = rand_serve.userCode;
     while (_datastore[User].containsIdentity(identity)) { identity++; }
@@ -188,13 +177,18 @@ class PartySharkModel {
     if (user.party.player == user) {
       user.party.player = null;
     }
+
+    _recomputePlaylist(user.party);
   }
 
   /// Create and link a new [Party] in this model as well as a default admin [User].
   Party createParty() {
+    int identity = rand_serve.partyCode;
+    while (_datastore[Party].containsIdentity(identity)) { identity++; }
+
     // Make and store new objects
     SettingsGroup settings = new SettingsGroup._(this, _datastore[SettingsGroup].freeIdentity);
-    Party party = new Party._(this, _datastore[Party].freeIdentity, rand_serve.adminCode, settings);
+    Party party = new Party._(this, identity, rand_serve.adminCode, settings);
     User user = createUser(party, true);
 
     _datastore
@@ -224,10 +218,7 @@ class PartySharkModel {
   Playthrough createPlaythrough(Song song, User suggester) {
     final Party party = suggester.party;
 
-    if (party.settings.playthroughCap == null ||
-        party.playlist.length < party.settings.playthroughCap)
-    { }
-    else { return null; }
+    if (!_canAddPlaythrough(party)) { return null; }
 
     Playthrough play = new Playthrough._(this, _datastore[Playthrough].freeIdentity, song, suggester);
     Ballot ballot = new Ballot._(this, _datastore[Ballot].freeIdentity, suggester, play, Vote.Up);
@@ -236,9 +227,13 @@ class PartySharkModel {
       ..add(play)
       ..add(ballot);
 
-    return play
+    play
       ..party.playlist.add(play)
       ..ballots.add(ballot);
+
+    _recomputePlaylist(party);
+
+    return play;
   }
 
   /// Remove and unlink a [Playthrough].
@@ -286,22 +281,46 @@ class PartySharkModel {
   /// Calculate and sort the [Playthrough] entities assigned to the specified
   /// [Party] according to the requsite ordering rules.
   void _recomputePlaylist(Party party) {
+    if (party.playlist.isEmpty) { return; }
+
+    int pred(Playthrough a, Playthrough b) {
+      int x = b.netVotes - a.netVotes;
+      if (x != 0) { return x; }
+      else { return a.creationTime.difference(b.creationTime).inMilliseconds; }
+    }
+
     party._lastRecomputed = new DateTime.now();
-
-    if (party.playlist.length < 3) { return; }
-
     Playthrough playing = party.playlist.first;
 
     party.playlist
-      ..remove(playing)
-      ..sort((a, b) => b.netVotes - a.netVotes)
-      ..insert(0, playing);
+        .where(_hitVetoCondition)
+        .toList(growable: false)
+        .forEach(deletePlaythrough);
+
+    if (party.playlist.contains(playing)) {
+      party.playlist
+        ..remove(playing)
+        ..sort(pred)
+        ..insert(0, playing);
+    }
+    else {
+      party.playlist.sort(pred);
+    }
   }
 
   /// Returns true if the specified [Playthrough] should be vetoed based on its
   /// state within the model; false otherwise.
   bool _hitVetoCondition(Playthrough play) => play.downvotes > play.party.settings.vetoRatio * play.party.users.length;
 
+  /// Returns true if it is valid to add a [Playthrough] to the provided party;
+  /// returns false otherwise.
+  bool _canAddPlaythrough(Party party) =>
+      party.settings.playthroughCap == null || party.playlist.length < party.settings.playthroughCap;
+
+  /// Returns true if it is valid to add a [User] to the provided party;
+  /// returns false otherwise.
+  bool _canAddUser(Party party) =>
+      party.settings.userCap == null || party.users.length < party.settings.userCap;
 }
 
 

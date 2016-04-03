@@ -65,6 +65,9 @@ int get adminCode => _randIntBits(24);
 /// Service for retrieving a random user code.
 int get userCode => _randIntBits(64);
 
+/// Service for retrieving a random party code.
+int get partyCode => _randIntBits(24);
+
 /// Service for retrieving a random username.
 String get username => _UsernameGenerator._only.generate();
 
